@@ -21,3 +21,4 @@ public/renders/exams/*
 # SQLite database
 prisma/*.db
 prisma/*.db-journal
+
