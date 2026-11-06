@@ -1,0 +1,960 @@
+{
+  "01-student-home": {
+    "title": "Chrysalis",
+    "currentUrl": "https://learning.chrysalis.world/student/home",
+    "heading": "",
+    "buttons": [],
+    "inputs": [],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": ""
+  },
+  "02-student-books": {
+    "title": "Chrysalis | Student/books",
+    "currentUrl": "https://learning.chrysalis.world/student/books",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "All",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nMy Books\nAll\nRecents\n\nNo books found.\n\nAll books\n\nNo books found.\n\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "03-student-resources": {
+    "title": "Chrysalis | Student/Resources",
+    "currentUrl": "https://learning.chrysalis.world/student/Resources",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nMore Tools\nNo data available.\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "04-student-homeworks": {
+    "title": "Chrysalis | Student/homeworks",
+    "currentUrl": "https://learning.chrysalis.world/student/homeworks",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [
+      {
+        "headers": [
+          "S.No",
+          "Subject",
+          "HomeFun name",
+          "Submitted On",
+          "Status",
+          "Teacher Status",
+          "Teacher Remarks",
+          "Teacher Comments",
+          "Score",
+          "Action"
+        ],
+        "rowCount": 1
+      }
+    ],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nAssignments\nPending\nCompleted\nOverdue\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "05-student-quiz": {
+    "title": "Chrysalis | Student/quiz",
+    "currentUrl": "https://learning.chrysalis.world/student/quiz",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [
+      {
+        "headers": [
+          "S.No",
+          "Subject",
+          "Quiz name",
+          "Submitted On",
+          "Status",
+          "Score",
+          "Action"
+        ],
+        "rowCount": 1
+      }
+    ],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nQuiz\nAssigned\nCompleted\nMissed\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "06-student-worksheet": {
+    "title": "Chrysalis | Student/worksheet",
+    "currentUrl": "https://learning.chrysalis.world/student/worksheet",
+    "heading": "WORKSHEET",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [
+      {
+        "headers": [
+          "S No",
+          "Worksheet Name",
+          "Assigned By",
+          "Subject",
+          "Action"
+        ],
+        "rowCount": 1
+      }
+    ],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nWORKSHEET\nBuddy\nWorksheet\nList Of Worksheets\nShow 10\nShow 20\nShow 30\nShow 40\nShow 50\nS No\n\t\nWorksheet Name\n\t\nAssigned By\n\t\nSubject\n\t\nAction\nPage 1 of 0\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "07-student-portfolio": {
+    "title": "Chrysalis | Student/Portfolio",
+    "currentUrl": "https://learning.chrysalis.world/student/Portfolio",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-2-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [
+      {
+        "headers": [
+          "S. No",
+          "Indicators",
+          "Evaluation"
+        ],
+        "rowCount": 8
+      },
+      {
+        "headers": [
+          "S. No",
+          "Indicators",
+          "Evaluation"
+        ],
+        "rowCount": 4
+      },
+      {
+        "headers": [
+          "S. No",
+          "Indicators",
+          "Evaluation"
+        ],
+        "rowCount": 4
+      },
+      {
+        "headers": [
+          "S. No",
+          "Indicators",
+          "Evaluation"
+        ],
+        "rowCount": 2
+      }
+    ],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nStudent Portfolio\n2026-2027\nAnup\n\n618104\n\nDOB\n\n:\n-\n\nGrade\n\n:\nGrade 5 - A\n\nGender\n\n:\nMale\n\nTerm\n\n:\n2026-2027\nCognitive Development\nSocio Emotional Development\nAesthetic And Cultural Development\nPositive Learning Habits\nTerm End Assessment\n\nTake a look at your best submission\n\nNo data available\n\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "08-student-profile": {
+    "title": "Chrysalis | Student/student profile",
+    "currentUrl": "https://learning.chrysalis.world/student/student-profile",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Edit Profile",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "file",
+        "placeholder": "",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [],
+    "cards": 7,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nStudent Profile\nAnup\nSchool: Achariya School Demo\nClass: Grade 5\nSection: A\nAdmission Date: N/A\nOther Details\nEdit Profile\n\nStudent Name\n\nAnup\n\nStudent Display Name\n\nAnup\n\nUser name\n\nanup@test.com\n\nPassword\n\nPa*****34\n\nRoll No.\n\n1\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "09-student-chat": {
+    "title": "Chrysalis | Student/chat",
+    "currentUrl": "https://learning.chrysalis.world/student/chat",
+    "heading": "",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Send",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Enter Message...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\n\nonline\n\nSend \nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  },
+  "10-student-access-denied": {
+    "title": "Chrysalis | Student/access denied",
+    "currentUrl": "https://learning.chrysalis.world/student/access-denied",
+    "heading": "You don't have permission to view this page.",
+    "buttons": [
+      "A\nAnup\nStudent",
+      "Profile",
+      "Logout",
+      "Purchase Now"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioVertical"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioFruit",
+        "id": "radioHorizontal"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioFluid"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioWidth",
+        "id": "radioBoxed"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeLight"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioTheme",
+        "id": "radioThemeDark"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeLightMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "radio",
+        "placeholder": "",
+        "name": "radioThemeMode",
+        "id": "radioThemeDarkMode"
+      },
+      {
+        "tag": "INPUT",
+        "type": "checkbox",
+        "placeholder": "",
+        "name": "",
+        "id": "checkbox_1"
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nResources\nAchariya School Demo\nA\nAnup\nStudent\nYou don't have permission to view this page.\nPlease contact the school for more details.\nDesigned by\nSettings\nLayouts\nVertical \nHorizontal\nLayout Width\nFluid \nBoxed\nTopbar Theme\nLight \nDark\nTheme\nLight \nDark\nPreloader\nPreloader\nChoose Layouts\n Purchase Now"
+  }
+}

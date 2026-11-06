@@ -1,0 +1,26 @@
+{
+  "url": "https://lsr.chrysalis.world/student/level-test",
+  "snippet": "LISTENING\n\nLISTEN\n\nTap to listen\n\nWhat stopped the energy flow in the broken engine?\n\nA\nA loose belt\nB\nA broken torch\nC\nA missing wire",
+  "navLinks": [
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "Tap to listen"
+    },
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "A | A loose belt"
+    },
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "B | A broken torch"
+    },
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "C | A missing wire"
+    }
+  ]
+}

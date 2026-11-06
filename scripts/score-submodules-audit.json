@@ -1,0 +1,95 @@
+{
+  "exam-builder": {
+    "title": "Exam Template Builder",
+    "heading": "Summative Exam Builder",
+    "buttons": [
+      "📋 All Exams"
+    ],
+    "inputs": [
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "textSnippet": "GRADE\nSelect Grade...\nGrade 5\n📋 All Exams\n📝\nSummative Exam Builder\n\nSelect a grade above to get started."
+  },
+  "exam-assign": {
+    "title": "Exam Template Builder",
+    "heading": "📋 Assign Exam",
+    "buttons": [
+      "Load",
+      "Pre-printed booklets\n\nA personalised printed copy for each student, with QR codes. Scans are graded in Exam Grader.",
+      "Free-form paper\nCOMING SOON\n\nStudents write in the school's own answer books. One question paper per version for the class, and a roster of who gets which. Graded in Free-form Grading.",
+      "📄 Generate Batch PDF (0)"
+    ],
+    "inputs": [
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "exam:7014:13:1740123456789",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "textSnippet": "GRADE\nSelect Grade...\nGrade 5\n📋 Assign Exam\n1. Select Exam\nEXAM CODE\nLoad\n\nPaste a code shared by a colleague to use their paper.\n\nOR BROWSE YOUR EXAMS\n\nSelect a grade and subject above to see exams.\n\n2. Select Class\n\nSelect at least one paper first to see matching classes.\n\n3. Select Students\n\nSelect a class to see students.\n\n4. How will students answer?\nPre-printed booklets\n\nA personalised printed copy for each student, with QR codes. Scans are graded in Exam Grader.\n\nFree-form paper\nCOMING SOON\n\nStudents write in the school's own answer books. One question paper per version for the class, and a roster of who gets which. Graded in Free-form Grading.\n\n📄 Generate Batch PDF (0)\n\nSelect at least one paper first\n\nRecent Batches\n\nNo batches generated yet."
+  },
+  "exam-grader": {
+    "title": "Exam Template Builder",
+    "heading": "Exam Grader",
+    "buttons": [
+      "Load"
+    ],
+    "inputs": [
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "exam:4:13:1773678096222",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "textSnippet": "Exam Grader\nEC2\nGrading runs →\nGRADE\nSelect Grade...\nGrade 5\nOR EXAM CODE\nLoad\n📋\nExam Grader\n\nSelect a grade above to get started."
+  },
+  "exam-grader-runs": {
+    "title": "Exam Template Builder",
+    "heading": "Grading Runs",
+    "buttons": [],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search by exam or class…",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "textSnippet": "← Back\nGrading Runs\n\nEvery exam you have scanned or graded\n\nAll statuses\nNot started\nReady to grade\nNeeds review\nIn review\nSubmitted\nLocked\nNo grading runs yet\nRuns appear here once you scan an exam in the Exam Grader."
+  },
+  "exam-insights": {
+    "title": "Exam Insights",
+    "heading": "No assessments yet",
+    "buttons": [],
+    "inputs": [],
+    "textSnippet": "← Back\nExam Insights\n📊\nNo assessments yet\n\nGrade a batch of exams in the Exam Grader and they’ll appear here for analysis.\n\nOpen Exam Grader"
+  }
+}

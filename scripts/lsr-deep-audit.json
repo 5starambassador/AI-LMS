@@ -1,0 +1,88 @@
+{
+  "url": "https://lsr.chrysalis.world/student/level-test",
+  "apis": [
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/auth/me"
+    },
+    {
+      "method": "POST",
+      "url": "https://lsr.chrysalis.world/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test-result?candidateId=377431&_t=1793947529513"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/lsr-dictionary/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test/G5?_t=1793947529824"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/vocab-known?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947529825"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/reinforce-progress?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947529826"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/result?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947529826"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test-result?candidateId=377431&_t=1793947529910"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/auth/me"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test-result?candidateId=377431&_t=1793947532797"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/lsr-dictionary/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test/G5?_t=1793947532943"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/vocab-known?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947532944"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/reinforce-progress?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947532945"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/result?candidateId=377431&tenantId=chrysalis-fresh&_t=1793947532945"
+    },
+    {
+      "method": "GET",
+      "url": "https://lsr.chrysalis.world/api/activity/lsr/level-test-result?candidateId=377431&_t=1793947533041"
+    }
+  ],
+  "manifestRoutes": [],
+  "nextData": {},
+  "bodyText": "🚀\nMy Level Test\nHello Anup! Let’s hear your English.\nAbout 10 minutes · there are no wrong answers\n\nHere’s what you’ll do\n\nListen\nSpeak\nRead\nWords\n\nAsk a grown-up to tap Allow\n\nTry again\n\n🔊 Turn your sound on — some questions talk to you!\n\n▶ Let’s go!",
+  "allLinks": [
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "Try again"
+    },
+    {
+      "tag": "BUTTON",
+      "href": null,
+      "text": "▶ Let’s go!"
+    }
+  ]
+}

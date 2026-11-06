@@ -1,0 +1,792 @@
+// Prisma Master Schema - Achariya AI ONE Enterprise Multi-Campus Architecture
+// Provider: SQLite (Local zero-config execution) / PostgreSQL compatible
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// 1. MULTI-TENANT ORGANIZATIONAL TOPOLOGY
+// ==========================================
+
+model Organization {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "ACHARIYA_GROUP"
+  name        String   // e.g. "Achariya Educational Trust"
+  description String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campuses    Campus[]
+  roles       Role[]
+
+  @@map("organizations")
+}
+
+model Campus {
+  id             String   @id @default(uuid())
+  schoolKey      String   @unique // e.g. "0F2FF6E3FB2CF29D"
+  organizationId String
+  code           String   // e.g. "ACH-VIL"
+  name           String   // e.g. "Achariya School Demo"
+  affiliation    String?  // e.g. "CBSE", "ICSE", "State Board"
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  pincode        String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  license        CampusLicense?
+  users          User[]
+  batches        Batch[]
+  classes        Class[]
+  sections       Section[]
+  subjects       Subject[]
+  teacherAlloc   TeacherAllocation[]
+  enrollments    StudentEnrollment[]
+  resourceBuckets ResourceBucket[]
+  homeBanners    HomeBanner[]
+  attendances    DailyAttendance[]
+  auditLogs      AuditLog[]
+
+  @@map("campuses")
+}
+
+model CampusLicense {
+  id             String   @id @default(uuid())
+  campusId       String   @unique
+  basic          Boolean  @default(true)
+  questionBank   Boolean  @default(true)
+  hpcLicense     Boolean  @default(true)
+  autoGrade      Boolean  @default(true)
+  primeLicense   Boolean  @default(true)
+  aiTools        Boolean  @default(true)
+  score          Boolean  @default(true)
+  compass        Boolean  @default(true)
+  voice          Boolean  @default(true)
+  validFrom      DateTime @default(now())
+  validTo        DateTime
+  maxStudents    Int      @default(1000)
+  maxStaff       Int      @default(100)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campus         Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@map("campus_licenses")
+}
+
+// ==========================================
+// 2. IDENTITY, ROLES & HYBRID RBAC/ABAC
+// ==========================================
+
+model Role {
+  id          String    @id @default(uuid())
+  roleKey     String    @unique // e.g. "key0000000000001", "key0000000000013", "key0000000000014"
+  name        String    @unique // e.g. "Super Admin", "Manager", "School Admin", "Uploader", "Teacher", "Student", "Parent"
+  scope       String    @default("CAMPUS") // GLOBAL, REGIONAL, CAMPUS, ASSIGNED, OWN
+  description String?
+  isSystem    Boolean   @default(false)
+  organizationId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "tenant.campus.create", "exam.author", "score.grader.scan"
+  domain      String   // e.g. "tenant", "academic", "security", "exam", "score", "ai"
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  userKey        String    @unique @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  fullName       String
+  phone          String?
+  avatarUrl      String?
+  roleId         String
+  campusId       String?   // Nullable for Global Super Admin or Regional Manager
+  isActive       Boolean   @default(true)
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  role           Role      @relation(fields: [roleId], references: [id])
+  campus         Campus?   @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  teacherAllocations TeacherAllocation[]
+  enrollments        StudentEnrollment[]
+  studentProfile     StudentProfile?
+  createdHomeworks   Homework[]
+  createdQuizzes     Quiz[]
+  createdExams       ScoreExam[]
+  hpcObservations    HpcObservation[]
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+// ==========================================
+// 3. ACADEMIC STRUCTURE & COHORTS
+// ==========================================
+
+model AcademicYear {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "2026-2027"
+  startDate   DateTime
+  endDate     DateTime
+  isCurrent   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  batches     Batch[]
+  allocations TeacherAllocation[]
+  portfolios  StudentPortfolio[]
+  hpcCards    HpcProgressCard[]
+
+  @@map("academic_years")
+}
+
+model Batch {
+  id             String   @id @default(uuid())
+  campusId       String
+  academicYearId String
+  name           String   // e.g. "Batch 2026-2027"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campus         Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  enrollments    StudentEnrollment[]
+
+  @@unique([campusId, academicYearId])
+  @@map("batches")
+}
+
+model Class {
+  id          String   @id @default(uuid())
+  campusId    String
+  classKey    String   @default(uuid())
+  name        String   // e.g. "Grade 5", "LKG", "UKG"
+  stage       String?  // e.g. "Foundational", "Preparatory", "Middle", "Secondary"
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campus      Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  sections    Section[]
+  subjects    Subject[]
+  books       Book[]
+  allocations TeacherAllocation[]
+  enrollments StudentEnrollment[]
+  homeworks   Homework[]
+  quizzes     Quiz[]
+  exams       ScoreExam[]
+  worksheets  Worksheet[]
+  attendances DailyAttendance[]
+
+  @@map("classes")
+}
+
+model Section {
+  id          String   @id @default(uuid())
+  classId     String
+  campusId    String
+  sectionKey  String   @default(uuid())
+  name        String   // e.g. "A", "B", "C"
+  roomNumber  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  campus      Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  allocations TeacherAllocation[]
+  enrollments StudentEnrollment[]
+  homeworks   Homework[]
+  quizzes     Quiz[]
+  exams       ScoreExam[]
+  attendances DailyAttendance[]
+
+  @@unique([classId, name])
+  @@map("sections")
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  campusId    String
+  classId     String
+  subjectKey  String   @default(uuid())
+  name        String   // e.g. "English", "Mathematics", "Science"
+  code        String?  // e.g. "ENG-05", "SCI-05"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campus      Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  allocations TeacherAllocation[]
+  books       Book[]
+  homeworks   Homework[]
+  quizzes     Quiz[]
+  exams       ScoreExam[]
+  worksheets  Worksheet[]
+
+  @@map("subjects")
+}
+
+model TeacherAllocation {
+  id             String   @id @default(uuid())
+  campusId       String
+  teacherId      String
+  classId        String
+  sectionId      String
+  subjectId      String
+  academicYearId String
+  isClassTeacher Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campus         Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  teacher        User         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  class          Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section        Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject        Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, classId, sectionId, subjectId, academicYearId])
+  @@map("teacher_allocations")
+}
+
+model StudentEnrollment {
+  id             String    @id @default(uuid())
+  studentId      String
+  campusId       String
+  batchId        String
+  classId        String
+  sectionId      String
+  rollNumber     String    // e.g. "05A-01"
+  status         String    @default("ACTIVE") // ACTIVE, PROMOTED, REPEATING, TRANSFERRED
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+  enrolledAt     DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  student        User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  campus         Campus    @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  batch          Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  class          Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section        Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, rollNumber])
+  @@map("student_enrollments")
+}
+
+model StudentProfile {
+  id               String    @id @default(uuid())
+  studentId        String    @unique
+  admissionNumber  String    @unique
+  dateOfBirth      DateTime?
+  gender           String?   // "Male", "Female", "Other"
+  bloodGroup       String?   // "A+", "B+", "O+", "AB+", etc.
+  heightCm         Float?
+  weightKg         Float?
+  parentName       String?
+  parentPhone      String?
+  parentEmail      String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  pincode          String?
+  emergencyContact String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  student          User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+// ==========================================
+// 4. CURRICULUM, BOOKS & CONTENT ENGINE
+// ==========================================
+
+model Book {
+  id           String   @id @default(uuid())
+  bookKey      String   @unique @default(uuid())
+  classId      String
+  subjectId    String
+  title        String   // e.g. "Achariya Global Lingua: Grade 5 - English"
+  edition      String?  // e.g. "2026 NEP Edition"
+  publisher    String   @default("Achariya World Class Publications")
+  coverImage   String?
+  flipbookUrl  String?
+  isPublished  Boolean  @default(true)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  class        Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject      Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  lessons      Lesson[]
+  qrCodes      BookQR[]
+
+  @@map("books")
+}
+
+model BookQR {
+  id          String   @id @default(uuid())
+  qrCode      String   @unique // e.g. "BQR-ENG05-93821"
+  bookId      String
+  status      String   @default("GENERATED") // GENERATED, PRINTED, DISTRIBUTED, REDEEMED, EXPIRED
+  redeemedBy  String?  // Student / User ID
+  redeemedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("book_qrs")
+}
+
+model Lesson {
+  id           String   @id @default(uuid())
+  bookId       String
+  lessonNumber Int
+  title        String   // e.g. "Chapter 1: The Energy Engine"
+  description  String?
+  orderIndex   Int      @default(0)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  book         Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  pages        FlipbookPage[]
+
+  @@map("lessons")
+}
+
+model FlipbookPage {
+  id          String   @id @default(uuid())
+  lessonId    String
+  pageNumber  Int
+  svgUrl      String?
+  pdfUrl      String?
+  thumbnailUrl String?
+  createdAt   DateTime @default(now())
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("flipbook_pages")
+}
+
+model ResourceBucket {
+  id          String   @id @default(uuid())
+  campusId    String?  // Nullable for Global master buckets
+  title       String   // e.g. "Science Lab Demonstrations"
+  orderIndex  Int      @default(0)
+  visibility  String   @default("ALL") // ALL, STAFF, STUDENT, ADMIN
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campus      Campus?  @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  items       ResourceItem[]
+
+  @@map("resource_buckets")
+}
+
+model ResourceItem {
+  id          String   @id @default(uuid())
+  bucketId    String
+  title       String
+  fileUrl     String
+  fileType    String   // PDF, MP4, WEBM, ZIP, LINK
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  bucket      ResourceBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+
+  @@map("resource_items")
+}
+
+// ==========================================
+// 5. FORMATIVE ASSESSMENT & PORTFOLIOS
+// ==========================================
+
+model Homework {
+  id          String   @id @default(uuid())
+  classId     String
+  sectionId   String
+  subjectId   String
+  teacherId   String
+  title       String
+  description String
+  dueDate     DateTime
+  maxMarks    Int      @default(10)
+  attachments String?  // JSON array of file URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  submissions HomeworkSubmission[]
+
+  @@map("homeworks")
+}
+
+model HomeworkSubmission {
+  id          String    @id @default(uuid())
+  homeworkId  String
+  studentId   String
+  status      String    @default("ASSIGNED") // ASSIGNED, IN_PROGRESS, SUBMITTED, EVALUATED
+  submittedText String?
+  attachments String?   // JSON array of file URLs
+  score       Float?
+  feedback    String?
+  submittedAt DateTime?
+  evaluatedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  homework    Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+
+  @@unique([homeworkId, studentId])
+  @@map("homework_submissions")
+}
+
+model Quiz {
+  id               String   @id @default(uuid())
+  classId          String
+  sectionId        String?
+  subjectId        String
+  teacherId        String
+  title            String
+  quizType         String   @default("CHOOSE") // CHOOSE, FILL, MATCH
+  timeLimitMinutes Int      @default(15)
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  class            Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section          Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  subject          Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher          User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions        QuizQuestion[]
+  submissions      QuizSubmission[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String   @id @default(uuid())
+  quizId        String
+  questionText  String
+  questionType  String   // MCQ, FILL_IN_BLANKS, MATCH_PAIRS
+  optionsJson   String   // JSON string of options or left/right pairs
+  correctAnswer String   // JSON string or answer key
+  marks         Float    @default(1.0)
+  orderIndex    Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model QuizSubmission {
+  id          String    @id @default(uuid())
+  quizId      String
+  studentId   String
+  answersJson String    // JSON map of questionId -> studentAnswer
+  score       Float
+  totalMarks  Float
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime  @default(now())
+
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_submissions")
+}
+
+model Worksheet {
+  id          String   @id @default(uuid())
+  classId     String
+  subjectId   String
+  title       String
+  canvasData  String   // JSON coordinate data for interactive canvas
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("worksheets")
+}
+
+model StudentPortfolio {
+  id             String   @id @default(uuid())
+  studentId      String
+  academicYearId String
+  title          String
+  category       String   // "Art", "Project", "Writing", "Certificate"
+  mediaUrl       String
+  teacherComment String?
+  isPublic       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@map("student_portfolios")
+}
+
+// ==========================================
+// 6. SCORE SUITE & AI SUMMATIVE EXAMS
+// ==========================================
+
+model ScoreExam {
+  id            String   @id @default(uuid())
+  classId       String
+  sectionId     String?
+  subjectId     String
+  teacherId     String
+  title         String   // e.g. "Term 1 Summative Assessment"
+  totalMarks    Int      @default(50)
+  durationMins  Int      @default(90)
+  blueprintJson String   // Question distribution and Bloom's Taxonomy weights
+  rubricJson    String   // Marking rubrics
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  class         Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section       Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher       User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  gradingRuns   ScoreGradingRun[]
+  results       ScoreStudentResult[]
+
+  @@map("score_exams")
+}
+
+model ScoreGradingRun {
+  id             String   @id @default(uuid())
+  examId         String
+  batchName      String   // e.g. "Section A Scan Batch"
+  status         String   @default("QUEUED") // QUEUED, PREPROCESSING, OCR_RUNNING, GRADING, COMPLETED, REVIEW_FLAGGED
+  totalPapers    Int      @default(0)
+  gradedPapers   Int      @default(0)
+  flaggedPapers  Int      @default(0)
+  avgConfidence  Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  exam           ScoreExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@map("score_grading_runs")
+}
+
+model ScoreStudentResult {
+  id             String   @id @default(uuid())
+  examId         String
+  studentId      String
+  marksObtained  Float
+  totalMarks     Float
+  ocrTranscript  String?  // Transcribed handwritten text
+  confidence     Float    @default(1.0)
+  isFlagged      Boolean  @default(false)
+  teacherOverride String? // JSON of manual adjustments
+  gradedAt       DateTime @default(now())
+
+  exam           ScoreExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@map("score_student_results")
+}
+
+// ==========================================
+// 7. HOLISTIC PROGRESS CARD (HPC / COMPASS)
+// ==========================================
+
+model HpcProgressCard {
+  id             String   @id @default(uuid())
+  studentId      String
+  academicYearId String
+  term           String   // "Term 1", "Term 2", "Annual"
+  cognitiveScore Float    @default(0.0)
+  socioScore     Float    @default(0.0)
+  physicalScore  Float    @default(0.0)
+  aestheticScore Float    @default(0.0)
+  ethicalScore   Float    @default(0.0)
+  aiNarrative    String?  // Generated multi-paragraph holistic summary
+  status         String   @default("DRAFT") // DRAFT, PUBLISHED
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, academicYearId, term])
+  @@map("hpc_progress_cards")
+}
+
+model HpcObservation {
+  id          String   @id @default(uuid())
+  studentId   String
+  teacherId   String
+  domain      String   // COGNITIVE, SOCIO_EMOTIONAL, PHYSICAL, AESTHETIC, ETHICAL
+  descriptor  String   // e.g. "Critical Thinking & Experimentation"
+  level       Int      // 1: Beginning, 2: Progressing, 3: Proficient, 4: Exemplary
+  anecdote    String?
+  createdAt   DateTime @default(now())
+
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("hpc_observations")
+}
+
+// ==========================================
+// 8. VOICE & LSR PLATFORM (Achariya VoiceLab)
+// ==========================================
+
+model LsrActivity {
+  id             String   @id @default(uuid())
+  gradeLabel     String   // e.g. "G5"
+  activityType   String   // listening, speaking, reading_fluency, reading_comprehension, vocabulary
+  templateType   String   // listening-lsr, speaking-lsr, reading-fluency-lsr, picture-describe-speak-lsr
+  format         String   // mcq, speaking, read_aloud, vocab_mcq
+  title          String?
+  passageText    String?
+  audioPromptUrl String?
+  optionsJson    String?  // JSON array of options
+  orderIndex     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  submissions    LsrSubmission[]
+
+  @@map("lsr_activities")
+}
+
+model LsrSubmission {
+  id             String   @id @default(uuid())
+  activityId     String
+  studentId      String
+  recordingUrl   String?  // Cloudflare R2 .webm audio url
+  score          Float    @default(0.0)
+  wcpm           Float?   // Words Correct Per Minute for reading fluency
+  feedbackText   String?
+  detailsJson    String?  // JSON phonemic accuracy breakdown
+  submittedAt    DateTime @default(now())
+
+  activity       LsrActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@map("lsr_submissions")
+}
+
+model LsrVocabulary {
+  id          String   @id @default(uuid())
+  word        String   @unique
+  grades      String   // JSON array e.g. ["PP1", "G1", "G5"]
+  imageUrl    String
+  definition  String?
+  phonetics   String?
+  createdAt   DateTime @default(now())
+
+  @@map("lsr_vocabularies")
+}
+
+// ==========================================
+// 9. DAILY OPERATIONS: ATTENDANCE & BANNERS
+// ==========================================
+
+model DailyAttendance {
+  id        String   @id @default(uuid())
+  date      DateTime
+  campusId  String
+  classId   String
+  sectionId String
+  studentId String
+  status    String   @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED
+  remarks   String?
+  createdAt DateTime @default(now())
+
+  campus    Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([date, studentId])
+  @@map("daily_attendances")
+}
+
+model HomeBanner {
+  id         String   @id @default(uuid())
+  campusId   String?  // Nullable for Global announcements
+  title      String
+  imageUrl   String
+  targetRole String   @default("ALL") // ALL, STAFF, STUDENT, ADMIN
+  clickUrl   String?
+  isActive   Boolean  @default(true)
+  priority   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  campus     Campus?  @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@map("home_banners")
+}
+
+// ==========================================
+// 10. SYSTEM SECURITY & AUDIT TRAIL
+// ==========================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  campusId    String?
+  action      String   // e.g. "USER_LOGIN", "BATCH_MIGRATION", "EXAM_PUBLISHED", "STUDENT_RESTORE"
+  resource    String   // e.g. "StudentEnrollment", "ScoreExam"
+  ipAddress   String?
+  detailsJson String?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  campus      Campus?  @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}

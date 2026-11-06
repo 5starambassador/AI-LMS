@@ -1,0 +1,216 @@
+{
+  "ai_tools_cards": [],
+  "ai_cards_links": [],
+  "planner_click_result": {
+    "url": "https://learning.chrysalis.world/staff/ppg",
+    "title": "Chrysalis | Staff/ppg"
+  },
+  "create_homework": {
+    "url": "https://learning.chrysalis.world/staff/create-homework",
+    "title": "Chrysalis | Staff/create homework",
+    "inputs": [
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "A\nAchariya School Teacher\nTeacher"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "Profile"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "Logout"
+      }
+    ],
+    "textSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher"
+  },
+  "create_quiz": {
+    "url": "https://learning.chrysalis.world/staff/quiz/create_quiz",
+    "title": "Chrysalis | Staff/quiz/create_quiz",
+    "inputs": [
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "A\nAchariya School Teacher\nTeacher"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "Profile"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "Logout"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "SAVE DRAFT"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "PUBLISH"
+      },
+      {
+        "tag": "INPUT",
+        "type": "file",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "hidden",
+        "name": "class",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "hidden",
+        "name": "subject",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "hidden",
+        "name": "book",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "hidden",
+        "name": "lesson",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": ""
+      }
+    ],
+    "textSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nQuiz\nCreate Quiz\nCreate Quiz\nSAVE DRAFT\nPUBLISH\nEnter quiz name\nEdit\nSelect Class*\nSelect a class\nSelect Subject*\nSelect a subject\nSelect Book*\nSelect a book\nSelect Lesson*\nSelect a lesson"
+  },
+  "create_worksheet": {
+    "url": "https://learning.chrysalis.world/staff/create-worksheet",
+    "title": "Chrysalis | Staff/create worksheet",
+    "inputs": [
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "A\nAchariya School Teacher\nTeacher"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "Profile"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "Logout"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "Enter worksheet name",
+        "text": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "text": "Select a class\nGrade 5"
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "text": "Select a subject\nEnglish\nMathematics\nScience\nSocial Studies\nEnvironmental Studies\nCoding and Computer Technology\nCurricular Resources"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "Enter question name",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "placeholder": "Enter option name",
+        "text": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "file",
+        "name": "",
+        "placeholder": "",
+        "text": ""
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "name": "",
+        "text": "Add Question"
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "name": "",
+        "text": "Create Worksheet"
+      }
+    ],
+    "textSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nCreate Worksheet\nWorksheet Name\nSelect Class\nSelect a class\nGrade 5\nSelect Subject\nSelect a subject\nEnglish\nMathematics\nScience\nSocial Studies\nEnvironmental Studies\nCoding and Computer Technology\nCurricular Resources\nQuestion 1\nOption Name\nOption Image\n\nAdd Question\nCreate Worksheet"
+  }
+}

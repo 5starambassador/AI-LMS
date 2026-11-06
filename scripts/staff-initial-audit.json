@@ -1,0 +1,206 @@
+{
+  "navStructure": {
+    "links": [
+      {
+        "tag": "A",
+        "text": "v2.8.18",
+        "href": "/staff/books",
+        "class": ""
+      },
+      {
+        "tag": "LI",
+        "text": "Home",
+        "href": "",
+        "class": "nav-item bottom-nav active"
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "href": "/staff/home",
+        "class": "nav-link cus-nav-link active"
+      },
+      {
+        "tag": "LI",
+        "text": "Resources",
+        "href": "",
+        "class": "nav-item "
+      },
+      {
+        "tag": "A",
+        "text": "Resources",
+        "href": "/staff/Resources",
+        "class": "nav-link cus-nav-link"
+      },
+      {
+        "tag": "LI",
+        "text": "AI Tools",
+        "href": "",
+        "class": "nav-item "
+      },
+      {
+        "tag": "A",
+        "text": "AI Tools",
+        "href": "/staff/aitools",
+        "class": "nav-link cus-nav-link"
+      },
+      {
+        "tag": "LI",
+        "text": "My Space",
+        "href": "",
+        "class": "nav-item "
+      },
+      {
+        "tag": "A",
+        "text": "My Space",
+        "href": "/staff/myspace",
+        "class": "nav-link cus-nav-link"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "A",
+        "href": "",
+        "class": "btn header-item waves-effect d-flex align-items-center gap-2"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Profile",
+        "href": "",
+        "class": "dropdown-item"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Logout",
+        "href": "",
+        "class": "text-danger dropdown-item"
+      },
+      {
+        "tag": "A",
+        "text": "Logout",
+        "href": "/logout?type=manual",
+        "class": "text-danger"
+      }
+    ],
+    "localStorageKeys": [
+      "sessionUserChanged",
+      "loginTime",
+      "authUser"
+    ],
+    "userAuth": "{\"pk_user_id\":385380,\"pk_user_key\":\"FF15754646009560\",\"fk_role_key\":\"key0000000000013\",\"first_name\":null,\"last_name\":null,\"email\":\"achariya@test.com\",\"created_by\":\"0F2FF6E3FB2CF29D\",\"username\":null,\"profile\":null,\"fk_main_user_key\":\"400A6AC9D11239B7\",\"is_active\":1,\"role_name\":\"Teacher\",\"original_password\":\"Pass@1234\",\"teacher_access\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"portfolio_visibility\":0,\"ai_tools_visibility\":1,\"tools\":null}],\"school_name\":\" Achariya School Demo\",\"pk_user_usage_key\":\"F8D22FDC4C5C559F\",\"display_name\":\" Achariya School Teacher\",\"must_update_email\":false,\"jwt_token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM4NTM4MCwiZW1haWwiOiJhY2hhcml5YUB0ZXN0LmNvbSIsInJvbGUiOiJUZWFjaGVyIiwiYWN0aXZlIjoxLCJwYXNzIjoiUGFzc0AxMjM0In0.aBZfknLi2lXqMckTYb7c2k5zN2WMzHdhTQCHkFpCD_I\"}"
+  },
+  "apiCalls": [
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b50h2v9222325739za208zd9222325739xf1&_p=1793939938549&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=1734919699.1793939939&frm=0&ngs=1&pscdl=noapi&rcb=17&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385423~120412528~120420414~120469145~120469153~121246026~121246034~123814185&sid=1793939938&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=595",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b50h2v9222325739za200zd9222325739xf1&_p=1793939938549&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&cid=1734919699.1793939939&frm=0&ngs=1&pscdl=noapi&rcb=17&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385423~120412528~120420414~120469145~120469153~121246026~121246034~123814185&sid=1793939938&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis&en=scroll&epn.percent_scrolled=90&_et=9&tfd=3509",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/checkUserLogin/user/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\"message\":{\"success\":true,\"data\":{\"pk_user_id\":385380,\"pk_user_key\":\"FF15754646009560\",\"fk_role_key\":\"key0000000000013\",\"first_name\":null,\"last_name\":null,\"email\":\"achariya@test.com\",\"created_by\":\"0F2FF6E3FB2CF29D\",\"username\":null,\"profile\":null,\"fk_main_user_key\":\"400A6AC9D11239B7\",\"is_active\":1,\"role_name\":\"Teacher\",\"original_password\":\"Pass@1234\",\"teacher_access\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"po"
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/getAllStaffAccess/teacher/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\"message\":{\"success\":true,\"data\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"portfolio_visibility\":0,\"ai_tools_visibility\":1,\"pd_visibility\":1,\"ppg_visibility\":1,\"walkthrough_visibility\":1,\"coordinator\":1,\"tools\":null}]}}"
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/listhomevideogallerystaff/homesetting/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "[{\"pk_pub_home_id\":6,\"pk_home_video_key\":\"33760274365D3582\",\"video_title\":\"Chrysalis Day2025-26\",\"video_link\":\"https:\\/\\/youtube.com\\/shorts\\/4MThkV80cd0?feature=share\",\"video_descrption\":\" \",\"created_by\":\"Chr2bl3is4h5e7t7\",\"view_visibility\":2,\"status\":1,\"created_on\":\"2025-08-21 13:51:10\",\"modified_by\":\"Chr2bl3is4h5e7t7\",\"modified_on\":\"2025-08-21 13:51:10\"},{\"pk_pub_home_id\":9,\"pk_home_video_key\":\"C197A2260DABCF4C\",\"video_title\":\"Chrysalis Day Webinar\",\"video_link\":\"https:\\/\\/www.youtube.com\\/em"
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/listhomepoststaff/homesetting/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "[]"
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/listhomebannerstaff/homesetting/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "[]"
+    },
+    {
+      "url": "https://googleads.g.doubleclick.net/pagead/id",
+      "status": 302,
+      "method": "GET",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://googleads.g.doubleclick.net/pagead/id",
+      "status": 302,
+      "method": "GET",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b50h2v9222325739za200zd9222325739xf1&_p=1793939938549&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAAQ&ae=a&cid=1734919699.1793939939&frm=0&ngs=1&pscdl=noapi&rcb=17&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385423~120412528~120420414~120469145~120469153~121246026~121246034~123814185&sid=1793939938&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis%20%7C&en=form_start&ep.form_id=&ep.form_destination=https%3A%2F%2Flearning.chrysalis.world%2F%23&epn.form_length=4&ep.first_field_id=username&ep.first_field_name=username&ep.first_field_type=text&epn.first_field_position=1&_et=2897&tfd=4954",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://googleads.g.doubleclick.net/pagead/id?slf_rd=1",
+      "status": 200,
+      "method": "GET",
+      "responseSnippet": ")]}'\n\n{\"id\":\"ANyPxKoQREJFds1kaAOXiGKb0vJjdwDkbdlRtcvGZ1UU0wJwHCKii2V9ATGaQ3vUoM-D3axVRu6M\",\"type\":4}"
+    },
+    {
+      "url": "https://googleads.g.doubleclick.net/pagead/id?slf_rd=1",
+      "status": 200,
+      "method": "GET",
+      "responseSnippet": ")]}'\n\n{\"id\":\"ANyPxKqLuTIQe4Oer7lPXmOLkprZIh6_4Sn8mphHdcPOepFpP8xI70LvNI4sgttBrUQsYz5qtu1Z\",\"type\":4}"
+    },
+    {
+      "url": "https://www.youtube.com/api/stats/qoe?cpn=k3XIyuQLAC_yhNBK&el=embedded&ns=yt&fexp=v1%2C100673025%2C1884%2C-76670265%2C27058999%2C34656%2C124674%2C117689%2C9252%2C16509%2C23206%2C100702%2C15105%2C25059%2C4174%2C15863%2C14583%2C18706%2C26008%2C13016%2C16087%2C6621%2C2783%2C23826%2C9500%2C25959%2C70719%2C20588%2C4199%2C30114%2C9181%2C48685%2C3666%2C6664%2C1168%2C8131%2C3786%2C30534%2C11462%2C45932%2C356%2C9717%2C3613%2C26539%2C3844%2C18499%2C31488%2C34472%2C2418%2C15719%2C5702%2C6958%2C2008%2C119%2C21711%2C4594%2C6340%2C2940%2C760%2C2877%2C5327%2C2266%2C4783%2C8893%2C5412%2C1397%2C3926%2C3884%2C9786%2C2305%2C6593%2C2787%2C634%2C1814%2C4270%2C164%2C287%2C4629%2C196%2C1362%2C442%2C4822%2C974%2C2529%2C3122%2C1647%2C2078%2C8597%2C150%2C7405%2C4565%2C490%2C7778%2C4613%2C582%2C992%2C2397%2C951%2C10455%2C6%2C787%2C2108%2C8665%2C1669%2C2400&cl=1013419924&seq=1&event=streamingstats&docid=4MThkV80cd0&cbr=HeadlessChrome&cbrver=155.0.0.0&c=WEB_EMBEDDED_PLAYER&cver=2.20261105.01.00&cplayer=UNIPLAYER&cos=Windows&cosver=10.0&cplatform=DESKTOP&vps=0.000:N,0.000:ER&cmt=0.000:0.000,0.000:0.000&error=0.000:auth::0.000:0;a6s.0;r.Video_unavailable&vis=0.000:0&bh=0.000:0.000&qclc=ChBrM1hJeXVRTEFDX3loTkJLEAE",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://www.gstatic.com/youtube/img/icons/mweb/youtube_fill/logo/v2/67px.svg",
+      "status": 200,
+      "method": "GET",
+      "responseSnippet": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 67 60\" fill=\"\"><path d=\"M63 14.87a7.885 7.885 0 00-5.56-5.56C52.54 8 32.88 8 32.88 8S13.23 8 8.32 9.31c-2.7.72-4.83 2.85-5.56 5.56C1.45 19.77 1.45 30 1.45 30s0 10.23 1.31 15.13c.72 2.7 2.85 4.83 5.56 5.56C13.23 52 32.88 52 32.88 52s19.66 0 24.56-1.31c2.7-.72 4.83-2.85 5.56-5.56C64.31 40.23 64.31 30 64.31 30s0-10.23-1.31-15.13z\"></path><path fill=\"#FFF\" class=\"logo-arrow\" d=\"M26.6 39.43L42.93 30 26.6 20.57z\"></path></svg>\n"
+    },
+    {
+      "url": "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/GenerateIT",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "[\"RY51P2EoGPgKugKKHIqHAyVevtXy1eCkXQaGzLQjQxzJxyI5soBIwtxB9K2EDsiP3qKjju5Kvdin4vyUBxlIJu3S\",43200,100]"
+    },
+    {
+      "url": "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/GenerateIT",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "[\"72yI6G26j4SwJhhBYA2accsUp4dePcCP/YPaNJL5LrKDZIX58TQ5fQoNypuGw0AHHNDHIn1F4UpsdDR2hR/heIvY\",43200,100]"
+    },
+    {
+      "url": "https://www.youtube.com/youtubei/v1/log_event?alt=json",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\n  \"responseContext\": {}\n}\n"
+    },
+    {
+      "url": "https://www.youtube.com/youtubei/v1/log_event?alt=json",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\n  \"responseContext\": {}\n}\n"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b50h2v9222325739za200zd9222325739xf1&_p=1793939938549&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&cid=1734919699.1793939939&frm=0&ngs=1&pscdl=noapi&rcb=17&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=4&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385423~120412528~120420414~120469145~120469153~121246026~121246034~123814185&dl=https%3A%2F%2Flearning.chrysalis.world%2Fstaff%2Fhome&dr=https%3A%2F%2Flearning.chrysalis.world%2F&sid=1793939938&sct=1&seg=1&dt=Chrysalis%20%7C%20Staff%2Fhome&en=page_view&_et=1439&tfd=9957",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "navStructure": {
+    "links": [
+      {
+        "tag": "A",
+        "text": "v2.8.18",
+        "href": "/student/books",
+        "class": ""
+      },
+      {
+        "tag": "LI",
+        "text": "Resources",
+        "href": "",
+        "class": "nav-item "
+      },
+      {
+        "tag": "A",
+        "text": "Resources",
+        "href": "/student/Resources",
+        "class": "nav-link cus-nav-link"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "A",
+        "href": "",
+        "class": "btn header-item waves-effect d-flex align-items-center gap-2"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Profile",
+        "href": "",
+        "class": "dropdown-item"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Logout",
+        "href": "",
+        "class": "text-danger dropdown-item"
+      },
+      {
+        "tag": "A",
+        "text": "Logout",
+        "href": "/logout?type=manual",
+        "class": "text-danger"
+      },
+      {
+        "tag": "A",
+        "text": "Purchase Now",
+        "href": "/student/access-denied",
+        "class": "btn btn-primary btn-block mt-3"
+      }
+    ],
+    "localStorageKeys": [
+      "sessionUserChanged",
+      "loginTime",
+      "authUser"
+    ],
+    "userAuth": "{\"pk_user_id\":385381,\"pk_user_key\":\"35C4E65BBEAB9E52\",\"fk_role_key\":\"key0000000000014\",\"first_name\":null,\"last_name\":null,\"email\":\"anup@test.com\",\"created_by\":\"0F2FF6E3FB2CF29D\",\"username\":\"Anup\",\"profile\":null,\"fk_main_user_key\":\"A111B4ED35BBEBAD\",\"is_active\":1,\"role_name\":\"Parent\",\"original_password\":\"Pass@1234\",\"student_access\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"portfolio_visibility\":0,\"ai_tools_visibility\":1,\"tools\":null}],\"school_name\":\" Achariya School Demo\",\"pk_user_usage_key\":\"0B3FCC400942E34C\",\"display_name\":\"Anup\",\"must_update_email\":false,\"jwt_token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM4NTM4MSwiZW1haWwiOiJhbnVwQHRlc3QuY29tIiwicm9sZSI6IlBhcmVudCIsImFjdGl2ZSI6MSwicGFzcyI6IlBhc3NAMTIzNCJ9.DKTw3jCQKhrPW1c-56FgbNdS6bHPWAZ-OpWwkusb7zU\"}"
+  },
+  "apiCalls": [
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b41v9222325739za208zd9222325739xf1&_p=1793939968947&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=35960046.1793939969&frm=0&ngs=1&pscdl=noapi&rcb=11&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120412528~120420414~120469145~120469153~121246026~121246034~123329123~123814183&sid=1793939969&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=485",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b41v9222325739za200zd9222325739xf1&_p=1793939968947&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&cid=35960046.1793939969&frm=0&ngs=1&pscdl=noapi&rcb=11&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120412528~120420414~120469145~120469153~121246026~121246034~123329123~123814183&sid=1793939969&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis&en=scroll&epn.percent_scrolled=90&_et=7&tfd=3457",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/checkUserLogin/user/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\"message\":{\"success\":true,\"data\":{\"pk_user_id\":385381,\"pk_user_key\":\"35C4E65BBEAB9E52\",\"fk_role_key\":\"key0000000000014\",\"first_name\":null,\"last_name\":null,\"email\":\"anup@test.com\",\"created_by\":\"0F2FF6E3FB2CF29D\",\"username\":\"Anup\",\"profile\":null,\"fk_main_user_key\":\"A111B4ED35BBEBAD\",\"is_active\":1,\"role_name\":\"Parent\",\"original_password\":\"Pass@1234\",\"student_access\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"portf"
+    },
+    {
+      "url": "https://learning.chrysalis.world/apis/api_index.php/getAllStudAccess/student/",
+      "status": 200,
+      "method": "POST",
+      "responseSnippet": "{\"message\":{\"success\":true,\"data\":[{\"pk_school_key\":\"0F2FF6E3FB2CF29D\",\"book_visibility\":0,\"publishing_visibility\":0,\"homework_visibility\":0,\"quiz_visibility\":0,\"portfolio_visibility\":0,\"ai_tools_visibility\":1,\"tools\":null}]}}"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b41v9222325739za200zd9222325739xf1&_p=1793939968947&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAAQ&ae=a&cid=35960046.1793939969&frm=0&ngs=1&pscdl=noapi&rcb=11&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120412528~120420414~120469145~120469153~121246026~121246034~123329123~123814183&sid=1793939969&sct=1&seg=0&dl=https%3A%2F%2Flearning.chrysalis.world%2F&dt=Chrysalis%20%7C&en=form_start&ep.form_id=&ep.form_destination=https%3A%2F%2Flearning.chrysalis.world%2F%23&epn.form_length=4&ep.first_field_id=username&ep.first_field_name=username&ep.first_field_type=text&epn.first_field_position=1&_et=2957&tfd=4960",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-PECTBK7ZN1&gtm=45je6b41v9222325739za200zd9222325739xf1&_p=1793939968947&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&cid=35960046.1793939969&frm=0&ngs=1&pscdl=noapi&rcb=11&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-us&_s=4&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120412528~120420414~120469145~120469153~121246026~121246034~123329123~123814183&dl=https%3A%2F%2Flearning.chrysalis.world%2Fstudent%2Faccess-denied&dr=https%3A%2F%2Flearning.chrysalis.world%2F&sid=1793939969&sct=1&seg=1&dt=Chrysalis%20%7C%20Student%2Faccess%20denied&en=page_view&_et=1496&tfd=9963",
+      "status": 204,
+      "method": "POST",
+      "responseSnippet": ""
+    }
+  ]
+}

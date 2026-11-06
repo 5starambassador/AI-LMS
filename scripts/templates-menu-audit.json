@@ -1,0 +1,111 @@
+{
+  "url": "https://templates.chrysalis.world/menu",
+  "title": "Exam Template Builder",
+  "cards": [
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "🦋 Chrysalis AI Teacher Hub | Exam Builder, HPC, LSR | A"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "HPC / COMPASS"
+    },
+    {
+      "tag": "A",
+      "href": "/api/autograde-sso",
+      "text": "Autograde | AI-powered grading for students' written responses"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Autograde"
+    },
+    {
+      "tag": "A",
+      "href": "https://thinkroom.chrysalis.world/hpc-report-card/?id=17492",
+      "text": "Holistic Progress Card | Record observations across domains - build, view and share the Holistic Progress Card"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Holistic Progress Card"
+    },
+    {
+      "tag": "A",
+      "href": "/exam-builder",
+      "text": "Exam Builder | Generate and configure exams with AI"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Exam Builder"
+    },
+    {
+      "tag": "A",
+      "href": "/exam-assign",
+      "text": "Assign Exam | Generate personalised exam copies for a class as a single batch PDF"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Assign Exam"
+    },
+    {
+      "tag": "A",
+      "href": "/exam-grader",
+      "text": "Exam Grader | Grade scanned exams and debug the grading pipeline"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Exam Grader"
+    },
+    {
+      "tag": "A",
+      "href": "/exam-grader/runs",
+      "text": "Grading Runs | Reopen an exam you have already scanned or graded"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Grading Runs"
+    },
+    {
+      "tag": "A",
+      "href": "/exam-insights",
+      "text": "Exam Insights | Review class-level performance across your graded exams"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Exam Insights"
+    },
+    {
+      "tag": "A",
+      "href": "/api/lsr-sso",
+      "text": "LSR Dashboard | Listening, Speaking & Reading analytics"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "LSR Dashboard"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "RESOURCES"
+    },
+    {
+      "tag": "A",
+      "href": "/api/library-sso",
+      "text": "Activity Library | Videos and activities for every lesson — ready to show your class"
+    },
+    {
+      "tag": "DIV",
+      "href": null,
+      "text": "Activity Library"
+    }
+  ]
+}

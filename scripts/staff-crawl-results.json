@@ -1,0 +1,304 @@
+{
+  "01-staff-home": {
+    "title": "Chrysalis | Staff/home",
+    "currentUrl": "https://learning.chrysalis.world/staff/home",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [],
+    "tables": [],
+    "cards": 4,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nVideo Gallery\nChrysalis Day2025-26\n\nChrysalis Day Webinar\n\nPosts\nWHAT'S NEW?\nNo posts available"
+  },
+  "02-staff-books": {
+    "title": "Chrysalis | Staff/books",
+    "currentUrl": "https://learning.chrysalis.world/staff/books",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout",
+      "All",
+      "Grade 5"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nBooks\nAll\nGrade 5\nRecents\n\nNo books found.\n\nAll Books\n\nNo books found."
+  },
+  "03-staff-resources": {
+    "title": "Chrysalis | Staff/Resources",
+    "currentUrl": "https://learning.chrysalis.world/staff/Resources",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nMore Tools\nNo data available."
+  },
+  "04-staff-aitools": {
+    "title": "Chrysalis | Staff/aitools",
+    "currentUrl": "https://learning.chrysalis.world/staff/aitools",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher"
+  },
+  "05-staff-myspace": {
+    "title": "Chrysalis | Staff/myspace",
+    "currentUrl": "https://learning.chrysalis.world/staff/myspace",
+    "heading": "Professional Development",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [],
+    "tables": [],
+    "cards": 3,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nMy Space\nProfessional Development\n\nAccess your professional development resources and training materials.\n\nPlanner\n\nCreate and manage your period plans efficiently.\n\nWalkthrough\n\nView walkthrough analytics and fill walkthrough forms for your school."
+  },
+  "06-staff-homeworks": {
+    "title": "Chrysalis | Staff/homeworks",
+    "currentUrl": "https://learning.chrysalis.world/staff/homeworks",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-2-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nHomeFun\nSubject\nCreated\nAssigned"
+  },
+  "07-staff-quiz": {
+    "title": "Chrysalis | Staff/quiz",
+    "currentUrl": "https://learning.chrysalis.world/staff/quiz",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-2-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-3-input"
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nQuiz\nAssigned\nGrade 5\nClass\nSubject\n\nNo Quiz Assigned."
+  },
+  "08-staff-worksheets": {
+    "title": "Chrysalis | Staff/worksheets",
+    "currentUrl": "https://learning.chrysalis.world/staff/worksheets",
+    "heading": "WORKSHEET",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout",
+      "Create Worksheet"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": "select-one",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [
+      {
+        "headers": [
+          "S No",
+          "Worksheet Name",
+          "Class",
+          "Subject",
+          "Action",
+          "Delete"
+        ],
+        "rowCount": 1
+      }
+    ],
+    "cards": 2,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nWORKSHEET\nBuddy\nWorksheet\nList Of Worksheets\nShow 10\nShow 20\nShow 30\nShow 40\nShow 50\nCreate Worksheet\nS No\n\t\nWorksheet Name\n\t\nClass\n\t\nSubject\n\t\nAction\n\t\nDelete\nPage 1 of 0"
+  },
+  "09-staff-studentlist": {
+    "title": "Chrysalis | Staff/studentlist",
+    "currentUrl": "https://learning.chrysalis.world/staff/studentlist",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-2-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "",
+        "name": "",
+        "id": "react-select-3-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search student name...",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [],
+    "cards": 1,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nStudents List\nSelect Class\nSelect Section\nAnup\n\nView portfolio "
+  },
+  "10-staff-profile": {
+    "title": "Chrysalis | Staff/staff profile",
+    "currentUrl": "https://learning.chrysalis.world/staff/staff-profile",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [],
+    "tables": [],
+    "cards": 6,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nProfile\nAchariya School Teacher\nTeacher\n\nEdit profile\n\nOther Details\n\nEmail\n\nachariya@test.com\n\nPassword\n\nPa*****34\n\nMobile\n\n1234567890\nSchool: Achariya School Demo\nClasses taken:\nGrade 5 - A\nCoding and Computer Technology\nCurricular Resources\nEnglish\nEnvironmental Studies\nMathematics\nScience\nSocial Studies"
+  },
+  "11-staff-walkthrough": {
+    "title": "Chrysalis | Staff/walkthrough",
+    "currentUrl": "https://learning.chrysalis.world/staff/walkthrough",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout"
+    ],
+    "inputs": [],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\nDashboard\nForms"
+  },
+  "12-staff-chat": {
+    "title": "Chrysalis | Staff/chat",
+    "currentUrl": "https://learning.chrysalis.world/staff/chat",
+    "heading": "",
+    "buttons": [
+      "A\nAchariya School Teacher\nTeacher",
+      "Profile",
+      "Logout",
+      "Send"
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Search...",
+        "name": "",
+        "id": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "placeholder": "Enter Message...",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "tables": [],
+    "cards": 0,
+    "visibleTextSnippet": "v2.8.18\nHome\nResources\nAI Tools\nMy Space\nAchariya School Demo\nA\nAchariya School Teacher\nTeacher\n\nonline\n\nSend "
+  }
+}
