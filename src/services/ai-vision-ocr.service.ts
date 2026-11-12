@@ -1,4 +1,5 @@
 import { ENV } from '../config/env.js';
+import { ServiceUnavailableError } from '../lib/errors.js';
 
 export interface HandwritingOcrRequest {
   imageBase64?: string;
@@ -164,25 +165,14 @@ export class AiVisionOcrService {
   }
 
   /**
-   * Fallback Neural OCR Pipeline with spatial feature bounding and rubric parsing
+   * No neural OCR fallback available — returning fabricated grades would corrupt real student records.
+   * Configure CLOUD_VISION_API_KEY or GEMINI_API_KEY in .env to enable OCR grading.
    */
-  private static executeNeuralOcrEngine(req: HandwritingOcrRequest): HandwritingOcrResult {
-    const sampleTranscription =
-      'Energy can neither be created nor destroyed; it can only be transformed from one form to another. For example, in chloroplasts, radiant light energy from solar photons is converted into chemical energy stored in glucose bonds during photosynthesis.';
-
-    const wordsRaw = sampleTranscription.split(/\s+/);
-    const words: WordBoundingBox[] = wordsRaw.map((w, idx) => ({
-      word: w.replace(/[.,;:]/g, ''),
-      confidence: Number((0.92 + (idx % 7) * 0.01).toFixed(3)),
-      box: {
-        x: 60 + (idx % 8) * 58,
-        y: 420 + Math.floor(idx / 8) * 26,
-        width: Math.max(30, w.length * 8),
-        height: 18
-      }
-    }));
-
-    return this.buildResult(sampleTranscription, 0.964, 'NEURAL_OCR_PIPELINE', words, req.maxMarks || 5.0);
+  private static executeNeuralOcrEngine(_req: HandwritingOcrRequest): never {
+    throw new ServiceUnavailableError(
+      'OCR grading service',
+      'No OCR API key is configured. Set CLOUD_VISION_API_KEY or GEMINI_API_KEY in .env to enable automated handwriting evaluation. This submission requires manual teacher review.'
+    );
   }
 
   /**

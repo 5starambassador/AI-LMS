@@ -1,4 +1,5 @@
 import { ENV } from '../config/env.js';
+import { ServiceUnavailableError } from '../lib/errors.js';
 
 export interface SpeechEvaluationRequest {
   audioBuffer?: Buffer;
@@ -140,17 +141,17 @@ export class AiSpeechWhisperService {
   }
 
   /**
-   * Neural Acoustic Engine with phoneme analysis and Oral Reading Fluency metrics
+   * No acoustic fallback available — returning fabricated transcripts would corrupt real ORF scores.
+   * Configure WHISPER_API_KEY or GEMINI_API_KEY in .env to enable speech evaluation.
    */
   private static executeNeuralAcousticEngine(
-    reference: string,
-    duration: number
-  ): SpeechEvaluationResult {
-    // High-fidelity student speech transcript sample
-    const transcript =
-      'A machine with moving parts that converts thermal energy into mechanical power is called an engine. In nature, trees capture solar photons to fuel cellular respiration.';
-
-    return this.alignAndScore(transcript, reference, duration, 'NEURAL_ACOUSTIC_PIPELINE');
+    _reference: string,
+    _duration: number
+  ): never {
+    throw new ServiceUnavailableError(
+      'Speech evaluation service',
+      'No speech API key is configured. Set WHISPER_API_KEY or GEMINI_API_KEY in .env to enable automated speech evaluation. This recording requires manual teacher review.'
+    );
   }
 
   /**

@@ -1,7 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class AssessmentController {
   // ==========================================
@@ -136,6 +134,7 @@ export class AssessmentController {
    * Teacher grades student homework submission
    */
   static async gradeHomework(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
     const { id } = request.params as { id: string };
     const { score, feedback } = request.body as { score: number; feedback?: string };
 
@@ -143,7 +142,34 @@ export class AssessmentController {
       return reply.status(400).send({ success: false, error: 'Score is required to grade.' });
     }
 
-    const submission = await prisma.homeworkSubmission.update({
+    // Verify the submission exists and the teacher owns the parent homework
+    const submission = await prisma.homeworkSubmission.findUnique({
+      where: { id },
+      include: { homework: { select: { teacherId: true, maxMarks: true } } }
+    });
+
+    if (!submission) {
+      return reply.status(404).send({ success: false, error: 'Submission not found.' });
+    }
+
+    const isAdmin = user.roleName === 'Super Admin' || user.roleName === 'Principal' || user.roleName === 'Coordinator';
+    if (!isAdmin && submission.homework.teacherId !== user.id) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Forbidden: You can only grade submissions for homework you assigned.',
+        code: 'OWNERSHIP_VIOLATION'
+      });
+    }
+
+    const maxMarks = submission.homework.maxMarks ?? 100;
+    if (score < 0 || score > maxMarks) {
+      return reply.status(400).send({
+        success: false,
+        error: `Score must be between 0 and ${maxMarks}.`
+      });
+    }
+
+    const updated = await prisma.homeworkSubmission.update({
       where: { id },
       data: {
         status: 'EVALUATED',
@@ -153,7 +179,7 @@ export class AssessmentController {
       }
     });
 
-    return reply.send({ success: true, message: 'Homework evaluated and marks committed.', submission });
+    return reply.send({ success: true, message: 'Homework evaluated and marks committed.', submission: updated });
   }
 
   // ==========================================

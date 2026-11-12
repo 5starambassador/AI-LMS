@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuthContext } from './context/AuthContext';
+import { LoginPage } from './pages/LoginPage';
 import { Header, ActiveTabType, StudentTabType } from './components/Header';
 import { StaffDashboard } from './components/StaffDashboard';
 import { AiToolsHub } from './components/AiToolsHub';
@@ -10,42 +12,38 @@ import { AttendanceHub } from './components/AttendanceHub';
 import { HomeworkHub } from './components/HomeworkHub';
 import { WorksheetCanvas } from './components/WorksheetCanvas';
 import { CurriculumHub } from './components/CurriculumHub';
-import { User } from './types';
-import { ShieldAlert, CheckCircle, ExternalLink, Sparkles, Building2, MapPin } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
-export const App: React.FC = () => {
+function AppShell() {
+  const { user: currentUser, isLoading, isAuthenticated, logout } = useAuthContext();
   const [currentPortal, setCurrentPortal] = useState<'STAFF' | 'STUDENT' | 'SUPERADMIN'>('STAFF');
   const [activeTab, setActiveTab] = useState<ActiveTabType>('home');
   const [studentTab, setStudentTab] = useState<StudentTabType>('voicelab');
   const [accessDeniedAlert, setAccessDeniedAlert] = useState<string | null>(null);
 
-  // Seeded User Context (Dr. Priya Sivaraman)
-  const [currentUser] = useState<User>({
-    id: 'ach-usr-priya-01',
-    userKey: 'ACH-TEA-1001',
-    email: 'achariya@test.com',
-    fullName: 'Dr. Priya Sivaraman',
-    roleKey: 'role-ach-teacher',
-    roleName: 'Senior Faculty',
-    scope: 'ASSIGNED',
-    campus: {
-      id: 'ach-campus-pud-01',
-      name: 'Achariya World Class Academy',
-      schoolKey: 'ACH98402PUD2026',
-      affiliation: 'CBSE Center of Excellence'
-    },
-    license: {
-      basic: true,
-      questionBank: true,
-      hpcLicense: true,
-      autoGrade: true,
-      primeLicense: true,
-      aiTools: true,
-      score: true,
-      compass: true,
-      voice: true
-    }
-  });
+  // Show loading spinner while session is being restored
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-sm text-slate-500">Loading Achariya AI ONE…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated || !currentUser) {
+    return (
+      <LoginPage
+        defaultPortal={window.location.pathname.startsWith('/student') ? 'STUDENT' : 'STAFF'}
+        onLoginSuccess={() => {
+          // Portal is set after login via applyRoute below
+        }}
+      />
+    );
+  }
 
   // URL Routing Engine: Maps path string to State
   const applyRoute = (pathname: string) => {
@@ -100,25 +98,8 @@ export const App: React.FC = () => {
     applyRoute(route);
   };
 
-  // Domain Partitioning Demonstration Test
-  const triggerDomainGatingTest = async () => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'student@achariya.in',
-          password: 'Pass@1234',
-          portal: 'STAFF'
-        })
-      });
-      const data = await res.json();
-      if (res.status === 403) {
-        setAccessDeniedAlert(data.error);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -215,17 +196,23 @@ export const App: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button
-              onClick={triggerDomainGatingTest}
-              className="text-teal-700 hover:text-teal-900 font-semibold underline"
-            >
-              Simulate Student Web Guard (403 Block)
-            </button>
-            <span>•</span>
             <span className="text-emerald-700 font-medium">Phase A Deep LMS Engine Live</span>
+            <span>•</span>
+            <button
+              onClick={handleLogout}
+              className="text-rose-600 hover:text-rose-800 font-semibold"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </footer>
     </div>
   );
-};
+}
+
+export const App: React.FC = () => (
+  <AuthProvider>
+    <AppShell />
+  </AuthProvider>
+);

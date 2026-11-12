@@ -1,7 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class OperationsController {
   // ==========================================
@@ -113,11 +111,15 @@ export class OperationsController {
    */
   static async listStudents(request: FastifyRequest, reply: FastifyReply) {
     const user = request.currentUser;
-    const { classId, sectionId, search } = request.query as {
+    const { classId, sectionId, search, cursor, limit: limitStr } = request.query as {
       classId?: string;
       sectionId?: string;
       search?: string;
+      cursor?: string;
+      limit?: string;
     };
+
+    const pageSize = Math.min(parseInt(limitStr ?? '50', 10) || 50, 200);
 
     const where: any = {
       isDeleted: false,
@@ -157,10 +159,21 @@ export class OperationsController {
         },
         studentProfile: true
       },
-      orderBy: { fullName: 'asc' }
+      orderBy: { fullName: 'asc' },
+      take: pageSize + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {})
     });
 
-    return reply.send({ success: true, count: students.length, students });
+    const hasMore = students.length > pageSize;
+    const page = hasMore ? students.slice(0, pageSize) : students;
+    const nextCursor = hasMore ? page[page.length - 1]?.id : undefined;
+
+    return reply.send({
+      success: true,
+      count: page.length,
+      students: page,
+      pagination: { hasMore, nextCursor: nextCursor ?? null }
+    });
   }
 
   /**

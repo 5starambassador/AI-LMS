@@ -1,11 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import fs from 'fs';
+import { prisma } from '../lib/prisma.js';
 import { ScorePdfService } from '../services/score-pdf.service.js';
 import { AiVisionOcrService } from '../services/ai-vision-ocr.service.js';
-
-const prisma = new PrismaClient();
 
 export class ScoreController {
   /**
@@ -295,25 +293,15 @@ export class ScoreController {
       return reply.status(404).send({ success: false, error: 'Grading run not found.' });
     }
 
-    // Process student results using Vision OCR service
-    let resultsToProcess = studentResults;
-
-    if (!resultsToProcess || resultsToProcess.length === 0) {
-      const student = await prisma.user.findFirst({
-        where: { role: { name: 'Student' } }
+    if (!studentResults || studentResults.length === 0) {
+      return reply.status(400).send({
+        success: false,
+        error: 'studentResults is required. Submit the OCR-graded student papers before processing.',
+        code: 'NO_RESULTS_PROVIDED'
       });
-      const ocrResult = await AiVisionOcrService.transcribeAndEvaluate({});
-
-      resultsToProcess = [
-        {
-          studentId: student?.id || '8aed4424-0a03-4ec9-b3b8-c781491117e1',
-          objectiveMarks: 14.0, // Section A: 14/15 OMR decoded
-          subjectiveTranscript: ocrResult.transcription,
-          aiConfidence: ocrResult.confidence,
-          marksAwarded: 14.0 + ocrResult.rubricEvaluation.marksAwarded * 6 // scaled to 50
-        }
-      ];
     }
+
+    const resultsToProcess = studentResults;
 
     let gradedCount = 0;
     let flaggedCount = 0;
@@ -386,7 +374,20 @@ export class ScoreController {
 
     // Classical Test Theory Metrics
     const difficultyPValue = exam.totalMarks > 0 ? (mean / exam.totalMarks) : 0;
-    const discriminationScore = 0.42; // Excellent discrimination (0.3 to 0.8)
+
+    // Point-biserial discrimination requires item-level binary scores (not available here).
+    // We return null with a note rather than a fabricated value.
+    const discriminationScore = count >= 10
+      ? (() => {
+          const sorted = [...scores].sort((a, b) => a - b);
+          const topN = Math.ceil(count * 0.27);
+          const topMean = sorted.slice(-topN).reduce((s, v) => s + v, 0) / topN;
+          const botMean = sorted.slice(0, topN).reduce((s, v) => s + v, 0) / topN;
+          return exam.totalMarks > 0
+            ? Math.round(((topMean - botMean) / exam.totalMarks) * 100) / 100
+            : null;
+        })()
+      : null;
 
     return reply.send({
       success: true,
@@ -399,6 +400,9 @@ export class ScoreController {
         lowestMarks: count > 0 ? Math.min(...scores) : 0,
         itemDifficulty_P: Math.round(difficultyPValue * 100) / 100,
         discrimination_D: discriminationScore,
+        discriminationNote: discriminationScore === null
+          ? 'Insufficient data: discrimination index requires at least 10 graded papers.'
+          : undefined,
         conceptMastery: difficultyPValue >= 0.75 ? 'HIGH' : difficultyPValue >= 0.5 ? 'MODERATE' : 'NEEDS_REINFORCEMENT'
       }
     });

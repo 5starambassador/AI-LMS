@@ -3,8 +3,9 @@ import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import * as path from 'path';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
 import { ENV } from './config/env.js';
+import { AppError } from './lib/errors.js';
+import { prisma } from './lib/prisma.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { academicRoutes } from './routes/academic.routes.js';
 import { assessmentRoutes } from './routes/assessment.routes.js';
@@ -20,25 +21,78 @@ export async function buildApp() {
     }
   });
 
-  // Register CORS
+  // Strict CORS: only allow explicitly listed origins
   await app.register(cors, {
     origin: (origin, cb) => {
-      // Allow requests with no origin (e.g. mobile apps, curl)
+      // Allow server-to-server requests with no origin (e.g. mobile apps, curl, cron jobs)
       if (!origin) return cb(null, true);
-      if (ENV.ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.chrysalis.world')) {
+
+      if (
+        ENV.ALLOWED_ORIGINS.includes(origin) ||
+        origin.endsWith('.achariya.in') ||
+        origin.endsWith('.chrysalis.world')
+      ) {
         return cb(null, true);
       }
-      return cb(null, true); // Permissive in development
+
+      // Reject all other origins — never fall through to cb(null, true)
+      return cb(new Error(`CORS: Origin ${origin} not permitted.`), false);
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   });
 
-  // Register Health Check
-  app.get('/health', async () => {
-    return { status: 'healthy', timestamp: new Date().toISOString(), platform: 'Achariya AI ONE Enterprise Platform' };
+  // Global error handler — translates AppError subclasses into consistent JSON responses
+  app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof AppError) {
+      return reply.status(error.statusCode).send({
+        success: false,
+        error: error.message,
+        code: error.code ?? undefined
+      });
+    }
+
+    // Fastify validation errors (request body schema mismatch)
+    if (error.validation) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Request validation failed.',
+        details: error.validation
+      });
+    }
+
+    // Log unexpected errors and respond with a safe 500
+    app.log.error(error);
+    return reply.status(500).send({
+      success: false,
+      error: 'An internal server error occurred. Please try again later.'
+    });
   });
 
-  // Register API Routes
+  // Liveness probe — returns immediately, no DB connection required
+  app.get('/health', async () => ({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    platform: 'Achariya AI ONE Enterprise Platform'
+  }));
+
+  // Readiness probe — confirms DB connection before accepting traffic
+  app.get('/ready', async (_request, reply) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return reply.send({ status: 'ready', db: 'connected', timestamp: new Date().toISOString() });
+    } catch (err) {
+      app.log.error('Readiness check: database not reachable', err);
+      return reply.status(503).send({ status: 'not_ready', db: 'disconnected' });
+    }
+  });
+
+  // ─── API Routes (Fastify plugin registration) ──────────────────────────────
+  // Each route module is an independent plugin. To add a new module:
+  //   1. Create src/routes/<module>.routes.ts
+  //   2. Create src/controllers/<module>.controller.ts
+  //   3. Register below: await app.register(<module>Routes);
   await app.register(authRoutes);
   await app.register(academicRoutes);
   await app.register(assessmentRoutes);
@@ -47,7 +101,9 @@ export async function buildApp() {
   await app.register(hpcRoutes);
   await app.register(lsrRoutes);
 
-  // Serve Generated Physical Batch Exam PDFs & Static Assets via @fastify/static
+  // ─── Static Assets ─────────────────────────────────────────────────────────
+
+  // Serve generated exam PDFs and OMR sheets
   const publicRendersPath = path.resolve(process.cwd(), 'public', 'renders');
   if (!fs.existsSync(publicRendersPath)) {
     fs.mkdirSync(publicRendersPath, { recursive: true });
@@ -58,17 +114,19 @@ export async function buildApp() {
     decorateReply: false
   });
 
-  // Serve Static Production Frontend SPA from dist/
+  // Serve compiled frontend SPA from dist/
   const distPath = path.resolve(process.cwd(), 'dist');
   if (fs.existsSync(distPath)) {
     await app.register(fastifyStatic, {
       root: distPath,
-      prefix: '/'
+      prefix: '/',
+      // decorateReply already set above — do not set again
     });
 
-    // SPA Fallback: Any non-API & non-static route serves index.html
+    // SPA fallback: non-API routes serve index.html so React handles routing
     app.setNotFoundHandler((req, reply) => {
-      if (!req.raw.url?.startsWith('/api') && !req.raw.url?.startsWith('/apis') && !req.raw.url?.startsWith('/renders')) {
+      const url = req.raw.url ?? '';
+      if (!url.startsWith('/api') && !url.startsWith('/apis') && !url.startsWith('/renders') && !url.startsWith('/health') && !url.startsWith('/ready')) {
         return reply.sendFile('index.html');
       }
       return reply.status(404).send({ success: false, error: 'Endpoint not found.' });
@@ -77,4 +135,3 @@ export async function buildApp() {
 
   return app;
 }
-

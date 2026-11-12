@@ -1,8 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { AiSpeechWhisperService } from '../services/ai-speech-whisper.service.js';
-
-const prisma = new PrismaClient();
 
 export class LsrController {
   /**
