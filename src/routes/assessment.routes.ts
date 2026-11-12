@@ -13,6 +13,10 @@ export async function assessmentRoutes(fastify: FastifyInstance) {
     AssessmentController.createHomework
   );
   fastify.post('/api/assessment/homework/:id/submit', AssessmentController.submitHomework);
+  fastify.get('/api/assessment/homework/:id/submissions',
+    { preHandler: [requirePermission('assessment:homework:grade')] },
+    AssessmentController.listSubmissions
+  );
   fastify.post('/api/assessment/homework/submissions/:id/grade',
     { preHandler: [requirePermission('assessment:homework:grade')] },
     AssessmentController.gradeHomework

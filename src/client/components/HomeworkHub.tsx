@@ -87,39 +87,41 @@ export const HomeworkHub: React.FC = () => {
       .finally(() => setListLoading(false));
   }, []);
 
-  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
-    {
-      id: 'sub-1',
-      studentName: 'Aarav Sundaram',
-      roll: 'ACH-05A-01',
-      submittedAt: 'Nov 5, 2026 · 04:15 PM',
-      status: 'EVALUATED',
-      score: 9.5,
-      maxMarks: 10,
-      content: 'The whispering canopy of the tropical banyan creates a dense, emerald umbrella that filters harsh solar radiation. Beneath its sprawling boughs, the microclimate remains cool and humid. Aerial roots descend like ancient pillars, stabilizing the massive lateral limbs.',
-      feedback: 'Outstanding descriptive sensory language! Commendable understanding of canopy microclimates.'
-    },
-    {
-      id: 'sub-2',
-      studentName: 'Diya Ramanathan',
-      roll: 'ACH-05A-02',
-      submittedAt: 'Nov 5, 2026 · 05:30 PM',
-      status: 'SUBMITTED',
-      maxMarks: 10,
-      content: 'I observed three trees near the campus pond. The leaves had tiny dew drops that sparkled in the morning light. The branches spread out wide to catch maximum sunlight.',
-      feedback: ''
-    },
-    {
-      id: 'sub-3',
-      studentName: 'Pranav Nair',
-      roll: 'ACH-05A-04',
-      submittedAt: 'Nov 6, 2026 · 09:20 AM',
-      status: 'SUBMITTED',
-      maxMarks: 10,
-      content: 'In the forest, the tall trees compete for sunlight by growing straight up. Their roots spread deep into the fertile soil.',
-      feedback: ''
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+
+  const fetchSubmissions = async (hwId: string) => {
+    setSubmissions([]);
+    setSubmissionsLoading(true);
+    try {
+      const data = await apiGet<{ submissions: Array<{
+        id: string; studentName: string; rollNumber: string;
+        status: string; submittedText: string | null;
+        score: number | null; feedback: string | null;
+        submittedAt: string | null; maxMarks: number;
+      }> }>(`/api/assessment/homework/${hwId}/submissions`);
+      setSubmissions(data.submissions.map(s => ({
+        id: s.id,
+        studentName: s.studentName,
+        roll: s.rollNumber,
+        submittedAt: s.submittedAt
+          ? new Date(s.submittedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+          : 'Not yet submitted',
+        status: (s.status === 'EVALUATED' ? 'EVALUATED' : s.status === 'SUBMITTED' ? 'SUBMITTED' : 'PENDING') as StudentSubmission['status'],
+        score: s.score ?? undefined,
+        maxMarks: s.maxMarks,
+        content: s.submittedText ?? '',
+        feedback: s.feedback ?? ''
+      })));
+    } catch {
+      showToast('Could not load submissions — check your permissions');
+    } finally {
+      setSubmissionsLoading(false);
     }
-  ]);
+  };
+
+  const liveSubmittedCount = submissions.filter(s => s.status !== 'PENDING').length;
+  const liveGradedCount = submissions.filter(s => s.status === 'EVALUATED').length;
 
   const filteredHomeworks = activeSubject === 'All'
     ? homeworkList
@@ -132,8 +134,9 @@ export const HomeworkHub: React.FC = () => {
         score: gradingScore,
         feedback: gradingFeedback
       });
-    } catch {
-      // Best-effort: even if the API call fails (e.g. demo data), update local UI state
+    } catch (err: any) {
+      showToast(err?.message ?? 'Failed to save grade');
+      return;
     }
     setSubmissions(prev => prev.map(s => s.id === selectedSubmission.id ? {
       ...s,
@@ -198,7 +201,7 @@ export const HomeworkHub: React.FC = () => {
         {filteredHomeworks.map(hw => (
           <div
             key={hw.id}
-            onClick={() => setSelectedHomework(hw)}
+            onClick={() => { setSelectedHomework(hw); fetchSubmissions(hw.id); }}
             className={`p-6 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 ${
               selectedHomework?.id === hw.id
                 ? 'bg-teal-50/40 border-teal-500 shadow-md ring-2 ring-teal-200/50'
@@ -238,16 +241,26 @@ export const HomeworkHub: React.FC = () => {
 
               {/* Submission Progress Bar */}
               <div>
-                <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                  <span>Submissions: {hw.submittedCount} / {hw.totalCount}</span>
-                  <span className="text-teal-700">{hw.gradedCount} Graded</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-teal-600 h-full rounded-full transition-all"
-                    style={{ width: `${(hw.submittedCount / hw.totalCount) * 100}%` }}
-                  ></div>
-                </div>
+                {(() => {
+                  const isSelected = selectedHomework?.id === hw.id;
+                  const submitted = isSelected ? liveSubmittedCount : hw.submittedCount;
+                  const graded = isSelected ? liveGradedCount : hw.gradedCount;
+                  const total = hw.totalCount || 1;
+                  return (
+                    <>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                        <span>Submissions: {submitted} / {total}</span>
+                        <span className="text-teal-700">{graded} Graded</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-teal-600 h-full rounded-full transition-all"
+                          style={{ width: `${(submitted / total) * 100}%` }}
+                        ></div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -279,6 +292,12 @@ export const HomeworkHub: React.FC = () => {
             <div className="lg:col-span-5 space-y-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Submitted Scholars:</span>
               <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 text-xs max-h-96 overflow-y-auto">
+                {submissionsLoading && (
+                  <div className="p-6 text-center text-slate-400 text-xs">Loading submissions…</div>
+                )}
+                {!submissionsLoading && submissions.length === 0 && (
+                  <div className="p-6 text-center text-slate-400 text-xs">No submissions yet for this task.</div>
+                )}
                 {submissions.map(sub => (
                   <div
                     key={sub.id}

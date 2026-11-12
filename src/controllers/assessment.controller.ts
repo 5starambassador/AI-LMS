@@ -130,6 +130,69 @@ export class AssessmentController {
   }
 
   /**
+   * GET /api/assessment/homework/:id/submissions
+   * List all student submissions for a homework (teacher/admin only via RBAC)
+   */
+  static async listSubmissions(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { id: homeworkId } = request.params as { id: string };
+
+    const homework = await prisma.homework.findUnique({
+      where: { id: homeworkId },
+      select: { id: true, teacherId: true, maxMarks: true }
+    });
+    if (!homework) {
+      return reply.status(404).send({ success: false, error: 'Homework not found.' });
+    }
+
+    const isAdmin = ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin'].includes(user.roleName ?? '');
+    if (!isAdmin && homework.teacherId !== user.id) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Forbidden: You can only view submissions for homework you assigned.',
+        code: 'OWNERSHIP_VIOLATION'
+      });
+    }
+
+    const submissions = await prisma.homeworkSubmission.findMany({
+      where: { homeworkId },
+      orderBy: { submittedAt: 'asc' }
+    });
+
+    // Enrich with student name + roll number via a separate lookup
+    const studentIds = [...new Set(submissions.map(s => s.studentId))];
+    const students = await prisma.user.findMany({
+      where: { id: { in: studentIds } },
+      select: {
+        id: true,
+        fullName: true,
+        enrollments: { select: { rollNumber: true }, take: 1 }
+      }
+    });
+    const studentMap = new Map(students.map(s => [
+      s.id,
+      { name: s.fullName, roll: s.enrollments[0]?.rollNumber ?? '-' }
+    ]));
+
+    const enriched = submissions.map(s => ({
+      id: s.id,
+      homeworkId: s.homeworkId,
+      studentId: s.studentId,
+      studentName: studentMap.get(s.studentId)?.name ?? 'Unknown Scholar',
+      rollNumber: studentMap.get(s.studentId)?.roll ?? '-',
+      status: s.status,
+      submittedText: s.submittedText,
+      score: s.score,
+      feedback: s.feedback,
+      submittedAt: s.submittedAt,
+      evaluatedAt: s.evaluatedAt,
+      maxMarks: homework.maxMarks
+    }));
+
+    return reply.send({ success: true, count: enriched.length, submissions: enriched });
+  }
+
+  /**
    * POST /api/assessment/homework/submissions/:id/grade
    * Teacher grades student homework submission
    */
