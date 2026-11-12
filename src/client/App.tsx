@@ -16,6 +16,7 @@ import { QrStudentPicker } from './components/QrStudentPicker';
 import { ScoreInsights } from './components/ScoreInsights';
 import { VoiceActivity } from './components/VoiceActivity';
 import { ExamHub } from './components/ExamHub';
+import { ParentPortal } from './components/ParentPortal';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -24,6 +25,12 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState<ActiveTabType>('home');
   const [studentTab, setStudentTab] = useState<StudentTabType>('voicelab');
   const [accessDeniedAlert, setAccessDeniedAlert] = useState<string | null>(null);
+
+  // Parent portal: public route — no auth needed
+  const parentMatch = window.location.pathname.match(/^\/parent\/([^/]+)/);
+  if (parentMatch) {
+    return <ParentPortal token={parentMatch[1]} />;
+  }
 
   // QR login: students land on /qr/<token> without prior auth
   const qrMatch = window.location.pathname.match(/^\/qr\/([^/]+)/);

@@ -61,6 +61,7 @@ model Campus {
   attendances    DailyAttendance[]
   auditLogs      AuditLog[]
   qrSessions     QrSession[]
+  parentTokens   ParentToken[]
 
   @@map("campuses")
 }
@@ -163,6 +164,8 @@ model User {
   hpcObservations    HpcObservation[]
   auditLogs          AuditLog[]
   qrSessions         QrSession[]
+  parentTokensFor    ParentToken[] @relation("ParentTokenStudent")
+  parentTokensGen    ParentToken[] @relation("ParentTokenGenerator")
 
   @@map("users")
 }
@@ -814,4 +817,25 @@ model QrSession {
   createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("qr_sessions")
+}
+
+// ==========================================
+// 10. PARENT PORTAL TOKENS
+// ==========================================
+
+model ParentToken {
+  id          String    @id @default(uuid())
+  token       String    @unique @default(cuid())
+  studentId   String
+  generatedBy String    // teacher/admin userId
+  campusId    String
+  usedAt      DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  student     User      @relation("ParentTokenStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  generator   User      @relation("ParentTokenGenerator", fields: [generatedBy], references: [id], onDelete: Cascade)
+  campus      Campus    @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@map("parent_tokens")
 }

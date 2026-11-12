@@ -14,6 +14,7 @@ import { scoreRoutes } from './routes/score.routes.js';
 import { hpcRoutes } from './routes/hpc.routes.js';
 import { lsrRoutes } from './routes/lsr.routes.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
+import { parentRoutes } from './routes/parent.routes.js';
 
 export async function buildApp() {
   const app = fastify({
@@ -102,6 +103,7 @@ export async function buildApp() {
   await app.register(hpcRoutes);
   await app.register(lsrRoutes);
   await app.register(analyticsRoutes);
+  await app.register(parentRoutes);
 
   // ─── Static Assets ─────────────────────────────────────────────────────────
 

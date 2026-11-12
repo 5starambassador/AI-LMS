@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiGet, apiPost } from '../lib/api';
+import { ParentQrPanel } from './ParentQrPanel';
 import {
   ClipboardList,
   Plus,
@@ -7,9 +8,7 @@ import {
   Printer,
   CheckCircle2,
   AlertCircle,
-  RefreshCw,
   ArrowLeft,
-  Trophy,
   Users
 } from 'lucide-react';
 
@@ -377,7 +376,14 @@ export const ExamHub: React.FC = () => {
             <span>Print / Save PDF</span>
           </button>
         </div>
-        <GradeCard exam={selectedExam} results={resultsData.results} />
+        <div className="flex gap-5 items-start print:block">
+          <div className="flex-1">
+            <GradeCard exam={selectedExam} results={resultsData.results} />
+          </div>
+          <div className="w-72 shrink-0 print:hidden">
+            <ParentQrPanel />
+          </div>
+        </div>
       </div>
     );
   }
