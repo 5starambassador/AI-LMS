@@ -15,6 +15,7 @@ import { CurriculumHub } from './components/CurriculumHub';
 import { QrStudentPicker } from './components/QrStudentPicker';
 import { ScoreInsights } from './components/ScoreInsights';
 import { VoiceActivity } from './components/VoiceActivity';
+import { ExamHub } from './components/ExamHub';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -93,6 +94,8 @@ function AppShell() {
         setActiveTab('resources');
       } else if (cleanPath === '/staff/insights' || cleanPath === '/insights') {
         setActiveTab('insights');
+      } else if (cleanPath === '/staff/exams' || cleanPath === '/exams') {
+        setActiveTab('exams');
       } else {
         setActiveTab('home');
       }
@@ -189,6 +192,7 @@ function AppShell() {
             {activeTab === 'aitools' && <AiToolsHub />}
             {activeTab === 'myspace' && <MySpaceHub />}
             {activeTab === 'insights' && <ScoreInsights />}
+            {activeTab === 'exams' && <ExamHub />}
           </div>
         )}
 

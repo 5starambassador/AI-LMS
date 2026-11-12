@@ -407,5 +407,118 @@ export class ScoreController {
       }
     });
   }
+
+  /**
+   * GET /api/score/exams/:id/results
+   * List all student results for an exam, enriched with student name + roll number.
+   */
+  static async listExamResults(request: FastifyRequest, reply: FastifyReply) {
+    const { id } = request.params as { id: string };
+
+    const exam = await prisma.scoreExam.findUnique({
+      where: { id },
+      select: { id: true, title: true, totalMarks: true, classId: true, sectionId: true, teacherId: true }
+    });
+    if (!exam) return reply.status(404).send({ success: false, error: 'Exam not found.' });
+
+    // Pull existing results
+    const results = await prisma.scoreStudentResult.findMany({
+      where: { examId: id },
+      orderBy: { gradedAt: 'asc' }
+    });
+
+    // Enumerate all enrolled students in the exam's class/section
+    const enrollments = await prisma.studentEnrollment.findMany({
+      where: {
+        classId: exam.classId,
+        ...(exam.sectionId ? { sectionId: exam.sectionId } : {}),
+        isDeleted: false
+      },
+      include: { student: { select: { id: true, fullName: true } } },
+      orderBy: { rollNumber: 'asc' }
+    });
+
+    const resultMap = new Map(results.map(r => [r.studentId, r]));
+
+    const enriched = enrollments.map(enr => {
+      const r = resultMap.get(enr.studentId);
+      return {
+        studentId: enr.studentId,
+        studentName: enr.student.fullName,
+        rollNumber: enr.rollNumber,
+        marksObtained: r?.marksObtained ?? null,
+        totalMarks: exam.totalMarks,
+        percentage: r ? Math.round((r.marksObtained / exam.totalMarks) * 100) : null,
+        grade: r ? (() => {
+          const pct = (r.marksObtained / exam.totalMarks) * 100;
+          if (pct >= 90) return 'A+';
+          if (pct >= 80) return 'A';
+          if (pct >= 70) return 'B+';
+          if (pct >= 60) return 'B';
+          if (pct >= 50) return 'C';
+          return 'D';
+        })() : null,
+        gradedAt: r?.gradedAt ?? null,
+        resultId: r?.id ?? null
+      };
+    });
+
+    return reply.send({ success: true, exam, results: enriched });
+  }
+
+  /**
+   * POST /api/score/exams/:id/results/batch-entry
+   * Teacher manually enters or updates marks for one or more students.
+   */
+  static async batchEnterResults(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { id: examId } = request.params as { id: string };
+    const { entries } = request.body as {
+      entries: Array<{ studentId: string; marksObtained: number }>;
+    };
+
+    const exam = await prisma.scoreExam.findUnique({
+      where: { id: examId },
+      select: { teacherId: true, totalMarks: true }
+    });
+    if (!exam) return reply.status(404).send({ success: false, error: 'Exam not found.' });
+
+    const isAdmin = ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin'].includes(user.roleName ?? '');
+    if (!isAdmin && exam.teacherId !== user.id) {
+      return reply.status(403).send({ success: false, error: 'Forbidden.', code: 'OWNERSHIP_VIOLATION' });
+    }
+
+    if (!entries || entries.length === 0) {
+      return reply.status(400).send({ success: false, error: 'entries array is required.' });
+    }
+
+    const saved: string[] = [];
+    for (const e of entries) {
+      if (e.marksObtained < 0 || e.marksObtained > exam.totalMarks) continue;
+
+      const existing = await prisma.scoreStudentResult.findFirst({
+        where: { examId, studentId: e.studentId }
+      });
+      if (existing) {
+        await prisma.scoreStudentResult.update({
+          where: { id: existing.id },
+          data: { marksObtained: e.marksObtained, gradedAt: new Date() }
+        });
+      } else {
+        await prisma.scoreStudentResult.create({
+          data: {
+            examId,
+            studentId: e.studentId,
+            marksObtained: e.marksObtained,
+            totalMarks: exam.totalMarks,
+            confidence: 1.0
+          }
+        });
+      }
+      saved.push(e.studentId);
+    }
+
+    return reply.send({ success: true, saved: saved.length, message: `${saved.length} results saved.` });
+  }
 }
 

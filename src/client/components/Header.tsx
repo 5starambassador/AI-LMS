@@ -12,7 +12,8 @@ import {
   PenTool,
   Home,
   Mic,
-  GraduationCap
+  GraduationCap,
+  ClipboardList
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -24,7 +25,8 @@ export type ActiveTabType =
   | 'worksheet'
   | 'aitools'
   | 'myspace'
-  | 'insights';
+  | 'insights'
+  | 'exams';
 
 export type StudentTabType = 'voicelab' | 'voice' | 'homework';
 
@@ -199,6 +201,17 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <GraduationCap className="w-3.5 h-3.5 text-violet-600" />
                 <span>Insights</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/exams')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'exams'
+                    ? 'bg-indigo-50 text-indigo-800 border border-indigo-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <ClipboardList className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Exams</span>
               </button>
             </nav>
           )}

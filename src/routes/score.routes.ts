@@ -45,4 +45,16 @@ export async function scoreRoutes(fastify: FastifyInstance) {
 
   // Exam insights — any authenticated staff can view
   fastify.get('/api/score/exams/:id/insights', ScoreController.getExamInsights);
+
+  // List student results for an exam
+  fastify.get('/api/score/exams/:id/results',
+    { preHandler: [requirePermission('assessment:homework:grade')] },
+    ScoreController.listExamResults
+  );
+
+  // Batch manual mark entry by teacher
+  fastify.post('/api/score/exams/:id/results/batch-entry',
+    { preHandler: [requirePermission('assessment:homework:grade')] },
+    ScoreController.batchEnterResults
+  );
 }
