@@ -44,6 +44,48 @@ export class ParentController {
   }
 
   /**
+   * POST /api/parent/tokens/bulk
+   * Bulk-generate parent tokens for a list of students (grade card distribution).
+   */
+  static async generateBulkTokens(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { studentIds } = request.body as { studentIds: string[] };
+
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return reply.status(400).send({ success: false, error: 'studentIds array is required.' });
+    }
+
+    const results: Array<{ studentId: string; studentName: string; token: string; portalUrl: string; expiresAt: string }> = [];
+
+    for (const studentId of studentIds) {
+      const student = await prisma.user.findUnique({
+        where: { id: studentId },
+        select: { id: true, fullName: true, campusId: true }
+      });
+      if (!student) continue;
+
+      const campusId = student.campusId ?? user.campusId;
+      if (!campusId) continue;
+
+      // Expire prior unused tokens
+      await prisma.parentToken.updateMany({
+        where: { studentId, usedAt: null, expiresAt: { gt: new Date() } },
+        data: { expiresAt: new Date() }
+      });
+
+      const expiresAt = new Date(Date.now() + TOKEN_TTL_HOURS * 60 * 60 * 1000);
+      const pt = await prisma.parentToken.create({
+        data: { studentId, generatedBy: user.id, campusId, expiresAt }
+      });
+
+      const portalUrl = `${request.protocol}://${request.hostname}/parent/${pt.token}`;
+      results.push({ studentId, studentName: student.fullName, token: pt.token, portalUrl, expiresAt: expiresAt.toISOString() });
+    }
+
+    return reply.send({ success: true, tokens: results });
+  }
+
+  /**
    * GET /api/parent/portal/:token  (PUBLIC — no auth required)
    * Returns the student summary for a valid, unexpired token.
    * Marks the token as used on first access (single-use).

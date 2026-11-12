@@ -4,10 +4,16 @@ import { authenticateToken } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 
 export async function parentRoutes(fastify: FastifyInstance) {
-  // Generate token — authenticated staff only
+  // Generate single token — authenticated staff only
   fastify.post('/api/parent/tokens',
     { preHandler: [authenticateToken, requirePermission('assessment:homework:grade')] },
     ParentController.generateToken
+  );
+
+  // Bulk generate tokens for grade card distribution
+  fastify.post('/api/parent/tokens/bulk',
+    { preHandler: [authenticateToken, requirePermission('assessment:homework:grade')] },
+    ParentController.generateBulkTokens
   );
 
   // Parent portal — PUBLIC (no auth)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-interface Student { id: string; name: string; roll: string }
+interface Student { id: string; name: string; roll: string; checkedIn?: boolean }
 
 interface Props {
   token: string;
@@ -124,23 +124,31 @@ export function QrStudentPicker({ token, onLoggedIn }: Props) {
             {filtered.map(student => (
               <button
                 key={student.id}
-                onClick={() => claim(student.id)}
-                disabled={!!claiming}
+                onClick={() => !student.checkedIn && claim(student.id)}
+                disabled={!!claiming || student.checkedIn}
                 className={`
-                  relative bg-white border-2 rounded-2xl p-4 text-left transition-all shadow-xs
-                  ${claiming === student.id
-                    ? 'border-teal-500 bg-teal-50 scale-95'
-                    : 'border-slate-200 hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5 active:scale-95'
+                  relative border-2 rounded-2xl p-4 text-left transition-all shadow-xs
+                  ${student.checkedIn
+                    ? 'bg-emerald-50 border-emerald-200 cursor-default opacity-80'
+                    : claiming === student.id
+                      ? 'bg-teal-50 border-teal-500 scale-95'
+                      : 'bg-white border-slate-200 hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5 active:scale-95 cursor-pointer'
                   }
-                  ${claiming && claiming !== student.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  ${claiming && claiming !== student.id && !student.checkedIn ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
               >
                 {/* Avatar initial */}
-                <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-800 font-bold text-lg flex items-center justify-center mb-2">
-                  {student.name.charAt(0).toUpperCase()}
+                <div className={`w-10 h-10 rounded-full font-bold text-lg flex items-center justify-center mb-2 ${
+                  student.checkedIn ? 'bg-emerald-200 text-emerald-800' : 'bg-teal-100 text-teal-800'
+                }`}>
+                  {student.checkedIn ? '✓' : student.name.charAt(0).toUpperCase()}
                 </div>
-                <p className="font-semibold text-slate-800 text-sm leading-tight truncate">{student.name}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Roll {student.roll}</p>
+                <p className={`font-semibold text-sm leading-tight truncate ${student.checkedIn ? 'text-emerald-800' : 'text-slate-800'}`}>
+                  {student.name}
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {student.checkedIn ? 'Already checked in ✓' : `Roll ${student.roll}`}
+                </p>
 
                 {claiming === student.id && (
                   <div className="absolute inset-0 flex items-center justify-center bg-teal-50/80 rounded-2xl">

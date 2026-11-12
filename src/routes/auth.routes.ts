@@ -261,10 +261,24 @@ export async function authRoutes(fastify: FastifyInstance) {
       orderBy: { rollNumber: 'asc' }
     });
 
+    // Check which students have already checked in today via QR
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const claimed = await prisma.dailyAttendance.findMany({
+      where: {
+        classId: session.classId,
+        date: today,
+        remarks: 'QR scan'
+      },
+      select: { studentId: true }
+    });
+    const claimedSet = new Set(claimed.map(c => c.studentId));
+
     const students = enrollments.map(e => ({
       id: e.student.id,
       name: e.student.fullName,
-      roll: e.rollNumber
+      roll: e.rollNumber,
+      checkedIn: claimedSet.has(e.student.id)
     }));
 
     return reply.send({
@@ -331,25 +345,32 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     await prisma.user.update({ where: { id: student.id }, data: { lastLoginAt: new Date() } });
 
-    // Auto-mark PRESENT for today via QR scan
+    // Auto-mark PRESENT for today via QR scan (single-use: skip if already claimed today)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    await prisma.dailyAttendance.upsert({
-      where: { date_studentId: { date: today, studentId: student.id } },
-      update: { status: 'PRESENT', remarks: 'QR scan' },
-      create: {
-        date: today,
-        campusId: session.campusId,
-        classId: session.classId,
-        sectionId: session.sectionId ?? enrollment.sectionId ?? '',
-        studentId: student.id,
-        status: 'PRESENT',
-        remarks: 'QR scan'
-      }
+    const existing = await prisma.dailyAttendance.findUnique({
+      where: { date_studentId: { date: today, studentId: student.id } }
     });
+    const alreadyCheckedIn = existing?.remarks === 'QR scan';
+    if (!alreadyCheckedIn) {
+      await prisma.dailyAttendance.upsert({
+        where: { date_studentId: { date: today, studentId: student.id } },
+        update: { status: 'PRESENT', remarks: 'QR scan' },
+        create: {
+          date: today,
+          campusId: session.campusId,
+          classId: session.classId,
+          sectionId: session.sectionId ?? enrollment.sectionId ?? '',
+          studentId: student.id,
+          status: 'PRESENT',
+          remarks: 'QR scan'
+        }
+      });
+    }
 
     return reply.send({
       success: true,
+      alreadyCheckedIn,
       token: jwtToken,
       user: {
         id:        student.id,

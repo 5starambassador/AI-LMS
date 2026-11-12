@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  Users
+  Users,
+  QrCode,
+  RefreshCw
 } from 'lucide-react';
 
 interface ScoreExam {
@@ -60,7 +62,7 @@ function pctColor(pct: number | null) {
 }
 
 // ─── Grade Card Print View ────────────────────────────────────────────────────
-function GradeCard({ exam, results }: { exam: ScoreExam; results: StudentResult[] }) {
+function GradeCard({ exam, results, qrUrls }: { exam: ScoreExam; results: StudentResult[]; qrUrls: Record<string, string> }) {
   const graded = results.filter(r => r.marksObtained !== null);
   const avg = graded.length
     ? Math.round(graded.reduce((s, r) => s + (r.percentage ?? 0), 0) / graded.length)
@@ -95,6 +97,9 @@ function GradeCard({ exam, results }: { exam: ScoreExam; results: StudentResult[
             <th className="py-2 px-3 text-center border border-slate-200">%</th>
             <th className="py-2 px-3 text-center border border-slate-200">Grade</th>
             <th className="py-2 px-3 text-left border border-slate-200">Remarks</th>
+            {Object.keys(qrUrls).length > 0 && (
+              <th className="py-2 px-3 text-center border border-slate-200">Verify (Parent QR)</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -118,6 +123,17 @@ function GradeCard({ exam, results }: { exam: ScoreExam; results: StudentResult[
                   ? r.percentage >= 75 ? 'Excellent' : r.percentage >= 60 ? 'Good' : r.percentage >= 40 ? 'Needs Improvement' : 'At Risk'
                   : 'Absent'}
               </td>
+              {Object.keys(qrUrls).length > 0 && (
+                <td className="py-2 px-3 border border-slate-200 text-center">
+                  {qrUrls[r.studentId] ? (
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(qrUrls[r.studentId])}`}
+                      alt="Verify"
+                      className="w-12 h-12 mx-auto"
+                    />
+                  ) : '—'}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -153,6 +169,10 @@ export const ExamHub: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
+  // Per-student parent QR URLs for grade card distribution
+  const [qrUrls, setQrUrls] = useState<Record<string, string>>({});
+  const [qrGenerating, setQrGenerating] = useState(false);
+
   // Create exam form
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -177,10 +197,26 @@ export const ExamHub: React.FC = () => {
 
   useEffect(() => { fetchExams(); }, [fetchExams]);
 
+  const generateBulkQr = async () => {
+    if (!resultsData) return;
+    setQrGenerating(true);
+    const gradedIds = resultsData.results
+      .filter(r => r.marksObtained !== null)
+      .map(r => r.studentId);
+    try {
+      const res = await apiPost('/api/parent/tokens/bulk', { studentIds: gradedIds });
+      const map: Record<string, string> = {};
+      for (const t of (res.tokens ?? [])) map[t.studentId] = t.portalUrl;
+      setQrUrls(map);
+    } catch { /* non-fatal */ }
+    finally { setQrGenerating(false); }
+  };
+
   const openResults = async (exam: ScoreExam) => {
     setSelectedExam(exam);
     setResultsLoading(true);
     setResultsData(null);
+    setQrUrls({});
     setView('entry');
     try {
       const data = await apiGet(`/api/score/exams/${exam.id}/results`);
@@ -361,24 +397,39 @@ export const ExamHub: React.FC = () => {
   if (view === 'gradecard' && selectedExam && resultsData) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between print:hidden">
+        <div className="flex items-center justify-between flex-wrap gap-3 print:hidden">
           <button onClick={() => setView('entry')}
             className="flex items-center space-x-1.5 text-xs font-semibold text-indigo-700 hover:text-indigo-900 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Mark Entry</span>
           </button>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow hover:bg-indigo-700 transition-colors"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print / Save PDF</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={generateBulkQr}
+              disabled={qrGenerating || !resultsData}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold shadow hover:bg-teal-700 disabled:opacity-60 transition-colors"
+            >
+              <QrCode className={`w-4 h-4 ${qrGenerating ? 'animate-spin' : ''}`} />
+              <span>{qrGenerating ? 'Generating…' : Object.keys(qrUrls).length > 0 ? 'Regenerate QR Links' : 'Add QR Links for Parents'}</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow hover:bg-indigo-700 transition-colors"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print / Save PDF</span>
+            </button>
+          </div>
         </div>
+        {Object.keys(qrUrls).length > 0 && (
+          <p className="text-xs text-teal-700 font-semibold print:hidden">
+            ✓ QR codes ready — each parent can scan to verify their child's result. Print now to include them.
+          </p>
+        )}
         <div className="flex gap-5 items-start print:block">
           <div className="flex-1">
-            <GradeCard exam={selectedExam} results={resultsData.results} />
+            <GradeCard exam={selectedExam} results={resultsData.results} qrUrls={qrUrls} />
           </div>
           <div className="w-72 shrink-0 print:hidden">
             <ParentQrPanel />
