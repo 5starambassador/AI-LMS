@@ -35,6 +35,85 @@ async function main() {
   }
   console.log(`[Seed] Configured ${rolesData.length} unique Achariya hierarchical roles.`);
 
+  // 1b. Permissions & Role-Permission Matrix
+  const permissionsData = [
+    // Assessment
+    { code: 'assessment:homework:create',   domain: 'assessment', description: 'Create and publish homework assignments' },
+    { code: 'assessment:homework:grade',    domain: 'assessment', description: 'Grade student homework submissions' },
+    { code: 'assessment:quiz:create',       domain: 'assessment', description: 'Author and publish quizzes' },
+    { code: 'assessment:worksheet:create',  domain: 'assessment', description: 'Create interactive worksheets' },
+    // HPC / Compass
+    { code: 'hpc:observe',    domain: 'hpc', description: 'Record domain observations for students' },
+    { code: 'hpc:view',       domain: 'hpc', description: 'View student holistic progress cards' },
+    { code: 'hpc:publish',    domain: 'hpc', description: 'Sign and publish progress cards' },
+    // Operations
+    { code: 'ops:attendance:write',  domain: 'operations', description: 'Record daily attendance' },
+    { code: 'ops:batch:migrate',     domain: 'operations', description: 'Run end-of-year batch cohort migration' },
+    { code: 'ops:banner:create',     domain: 'operations', description: 'Create noticeboard banners' },
+    { code: 'ops:resource:create',   domain: 'operations', description: 'Create resource buckets and items' },
+    // Score / AI Grading
+    { code: 'score:exam:create',    domain: 'score', description: 'Author summative exams' },
+    { code: 'score:exam:assign',    domain: 'score', description: 'Assign batch exams to class sections' },
+    { code: 'score:grade:run',      domain: 'score', description: 'Initiate grading runs and OCR transcription' },
+    { code: 'score:grade:process',  domain: 'score', description: 'Process and commit AI grading pipeline results' },
+    // Academic / Curriculum
+    { code: 'academic:book:manage',    domain: 'academic', description: 'Upload and manage digital books' },
+    { code: 'academic:qr:admin',       domain: 'academic', description: 'View and manage book QR redemption status' },
+  ];
+
+  const permsMap = new Map<string, any>();
+  for (const p of permissionsData) {
+    let perm = await prisma.permission.findUnique({ where: { code: p.code } });
+    if (!perm) {
+      perm = await prisma.permission.create({ data: p });
+    }
+    permsMap.set(p.code, perm);
+  }
+  console.log(`[Seed] Configured ${permissionsData.length} permission codes.`);
+
+  // Role → Permissions mapping
+  const rolePermissions: Record<string, string[]> = {
+    'Super Admin': permissionsData.map(p => p.code),  // all permissions (middleware also bypasses by name)
+    'Manager':     permissionsData.map(p => p.code),  // regional director sees everything
+    'School Admin': permissionsData.map(p => p.code), // principal has full campus authority
+    'Uploader': [
+      'assessment:worksheet:create',
+      'ops:resource:create',
+      'academic:book:manage',
+      'academic:qr:admin',
+    ],
+    'Teacher': [
+      'assessment:homework:create',
+      'assessment:homework:grade',
+      'assessment:quiz:create',
+      'assessment:worksheet:create',
+      'hpc:observe',
+      'hpc:view',
+      'ops:attendance:write',
+      'score:exam:create',
+      'score:exam:assign',
+      'score:grade:run',
+      'score:grade:process',
+    ],
+    'Student': [],
+    'Parent':  [],
+  };
+
+  for (const [roleName, codes] of Object.entries(rolePermissions)) {
+    const role = rolesMap.get(roleName);
+    if (!role) continue;
+    for (const code of codes) {
+      const perm = permsMap.get(code);
+      if (!perm) continue;
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: perm.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: perm.id }
+      });
+    }
+  }
+  console.log('[Seed] Role-permission matrix applied.');
+
   // 2. Organization & Campus Setup
   const org = await prisma.organization.upsert({
     where: { code: 'ACHARIYA_TRUST' },
