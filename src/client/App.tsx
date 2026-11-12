@@ -12,14 +12,29 @@ import { AttendanceHub } from './components/AttendanceHub';
 import { HomeworkHub } from './components/HomeworkHub';
 import { WorksheetCanvas } from './components/WorksheetCanvas';
 import { CurriculumHub } from './components/CurriculumHub';
+import { QrStudentPicker } from './components/QrStudentPicker';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
-  const { user: currentUser, isLoading, isAuthenticated, logout } = useAuthContext();
+  const { user: currentUser, isLoading, isAuthenticated, logout, loginWithToken } = useAuthContext();
   const [currentPortal, setCurrentPortal] = useState<'STAFF' | 'STUDENT' | 'SUPERADMIN'>('STAFF');
   const [activeTab, setActiveTab] = useState<ActiveTabType>('home');
   const [studentTab, setStudentTab] = useState<StudentTabType>('voicelab');
   const [accessDeniedAlert, setAccessDeniedAlert] = useState<string | null>(null);
+
+  // QR login: students land on /qr/<token> without prior auth
+  const qrMatch = window.location.pathname.match(/^\/qr\/([^/]+)/);
+  if (qrMatch) {
+    return (
+      <QrStudentPicker
+        token={qrMatch[1]}
+        onLoggedIn={(token, user) => {
+          loginWithToken(token, user as Parameters<typeof loginWithToken>[1]);
+          window.history.replaceState(null, '', '/student/voicelab');
+        }}
+      />
+    );
+  }
 
   // Show loading spinner while session is being restored
   if (isLoading) {

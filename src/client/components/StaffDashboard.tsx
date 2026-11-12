@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
 import { apiFetch } from '../lib/api';
+import { QrSessionPanel } from './QrSessionPanel';
 
 export const StaffDashboard: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -26,7 +27,7 @@ export const StaffDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Modals & States
-  const [activeModal, setActiveModal] = useState<'bookReader' | 'rollCall' | 'createHomework' | 'studentDirectory' | null>(null);
+  const [activeModal, setActiveModal] = useState<'bookReader' | 'rollCall' | 'createHomework' | 'studentDirectory' | 'qrLogin' | null>(null);
   const [attendanceSubmitted, setAttendanceSubmitted] = useState(false);
   const [selectedStudentStatus, setSelectedStudentStatus] = useState<'PRESENT' | 'ABSENT' | 'LATE'>('PRESENT');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -117,7 +118,7 @@ export const StaffDashboard: React.FC = () => {
       </div>
 
       {/* 2. Daily Operations Quick Action Ribbon - Clean Light Aesthetic */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <button
           onClick={() => setActiveModal('bookReader')}
           className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all text-left group"
@@ -160,6 +161,17 @@ export const StaffDashboard: React.FC = () => {
           </div>
           <div className="text-xs font-bold text-slate-900">Assign Homework</div>
           <div className="text-[11px] text-slate-500 mt-0.5">Publish experiential tasks</div>
+        </button>
+
+        <button
+          onClick={() => setActiveModal('qrLogin')}
+          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-400 transition-all text-left group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-teal-100 text-lg">
+            📱
+          </div>
+          <div className="text-xs font-bold text-slate-900">QR Class Login</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">Students scan to sign in</div>
         </button>
       </div>
 
@@ -483,6 +495,13 @@ export const StaffDashboard: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* QR Classroom Login Modal */}
+      {activeModal === 'qrLogin' && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <QrSessionPanel onClose={() => setActiveModal(null)} />
         </div>
       )}
 

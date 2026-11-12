@@ -9,6 +9,7 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string, portal?: 'STAFF' | 'STUDENT' | 'SUPERADMIN') => Promise<{ success: boolean; error?: string; redirectUrl?: string }>;
+  loginWithToken: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -79,6 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const loginWithToken = useCallback((token: string, user: User) => {
+    try { localStorage.setItem(TOKEN_KEY, token); } catch { /* ignore */ }
+    setState({ user, token, isLoading: false });
+  }, []);
+
   const logout = useCallback(() => {
     try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
     setState({ user: null, token: null, isLoading: false });
@@ -93,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       ...state,
       login,
+      loginWithToken,
       logout,
       isAuthenticated: !!state.user && !!state.token
     }}>

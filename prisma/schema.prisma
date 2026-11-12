@@ -60,6 +60,7 @@ model Campus {
   homeBanners    HomeBanner[]
   attendances    DailyAttendance[]
   auditLogs      AuditLog[]
+  qrSessions     QrSession[]
 
   @@map("campuses")
 }
@@ -161,6 +162,7 @@ model User {
   createdExams       ScoreExam[]
   hpcObservations    HpcObservation[]
   auditLogs          AuditLog[]
+  qrSessions         QrSession[]
 
   @@map("users")
 }
@@ -223,6 +225,7 @@ model Class {
   exams       ScoreExam[]
   worksheets  Worksheet[]
   attendances DailyAttendance[]
+  qrSessions  QrSession[]
 
   @@map("classes")
 }
@@ -790,4 +793,25 @@ model AuditLog {
   campus      Campus?  @relation(fields: [campusId], references: [id], onDelete: SetNull)
 
   @@map("audit_logs")
+}
+
+// ==========================================
+// 12. QR CLASSROOM LOGIN SESSIONS
+// ==========================================
+
+model QrSession {
+  id          String   @id @default(uuid())
+  token       String   @unique @default(cuid())
+  campusId    String
+  classId     String
+  sectionId   String?
+  createdById String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  campus      Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("qr_sessions")
 }
