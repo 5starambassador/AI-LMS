@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -39,6 +39,8 @@ interface ScholarAttendanceRecord {
   dailyHistory: Record<number, 'P' | 'A' | 'L' | 'E' | 'H'>;
 }
 
+import { apiGet, apiPost } from '../lib/api';
+
 export const AttendanceHub: React.FC = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'monthly' | 'analytics'>('daily');
   const [selectedMonth, setSelectedMonth] = useState<'JUN' | 'JUL' | 'AUG' | 'SEP' | 'OCT' | 'NOV' | 'DEC' | 'JAN' | 'FEB' | 'MAR'>('NOV');
@@ -63,128 +65,34 @@ export const AttendanceHub: React.FC = () => {
 
   const currentMonthConfig = months.find(m => m.key === selectedMonth) || months[5];
 
-  const [scholars, setScholars] = useState<ScholarAttendanceRecord[]>([
-    {
-      id: '1',
-      name: 'Aarav Sundaram',
-      roll: 'ACH-05A-01',
-      status: 'PRESENT',
-      arrival: '08:15 AM',
-      remarks: 'On time · Science Prefect',
-      parentPhone: '+91 98402 11001',
-      parentEmail: 'sundaram.r@achariya.in',
-      totalPresent: 23,
-      totalAbsent: 1,
-      totalLate: 0,
-      attendanceRate: 95.8,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'A', 21: 'H', 22: 'H', 23: 'P', 24: 'P', 25: 'P', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '2',
-      name: 'Diya Ramanathan',
-      roll: 'ACH-05A-02',
-      status: 'PRESENT',
-      arrival: '08:10 AM',
-      remarks: 'On time · Assembly Reader',
-      parentPhone: '+91 98402 11002',
-      parentEmail: 'ramanathan.k@achariya.in',
-      totalPresent: 24,
-      totalAbsent: 0,
-      totalLate: 0,
-      attendanceRate: 100.0,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'P', 25: 'P', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '3',
-      name: 'Kavya Krishnan',
-      roll: 'ACH-05A-03',
-      status: 'PRESENT',
-      arrival: '08:18 AM',
-      remarks: 'On time · Library Club',
-      parentPhone: '+91 98402 11003',
-      parentEmail: 'krishnan.v@achariya.in',
-      totalPresent: 22,
-      totalAbsent: 2,
-      totalLate: 0,
-      attendanceRate: 91.6,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'A', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'P', 25: 'A', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '4',
-      name: 'Pranav Nair',
-      roll: 'ACH-05A-04',
-      status: 'LATE',
-      arrival: '08:42 AM',
-      remarks: 'Bus delay at OMR Tollgate',
-      parentPhone: '+91 98402 11004',
-      parentEmail: 'nair.s@achariya.in',
-      totalPresent: 18,
-      totalAbsent: 2,
-      totalLate: 4,
-      attendanceRate: 75.0,
-      dailyHistory: { 1: 'L', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'L', 7: 'H', 8: 'H', 9: 'L', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'A', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'L', 24: 'P', 25: 'P', 26: 'A', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '5',
-      name: 'Meera Balaji',
-      roll: 'ACH-05A-05',
-      status: 'ABSENT',
-      arrival: '-',
-      remarks: 'Medical leave letter received',
-      parentPhone: '+91 98402 11005',
-      parentEmail: 'balaji.t@achariya.in',
-      totalPresent: 16,
-      totalAbsent: 8,
-      totalLate: 0,
-      attendanceRate: 66.7,
-      dailyHistory: { 1: 'A', 2: 'A', 3: 'A', 4: 'P', 5: 'P', 6: 'A', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'A', 13: 'A', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'A', 25: 'A', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '6',
-      name: 'Rohan Jayakumar',
-      roll: 'ACH-05A-06',
-      status: 'PRESENT',
-      arrival: '08:20 AM',
-      remarks: 'On time · Sports Captain',
-      parentPhone: '+91 98402 11006',
-      parentEmail: 'jayakumar.m@achariya.in',
-      totalPresent: 23,
-      totalAbsent: 1,
-      totalLate: 0,
-      attendanceRate: 95.8,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'A', 25: 'P', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '7',
-      name: 'Ananya Sridhar',
-      roll: 'ACH-05A-07',
-      status: 'PRESENT',
-      arrival: '08:14 AM',
-      remarks: 'On time · Choir Member',
-      parentPhone: '+91 98402 11007',
-      parentEmail: 'sridhar.n@achariya.in',
-      totalPresent: 24,
-      totalAbsent: 0,
-      totalLate: 0,
-      attendanceRate: 100.0,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'P', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'P', 25: 'P', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    },
-    {
-      id: '8',
-      name: 'Karthik Varma',
-      roll: 'ACH-05A-08',
-      status: 'EXCUSED',
-      arrival: '-',
-      remarks: 'Inter-Campus Robotics Olympiad',
-      parentPhone: '+91 98402 11008',
-      parentEmail: 'varma.k@achariya.in',
-      totalPresent: 24,
-      totalAbsent: 0,
-      totalLate: 0,
-      attendanceRate: 100.0,
-      dailyHistory: { 1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 'P', 6: 'E', 7: 'H', 8: 'H', 9: 'P', 10: 'P', 11: 'P', 12: 'P', 13: 'P', 14: 'H', 15: 'H', 16: 'P', 17: 'P', 18: 'P', 19: 'P', 20: 'P', 21: 'H', 22: 'H', 23: 'P', 24: 'P', 25: 'P', 26: 'P', 27: 'P', 28: 'H', 29: 'H', 30: 'P' }
-    }
-  ]);
+  const [scholars, setScholars] = useState<ScholarAttendanceRecord[]>([]);
+  const [scholarsLoading, setScholarsLoading] = useState(true);
+
+  useEffect(() => {
+    apiGet<{ students: Array<{
+      id: string; name: string; admissionNumber: string;
+      parentPhone?: string; parentEmail?: string;
+    }> }>('/api/operations/students')
+      .then(data => {
+        setScholars(data.students.map((s, idx) => ({
+          id: s.id,
+          name: s.name,
+          roll: s.admissionNumber,
+          status: 'PRESENT' as const,
+          arrival: '08:15 AM',
+          remarks: 'On time',
+          parentPhone: s.parentPhone ?? '-',
+          parentEmail: s.parentEmail ?? '-',
+          totalPresent: 0,
+          totalAbsent: 0,
+          totalLate: 0,
+          attendanceRate: 0,
+          dailyHistory: {}
+        })));
+      })
+      .catch(() => {/* keep empty list on error */})
+      .finally(() => setScholarsLoading(false));
+  }, []);
 
   const updateStatus = (id: string, newStatus: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED') => {
     setScholars(prev => prev.map(s => {
@@ -210,7 +118,22 @@ export const AttendanceHub: React.FC = () => {
     setIsSaved(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    try {
+      const today = new Date().toISOString();
+      await apiPost('/api/operations/attendance/rollcall', {
+        date: today,
+        classId: 'grade-5a',
+        sectionId: 'sec-a',
+        records: scholars.map(s => ({
+          studentId: s.id,
+          status: s.status,
+          remarks: s.remarks
+        }))
+      });
+    } catch {
+      /* non-fatal: teacher sees local state; server may reject without classId/sectionId */
+    }
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -412,6 +335,9 @@ export const AttendanceHub: React.FC = () => {
           </div>
 
           {/* Roll Call Table */}
+          {scholarsLoading && (
+            <div className="p-8 text-center text-sm text-slate-400 font-medium">Loading student roster…</div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>

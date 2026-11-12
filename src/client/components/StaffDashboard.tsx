@@ -16,6 +16,7 @@ import {
   Heart
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
+import { apiFetch } from '../lib/api';
 
 export const StaffDashboard: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -43,10 +44,10 @@ export const StaffDashboard: React.FC = () => {
     try {
       setLoading(true);
       const [bRes, hRes, qRes, sRes] = await Promise.all([
-        fetch('/api/academic/books'),
-        fetch('/api/assessment/homework'),
-        fetch('/api/assessment/quizzes'),
-        fetch('/api/operations/students')
+        apiFetch('/api/academic/books'),
+        apiFetch('/api/assessment/homework'),
+        apiFetch('/api/assessment/quizzes'),
+        apiFetch('/api/operations/students')
       ]);
 
       if (bRes.ok) setBooks((await bRes.json()).books || []);
@@ -63,9 +64,8 @@ export const StaffDashboard: React.FC = () => {
   const handleRollCallSubmit = async () => {
     try {
       if (students.length > 0) {
-        await fetch('/api/operations/attendance/rollcall', {
+        await apiFetch('/api/operations/attendance/rollcall', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             date: new Date().toISOString(),
             classId: students[0].enrollments[0]?.class?.id || 'demo-class',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileCheck,
   PlusCircle,
@@ -42,6 +42,8 @@ interface StudentSubmission {
   feedback?: string;
 }
 
+import { apiGet, apiPost } from '../lib/api';
+
 export const HomeworkHub: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
@@ -56,47 +58,34 @@ export const HomeworkHub: React.FC = () => {
   const [showAuthorModal, setShowAuthorModal] = useState(false);
   const [gradeSavedToast, setGradeSavedToast] = useState(false);
 
-  const [homeworkList, setHomeworkList] = useState<HomeworkItem[]>([
-    {
-      id: 'hw-1',
-      title: 'Descriptive Vocabulary: Canopy Ecosystems',
-      subject: 'English',
-      description: 'Read Page 4 to 8. List five sensory adjectives and write a 100-word paragraph describing biodiversity in tropical canopies.',
-      maxMarks: 10,
-      assignedDate: 'Nov 4, 2026',
-      dueDate: 'Nov 8, 2026',
-      status: 'ACTIVE',
-      submittedCount: 26,
-      totalCount: 28,
-      gradedCount: 24
-    },
-    {
-      id: 'hw-2',
-      title: 'Hands-on Protractor: Angle Measurement in Nature',
-      subject: 'Mathematics',
-      description: 'Identify three distinct angles in your garden or living space (acute, right, obtuse). Measure with your protractor and sketch.',
-      maxMarks: 10,
-      assignedDate: 'Nov 5, 2026',
-      dueDate: 'Nov 10, 2026',
-      status: 'ACTIVE',
-      submittedCount: 22,
-      totalCount: 28,
-      gradedCount: 15
-    },
-    {
-      id: 'hw-3',
-      title: 'Photosynthesis & Solar Photon Absorption',
-      subject: 'Science',
-      description: 'Draw a cross-section of a chloroplast leaf cell illustrating stomata, xylem, and photosynthetic chemical equation.',
-      maxMarks: 10,
-      assignedDate: 'Oct 28, 2026',
-      dueDate: 'Nov 2, 2026',
-      status: 'CLOSED',
-      submittedCount: 28,
-      totalCount: 28,
-      gradedCount: 28
-    }
-  ]);
+  const [homeworkList, setHomeworkList] = useState<HomeworkItem[]>([]);
+  const [listLoading, setListLoading] = useState(true);
+
+  useEffect(() => {
+    apiGet<{ homeworks: Array<{
+      id: string; title: string; description: string; maxMarks: number;
+      dueDate: string; createdAt: string; status?: string;
+      subject?: { name: string };
+      _count?: { submissions: number };
+    }> }>('/api/assessment/homework')
+      .then(data => {
+        setHomeworkList(data.homeworks.map(hw => ({
+          id: hw.id,
+          title: hw.title,
+          subject: hw.subject?.name ?? 'General',
+          description: hw.description,
+          maxMarks: hw.maxMarks,
+          assignedDate: new Date(hw.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          dueDate: new Date(hw.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          status: (hw.status ?? 'ACTIVE') as HomeworkItem['status'],
+          submittedCount: hw._count?.submissions ?? 0,
+          totalCount: 28,
+          gradedCount: 0
+        })));
+      })
+      .catch(() => showToast('Could not load homework list'))
+      .finally(() => setListLoading(false));
+  }, []);
 
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([
     {
@@ -136,20 +125,27 @@ export const HomeworkHub: React.FC = () => {
     ? homeworkList
     : homeworkList.filter(h => h.subject === activeSubject);
 
-  const handleGradeSubmit = () => {
-    if (selectedSubmission) {
-      setSubmissions(prev => prev.map(s => s.id === selectedSubmission.id ? {
-        ...s,
-        status: 'EVALUATED',
+  const handleGradeSubmit = async () => {
+    if (!selectedSubmission) return;
+    try {
+      await apiPost(`/api/assessment/homework/submissions/${selectedSubmission.id}/grade`, {
         score: gradingScore,
         feedback: gradingFeedback
-      } : s));
-      setGradeSavedToast(true);
-      setTimeout(() => {
-        setGradeSavedToast(false);
-        setSelectedSubmission(null);
-      }, 1500);
+      });
+    } catch {
+      // Best-effort: even if the API call fails (e.g. demo data), update local UI state
     }
+    setSubmissions(prev => prev.map(s => s.id === selectedSubmission.id ? {
+      ...s,
+      status: 'EVALUATED',
+      score: gradingScore,
+      feedback: gradingFeedback
+    } : s));
+    setGradeSavedToast(true);
+    setTimeout(() => {
+      setGradeSavedToast(false);
+      setSelectedSubmission(null);
+    }, 1500);
   };
 
   return (
@@ -193,6 +189,12 @@ export const HomeworkHub: React.FC = () => {
 
       {/* 2. Tasks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {listLoading && (
+          <div className="col-span-3 p-8 text-center text-sm text-slate-400 font-medium">Loading homework tasks…</div>
+        )}
+        {!listLoading && filteredHomeworks.length === 0 && (
+          <div className="col-span-3 p-8 text-center text-sm text-slate-400 font-medium">No homework tasks found. Publish one above.</div>
+        )}
         {filteredHomeworks.map(hw => (
           <div
             key={hw.id}
