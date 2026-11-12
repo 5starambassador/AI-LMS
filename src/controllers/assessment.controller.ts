@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { AiVisionOcrService } from '../services/ai-vision-ocr.service.js';
 
 export class AssessmentController {
   // ==========================================
@@ -243,6 +244,63 @@ export class AssessmentController {
     });
 
     return reply.send({ success: true, message: 'Homework evaluated and marks committed.', submission: updated });
+  }
+
+  /**
+   * POST /api/assessment/homework/submissions/:id/ocr-autograde
+   * AI autograder: OCR-evaluate an image or text submission and return pre-fill data for the grading form.
+   * Does NOT save the grade — teacher must confirm and save via the normal grade endpoint.
+   */
+  static async autoGradeHomework(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { id } = request.params as { id: string };
+    const { imageBase64 } = (request.body ?? {}) as { imageBase64?: string };
+
+    const submission = await prisma.homeworkSubmission.findUnique({
+      where: { id },
+      include: { homework: { select: { teacherId: true, maxMarks: true, title: true } } }
+    });
+
+    if (!submission) {
+      return reply.status(404).send({ success: false, error: 'Submission not found.' });
+    }
+
+    const isAdmin = ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin'].includes(user.roleName ?? '');
+    if (!isAdmin && submission.homework.teacherId !== user.id) {
+      return reply.status(403).send({ success: false, error: 'Forbidden.', code: 'OWNERSHIP_VIOLATION' });
+    }
+
+    const maxMarks = submission.homework.maxMarks ?? 10;
+
+    try {
+      let result;
+      if (imageBase64) {
+        result = await AiVisionOcrService.transcribeAndEvaluate({
+          imageBase64,
+          maxMarks,
+          questionPrompt: submission.homework.title
+        });
+      } else {
+        const text = submission.submittedText ?? '';
+        result = AiVisionOcrService.evaluateTextSubmission(text, maxMarks);
+      }
+
+      return reply.send({
+        success: true,
+        marksAwarded: result.rubricEvaluation.marksAwarded,
+        maxMarks: result.rubricEvaluation.maxMarks,
+        percentage: result.rubricEvaluation.percentage,
+        transcription: result.transcription,
+        feedback: result.semanticFeedback,
+        dimensionScores: result.rubricEvaluation.dimensionScores,
+        provider: result.provider
+      });
+    } catch (err: any) {
+      return reply.status(503).send({
+        success: false,
+        error: err?.message ?? 'AI grading service unavailable.'
+      });
+    }
   }
 
   // ==========================================

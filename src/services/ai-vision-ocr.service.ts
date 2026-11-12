@@ -165,6 +165,17 @@ export class AiVisionOcrService {
   }
 
   /**
+   * Evaluates a typed/text submission without an image (skips OCR, goes straight to rubric scoring).
+   * Safe to call when no image is available — avoids fabricating transcription data.
+   */
+  static evaluateTextSubmission(text: string, maxMarks: number): HandwritingOcrResult {
+    if (!text || !text.trim()) {
+      throw new ServiceUnavailableError('OCR grading service', 'Submission text is empty — nothing to evaluate.');
+    }
+    return AiVisionOcrService.buildResult(text.trim(), 1.0, 'NEURAL_OCR_PIPELINE', [], maxMarks);
+  }
+
+  /**
    * No neural OCR fallback available — returning fabricated grades would corrupt real student records.
    * Configure CLOUD_VISION_API_KEY or GEMINI_API_KEY in .env to enable OCR grading.
    */

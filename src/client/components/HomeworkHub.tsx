@@ -58,6 +58,37 @@ export const HomeworkHub: React.FC = () => {
   const [showAuthorModal, setShowAuthorModal] = useState(false);
   const [gradeSavedToast, setGradeSavedToast] = useState(false);
 
+  // AI AutoGrade state
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrResult, setOcrResult] = useState<{
+    marksAwarded: number;
+    maxMarks: number;
+    percentage: number;
+    transcription: string;
+    feedback: string;
+    dimensionScores: Array<{ dimension: string; score: number; maxScore: number; feedback: string }>;
+    provider: string;
+  } | null>(null);
+
+  const handleAutoGrade = async () => {
+    if (!selectedSubmission) return;
+    setOcrLoading(true);
+    setOcrResult(null);
+    try {
+      const data = await apiPost<typeof ocrResult & { success: boolean; error?: string }>(
+        `/api/assessment/homework/submissions/${selectedSubmission.id}/ocr-autograde`,
+        {}
+      );
+      setOcrResult(data);
+      setGradingScore(data!.marksAwarded);
+      setGradingFeedback(data!.feedback);
+    } catch (err: any) {
+      showToast(err?.message ?? 'AI grading service unavailable — configure GEMINI_API_KEY or CLOUD_VISION_API_KEY in .env');
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
   const [homeworkList, setHomeworkList] = useState<HomeworkItem[]>([]);
   const [listLoading, setListLoading] = useState(true);
 
@@ -303,6 +334,7 @@ export const HomeworkHub: React.FC = () => {
                     key={sub.id}
                     onClick={() => {
                       setSelectedSubmission(sub);
+                      setOcrResult(null);
                       if (sub.score) setGradingScore(sub.score);
                       if (sub.feedback) setGradingFeedback(sub.feedback);
                     }}
@@ -350,6 +382,54 @@ export const HomeworkHub: React.FC = () => {
                     <div className="p-4 bg-white rounded-xl border border-slate-200 text-slate-800 leading-relaxed font-serif text-sm shadow-xs">
                       &ldquo;{selectedSubmission.content}&rdquo;
                     </div>
+                  </div>
+
+                  {/* AI AutoGrade button + result */}
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={handleAutoGrade}
+                      disabled={ocrLoading || selectedSubmission.status === 'PENDING'}
+                      className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {ocrLoading ? 'AI is evaluating…' : '✦ AI AutoGrade'}
+                    </button>
+
+                    {ocrResult && (
+                      <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 space-y-3 text-xs animate-in fade-in">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-violet-800 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5" /> AI Evaluation Result
+                          </span>
+                          <span className="font-mono font-extrabold text-violet-900 text-sm bg-violet-100 px-2 py-0.5 rounded-lg border border-violet-200">
+                            {ocrResult.marksAwarded} / {ocrResult.maxMarks} ({ocrResult.percentage}%)
+                          </span>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          {ocrResult.dimensionScores.map(d => (
+                            <div key={d.dimension} className="flex items-start gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className="font-semibold text-violet-800">{d.dimension}</span>
+                                  <span className="font-mono text-violet-700">{d.score}/{d.maxScore}</span>
+                                </div>
+                                <div className="w-full bg-violet-100 h-1.5 rounded-full overflow-hidden">
+                                  <div className="bg-violet-500 h-full rounded-full" style={{ width: `${(d.score / d.maxScore) * 100}%` }} />
+                                </div>
+                                <p className="text-violet-600 mt-0.5">{d.feedback}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <p className="text-[10px] text-violet-500 font-medium">
+                          Score & feedback pre-filled below — review and confirm before saving.
+                          Provider: {ocrResult.provider}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

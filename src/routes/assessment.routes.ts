@@ -21,6 +21,10 @@ export async function assessmentRoutes(fastify: FastifyInstance) {
     { preHandler: [requirePermission('assessment:homework:grade')] },
     AssessmentController.gradeHomework
   );
+  fastify.post('/api/assessment/homework/submissions/:id/ocr-autograde',
+    { preHandler: [requirePermission('assessment:homework:grade')] },
+    AssessmentController.autoGradeHomework
+  );
 
   // Quizzes — read: all authenticated; create: teachers only
   fastify.get('/api/assessment/quizzes', AssessmentController.listQuizzes);
