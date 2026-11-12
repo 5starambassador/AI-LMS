@@ -14,6 +14,7 @@ import { WorksheetCanvas } from './components/WorksheetCanvas';
 import { CurriculumHub } from './components/CurriculumHub';
 import { QrStudentPicker } from './components/QrStudentPicker';
 import { ScoreInsights } from './components/ScoreInsights';
+import { VoiceActivity } from './components/VoiceActivity';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -71,6 +72,8 @@ function AppShell() {
       setCurrentPortal('STUDENT');
       if (cleanPath === '/student/homework') {
         setStudentTab('homework');
+      } else if (cleanPath === '/student/voice') {
+        setStudentTab('voice');
       } else {
         setStudentTab('voicelab');
       }
@@ -193,6 +196,7 @@ function AppShell() {
         {currentPortal === 'STUDENT' && (
           <div>
             {studentTab === 'voicelab' && <LsrStudentPortal />}
+            {studentTab === 'voice' && <VoiceActivity />}
             {studentTab === 'homework' && (
               <StudentHomeworkPortal
                 onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}

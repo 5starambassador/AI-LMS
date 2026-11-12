@@ -26,7 +26,7 @@ export type ActiveTabType =
   | 'myspace'
   | 'insights';
 
-export type StudentTabType = 'voicelab' | 'homework';
+export type StudentTabType = 'voicelab' | 'voice' | 'homework';
 
 interface HeaderProps {
   activeTab: ActiveTabType;
@@ -216,6 +216,17 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Mic className="w-3.5 h-3.5 text-teal-600" />
                 <span>VoiceLab Speech AI</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/student/voice')}
+                className={`px-3.5 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1.5 ${
+                  studentTab === 'voice'
+                    ? 'bg-rose-50 text-rose-800 border border-rose-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Mic className="w-3.5 h-3.5 text-rose-500" />
+                <span>Read Aloud</span>
               </button>
               <button
                 onClick={() => onNavigate('/student/homework')}
