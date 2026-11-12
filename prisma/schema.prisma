@@ -1,9 +1,10 @@
 // Prisma Master Schema - Achariya AI ONE Enterprise Multi-Campus Architecture
-// Provider: SQLite (Local zero-config execution) / PostgreSQL compatible
+// Provider: PostgreSQL (production) — set DATABASE_URL in .env
+// For local dev: run `docker compose up -d` then `npm run db:migrate`
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
