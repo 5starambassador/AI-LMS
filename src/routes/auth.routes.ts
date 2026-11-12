@@ -331,6 +331,23 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     await prisma.user.update({ where: { id: student.id }, data: { lastLoginAt: new Date() } });
 
+    // Auto-mark PRESENT for today via QR scan
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await prisma.dailyAttendance.upsert({
+      where: { date_studentId: { date: today, studentId: student.id } },
+      update: { status: 'PRESENT', remarks: 'QR scan' },
+      create: {
+        date: today,
+        campusId: session.campusId,
+        classId: session.classId,
+        sectionId: session.sectionId ?? enrollment.sectionId ?? '',
+        studentId: student.id,
+        status: 'PRESENT',
+        remarks: 'QR scan'
+      }
+    });
+
     return reply.send({
       success: true,
       token: jwtToken,

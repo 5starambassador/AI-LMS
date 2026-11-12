@@ -348,5 +348,65 @@ export class OperationsController {
 
     return reply.status(201).send({ success: true, bucket });
   }
+
+  /**
+   * GET /api/operations/attendance/qr-session/:token/live
+   * Returns all enrolled students for the QR session's class with today's
+   * attendance status — teacher polls this for the live scan feed.
+   */
+  static async qrAttendanceLive(request: FastifyRequest, reply: FastifyReply) {
+    const { token } = request.params as { token: string };
+
+    const session = await prisma.qrSession.findUnique({ where: { token } });
+    if (!session) return reply.status(404).send({ success: false, error: 'QR session not found.' });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const enrollments = await prisma.studentEnrollment.findMany({
+      where: {
+        classId: session.classId,
+        ...(session.sectionId ? { sectionId: session.sectionId } : {}),
+        isDeleted: false
+      },
+      include: { student: { select: { id: true, fullName: true } } },
+      orderBy: { rollNumber: 'asc' }
+    });
+
+    const attendances = await prisma.dailyAttendance.findMany({
+      where: {
+        classId: session.classId,
+        date: today
+      },
+      select: { studentId: true, status: true, remarks: true }
+    });
+
+    const attendanceMap = new Map(attendances.map(a => [a.studentId, a]));
+
+    const students = enrollments.map(enr => {
+      const att = attendanceMap.get(enr.studentId);
+      return {
+        studentId: enr.studentId,
+        name: enr.student.fullName,
+        rollNumber: enr.rollNumber,
+        status: att?.status ?? 'ABSENT',
+        scannedViaQr: att?.remarks === 'QR scan',
+        markedAt: att ? today.toISOString() : null
+      };
+    });
+
+    const present = students.filter(s => s.status === 'PRESENT').length;
+
+    return reply.send({
+      success: true,
+      sessionExpired: session.expiresAt < new Date(),
+      classId: session.classId,
+      date: today,
+      total: students.length,
+      present,
+      absent: students.length - present,
+      students
+    });
+  }
 }
 

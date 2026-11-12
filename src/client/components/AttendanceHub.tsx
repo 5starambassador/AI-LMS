@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -20,7 +20,10 @@ import {
   Phone,
   Mail,
   ShieldAlert,
-  ChevronDown
+  ChevronDown,
+  QrCode,
+  RefreshCw,
+  Wifi
 } from 'lucide-react';
 
 interface ScholarAttendanceRecord {
@@ -41,8 +44,71 @@ interface ScholarAttendanceRecord {
 
 import { apiGet, apiPost } from '../lib/api';
 
+interface QrLiveStudent {
+  studentId: string; name: string; rollNumber: string | null;
+  status: string; scannedViaQr: boolean;
+}
+interface QrLiveData {
+  total: number; present: number; absent: number;
+  sessionExpired: boolean; students: QrLiveStudent[];
+}
+
 export const AttendanceHub: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'daily' | 'monthly' | 'analytics'>('daily');
+  const [viewMode, setViewMode] = useState<'daily' | 'monthly' | 'analytics' | 'qrscan'>('daily');
+
+  // QR scan mode state
+  const [qrToken, setQrToken] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qrGenerating, setQrGenerating] = useState(false);
+  const [qrLive, setQrLive] = useState<QrLiveData | null>(null);
+  const [qrPolling, setQrPolling] = useState(false);
+  const qrPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (qrPollRef.current) { clearInterval(qrPollRef.current); qrPollRef.current = null; }
+    setQrPolling(false);
+  }, []);
+
+  const pollLive = useCallback(async (token: string) => {
+    try {
+      const res = await fetch(`/api/operations/attendance/qr-session/${token}/live`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setQrLive(data);
+        if (data.sessionExpired) stopPolling();
+      }
+    } catch { /* ignore transient errors */ }
+  }, [stopPolling]);
+
+  const generateQrSession = async () => {
+    setQrGenerating(true);
+    stopPolling();
+    try {
+      const res = await fetch('/api/auth/qr-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`
+        },
+        body: JSON.stringify({ ttlMinutes: 30 })
+      });
+      const data = await res.json();
+      if (data.success && data.token) {
+        setQrToken(data.token);
+        const url = `${window.location.origin}/qr/${data.token}`;
+        setQrUrl(url);
+        setQrLive(null);
+        await pollLive(data.token);
+        setQrPolling(true);
+        qrPollRef.current = setInterval(() => pollLive(data.token), 5000);
+      }
+    } catch { /* non-fatal */ }
+    finally { setQrGenerating(false); }
+  };
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
   const [selectedMonth, setSelectedMonth] = useState<'JUN' | 'JUL' | 'AUG' | 'SEP' | 'OCT' | 'NOV' | 'DEC' | 'JAN' | 'FEB' | 'MAR'>('NOV');
   const [selectedDay, setSelectedDay] = useState(6);
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,6 +283,15 @@ export const AttendanceHub: React.FC = () => {
               }`}
             >
               Retention Telemetry
+            </button>
+            <button
+              onClick={() => setViewMode('qrscan')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center space-x-1 ${
+                viewMode === 'qrscan' ? 'bg-teal-600 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR Scan</span>
             </button>
           </div>
 
@@ -627,6 +702,105 @@ export const AttendanceHub: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── QR SCAN MODE ── */}
+      {viewMode === 'qrscan' && (
+        <div className="space-y-5">
+          {/* Generate button */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">QR Attendance</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Students scan once → marked PRESENT automatically</p>
+            </div>
+            <button
+              onClick={generateQrSession}
+              disabled={qrGenerating}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold shadow hover:bg-teal-700 disabled:opacity-60 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${qrGenerating ? 'animate-spin' : ''}`} />
+              <span>{qrGenerating ? 'Generating…' : qrToken ? 'New QR Session' : 'Start QR Session'}</span>
+            </button>
+          </div>
+
+          {qrUrl && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* QR Code display */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col items-center space-y-4">
+                <div className="text-xs font-semibold text-slate-600 text-center">
+                  Display on projector · Students scan to check in
+                </div>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}`}
+                  alt="Attendance QR code"
+                  className="w-52 h-52 rounded-xl border border-slate-200 shadow-sm"
+                />
+                <div className="text-center space-y-1">
+                  <div className="flex items-center space-x-1.5 text-xs text-emerald-700 font-semibold">
+                    <Wifi className="w-3.5 h-3.5" />
+                    <span>{qrPolling ? 'Live — polling every 5 s' : 'Session expired'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">Valid 30 minutes · auto-refresh</p>
+                </div>
+              </div>
+
+              {/* Live feed */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+                {qrLive ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Live Scan Feed</span>
+                      <div className="flex items-center space-x-3 text-xs">
+                        <span className="text-emerald-700 font-bold">{qrLive.present} present</span>
+                        <span className="text-slate-400">/</span>
+                        <span className="text-slate-600 font-semibold">{qrLive.total} total</span>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-teal-500 rounded-full transition-all duration-500"
+                        style={{ width: qrLive.total > 0 ? `${(qrLive.present / qrLive.total) * 100}%` : '0%' }}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                      {qrLive.students.map(s => (
+                        <div key={s.studentId} className={`flex items-center justify-between py-1.5 px-3 rounded-xl text-xs ${
+                          s.status === 'PRESENT' ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100'
+                        }`}>
+                          <div className="flex items-center space-x-2">
+                            {s.status === 'PRESENT'
+                              ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              : <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                            <span className={`font-semibold ${s.status === 'PRESENT' ? 'text-slate-800' : 'text-slate-400'}`}>
+                              {s.name}
+                            </span>
+                            {s.scannedViaQr && (
+                              <span className="text-[10px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded font-bold">QR</span>
+                            )}
+                          </div>
+                          <span className="text-slate-400">{s.rollNumber ?? ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-40 text-slate-400 text-xs">
+                    Waiting for first scan…
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!qrUrl && (
+            <div className="text-center py-16 text-slate-400 text-sm">
+              Press <strong>Start QR Session</strong> to generate today's attendance QR code.
+            </div>
+          )}
         </div>
       )}
     </div>

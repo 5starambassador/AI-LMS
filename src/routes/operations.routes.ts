@@ -39,4 +39,10 @@ export async function operationsRoutes(fastify: FastifyInstance) {
     { preHandler: [requirePermission('ops:resource:create')] },
     OperationsController.createBucket
   );
+
+  // QR scan live feed — teacher polls this to see who has checked in
+  fastify.get('/api/operations/attendance/qr-session/:token/live',
+    { preHandler: [requirePermission('ops:attendance:record')] },
+    OperationsController.qrAttendanceLive
+  );
 }
