@@ -23,7 +23,8 @@ export type ActiveTabType =
   | 'attendance'
   | 'worksheet'
   | 'aitools'
-  | 'myspace';
+  | 'myspace'
+  | 'insights';
 
 export type StudentTabType = 'voicelab' | 'homework';
 
@@ -187,6 +188,17 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Compass className="w-3.5 h-3.5 text-indigo-600" />
                 <span>My Space</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/insights')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'insights'
+                    ? 'bg-violet-50 text-violet-800 border border-violet-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-violet-600" />
+                <span>Insights</span>
               </button>
             </nav>
           )}

@@ -13,6 +13,7 @@ import { HomeworkHub } from './components/HomeworkHub';
 import { WorksheetCanvas } from './components/WorksheetCanvas';
 import { CurriculumHub } from './components/CurriculumHub';
 import { QrStudentPicker } from './components/QrStudentPicker';
+import { ScoreInsights } from './components/ScoreInsights';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -87,6 +88,8 @@ function AppShell() {
         setActiveTab('myspace');
       } else if (cleanPath === '/staff/resources' || cleanPath === '/resources') {
         setActiveTab('resources');
+      } else if (cleanPath === '/staff/insights' || cleanPath === '/insights') {
+        setActiveTab('insights');
       } else {
         setActiveTab('home');
       }
@@ -182,6 +185,7 @@ function AppShell() {
             )}
             {activeTab === 'aitools' && <AiToolsHub />}
             {activeTab === 'myspace' && <MySpaceHub />}
+            {activeTab === 'insights' && <ScoreInsights />}
           </div>
         )}
 
