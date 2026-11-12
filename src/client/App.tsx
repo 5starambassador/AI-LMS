@@ -16,6 +16,11 @@ import { QrStudentPicker } from './components/QrStudentPicker';
 import { ScoreInsights } from './components/ScoreInsights';
 import { VoiceActivity } from './components/VoiceActivity';
 import { ExamHub } from './components/ExamHub';
+import { TimetableHub } from './components/TimetableHub';
+import { NoticeboardHub } from './components/NoticeboardHub';
+import { ReportCardHub } from './components/ReportCardHub';
+import { LeaveHub } from './components/LeaveHub';
+import { FeeHub } from './components/FeeHub';
 import { ParentPortal } from './components/ParentPortal';
 import { ShieldAlert } from 'lucide-react';
 
@@ -103,6 +108,16 @@ function AppShell() {
         setActiveTab('insights');
       } else if (cleanPath === '/staff/exams' || cleanPath === '/exams') {
         setActiveTab('exams');
+      } else if (cleanPath === '/staff/timetable' || cleanPath === '/timetable') {
+        setActiveTab('timetable');
+      } else if (cleanPath === '/staff/noticeboard' || cleanPath === '/noticeboard') {
+        setActiveTab('noticeboard');
+      } else if (cleanPath === '/staff/reportcard' || cleanPath === '/reportcard') {
+        setActiveTab('reportcard');
+      } else if (cleanPath === '/staff/leaves' || cleanPath === '/leaves') {
+        setActiveTab('leaves');
+      } else if (cleanPath === '/staff/fees' || cleanPath === '/fees') {
+        setActiveTab('fees');
       } else {
         setActiveTab('home');
       }
@@ -200,6 +215,11 @@ function AppShell() {
             {activeTab === 'myspace' && <MySpaceHub />}
             {activeTab === 'insights' && <ScoreInsights />}
             {activeTab === 'exams' && <ExamHub />}
+            {activeTab === 'timetable' && <TimetableHub />}
+            {activeTab === 'noticeboard' && <NoticeboardHub />}
+            {activeTab === 'reportcard' && <ReportCardHub />}
+            {activeTab === 'leaves' && <LeaveHub />}
+            {activeTab === 'fees' && <FeeHub />}
           </div>
         )}
 

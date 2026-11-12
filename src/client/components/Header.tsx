@@ -13,7 +13,12 @@ import {
   Home,
   Mic,
   GraduationCap,
-  ClipboardList
+  ClipboardList,
+  CalendarDays,
+  Megaphone,
+  FileText,
+  UmbrellaOff,
+  CreditCard
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -26,7 +31,12 @@ export type ActiveTabType =
   | 'aitools'
   | 'myspace'
   | 'insights'
-  | 'exams';
+  | 'exams'
+  | 'timetable'
+  | 'noticeboard'
+  | 'reportcard'
+  | 'leaves'
+  | 'fees';
 
 export type StudentTabType = 'voicelab' | 'voice' | 'homework';
 
@@ -212,6 +222,61 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <ClipboardList className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Exams</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/timetable')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'timetable'
+                    ? 'bg-teal-50 text-teal-800 border border-teal-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <CalendarDays className="w-3.5 h-3.5 text-teal-600" />
+                <span>Timetable</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/noticeboard')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'noticeboard'
+                    ? 'bg-orange-50 text-orange-800 border border-orange-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Megaphone className="w-3.5 h-3.5 text-orange-500" />
+                <span>Notices</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/reportcard')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'reportcard'
+                    ? 'bg-violet-50 text-violet-800 border border-violet-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 text-violet-600" />
+                <span>Reports</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/leaves')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'leaves'
+                    ? 'bg-rose-50 text-rose-800 border border-rose-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <UmbrellaOff className="w-3.5 h-3.5 text-rose-500" />
+                <span>Leave</span>
+              </button>
+              <button
+                onClick={() => onNavigate('/staff/fees')}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all flex items-center space-x-1 ${
+                  activeTab === 'fees'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Fees</span>
               </button>
             </nav>
           )}

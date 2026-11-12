@@ -15,6 +15,11 @@ import { hpcRoutes } from './routes/hpc.routes.js';
 import { lsrRoutes } from './routes/lsr.routes.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
 import { parentRoutes } from './routes/parent.routes.js';
+import { timetableRoutes } from './routes/timetable.routes.js';
+import { noticeboardRoutes } from './routes/noticeboard.routes.js';
+import { reportcardRoutes } from './routes/reportcard.routes.js';
+import { leaveRoutes } from './routes/leave.routes.js';
+import { feeRoutes } from './routes/fee.routes.js';
 
 export async function buildApp() {
   const app = fastify({
@@ -104,6 +109,11 @@ export async function buildApp() {
   await app.register(lsrRoutes);
   await app.register(analyticsRoutes);
   await app.register(parentRoutes);
+  await app.register(timetableRoutes);
+  await app.register(noticeboardRoutes);
+  await app.register(reportcardRoutes);
+  await app.register(leaveRoutes);
+  await app.register(feeRoutes);
 
   // ─── Static Assets ─────────────────────────────────────────────────────────
 

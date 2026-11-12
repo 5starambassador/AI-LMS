@@ -57,11 +57,14 @@ model Campus {
   teacherAlloc   TeacherAllocation[]
   enrollments    StudentEnrollment[]
   resourceBuckets ResourceBucket[]
-  homeBanners    HomeBanner[]
-  attendances    DailyAttendance[]
-  auditLogs      AuditLog[]
-  qrSessions     QrSession[]
-  parentTokens   ParentToken[]
+  homeBanners       HomeBanner[]
+  attendances       DailyAttendance[]
+  auditLogs         AuditLog[]
+  qrSessions        QrSession[]
+  parentTokens      ParentToken[]
+  timetablePeriods  TimetablePeriod[]
+  leaveRequests     LeaveRequest[]
+  feePayments       FeePayment[]
 
   @@map("campuses")
 }
@@ -164,8 +167,12 @@ model User {
   hpcObservations    HpcObservation[]
   auditLogs          AuditLog[]
   qrSessions         QrSession[]
-  parentTokensFor    ParentToken[] @relation("ParentTokenStudent")
-  parentTokensGen    ParentToken[] @relation("ParentTokenGenerator")
+  parentTokensFor    ParentToken[]    @relation("ParentTokenStudent")
+  parentTokensGen    ParentToken[]    @relation("ParentTokenGenerator")
+  timetablePeriods   TimetablePeriod[] @relation("TimetableTeacher")
+  leaveRequests      LeaveRequest[]   @relation("LeaveRequestUser")
+  leaveApprovals     LeaveRequest[]   @relation("LeaveRequestApprover")
+  feePayments        FeePayment[]     @relation("FeeStudent")
 
   @@map("users")
 }
@@ -227,8 +234,9 @@ model Class {
   quizzes     Quiz[]
   exams       ScoreExam[]
   worksheets  Worksheet[]
-  attendances DailyAttendance[]
-  qrSessions  QrSession[]
+  attendances      DailyAttendance[]
+  qrSessions       QrSession[]
+  timetablePeriods TimetablePeriod[]
 
   @@map("classes")
 }
@@ -838,4 +846,80 @@ model ParentToken {
   campus      Campus    @relation(fields: [campusId], references: [id], onDelete: Cascade)
 
   @@map("parent_tokens")
+}
+
+// ==========================================
+// 13. TIMETABLE MANAGER
+// ==========================================
+
+model TimetablePeriod {
+  id           String   @id @default(uuid())
+  campusId     String
+  classId      String
+  sectionId    String?
+  dayOfWeek    Int      // 1=Monday … 5=Friday
+  periodNumber Int      // 1-based
+  subject      String
+  teacherId    String?
+  startTime    String   // "08:00"
+  endTime      String   // "08:45"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campus  Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher User?  @relation("TimetableTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([classId, sectionId, dayOfWeek, periodNumber])
+  @@map("timetable_periods")
+}
+
+// ==========================================
+// 14. LEAVE MANAGEMENT
+// ==========================================
+
+model LeaveRequest {
+  id         String    @id @default(uuid())
+  userId     String
+  campusId   String
+  type       String    @default("CASUAL") // CASUAL, SICK, EARNED, EMERGENCY
+  reason     String
+  startDate  DateTime
+  endDate    DateTime
+  status     String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approverId String?
+  approvedAt DateTime?
+  remarks    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user     User   @relation("LeaveRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  approver User?  @relation("LeaveRequestApprover", fields: [approverId], references: [id], onDelete: SetNull)
+  campus   Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@map("leave_requests")
+}
+
+// ==========================================
+// 15. FEE STATUS TRACKER
+// ==========================================
+
+model FeePayment {
+  id        String    @id @default(uuid())
+  studentId String
+  campusId  String
+  feeType   String    // "TUITION", "TRANSPORT", "EXAM", "LIBRARY", "SPORTS"
+  amount    Decimal
+  dueDate   DateTime
+  paidAt    DateTime?
+  status    String    @default("PENDING") // PENDING, PAID, OVERDUE
+  reference String?
+  remarks   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  student User   @relation("FeeStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  campus  Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@map("fee_payments")
 }
