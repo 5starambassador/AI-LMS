@@ -361,8 +361,16 @@ export const ExamHub: React.FC = () => {
         ) : error ? (
           <div className="text-center py-16 text-rose-600 text-sm">{error}</div>
         ) : exams.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 text-sm">
-            No exams yet. Create your first exam above.
+          <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+              <ClipboardList className="w-8 h-8 text-indigo-500" />
+            </div>
+            <h3 className="font-bold text-slate-700 mb-1">No exams yet</h3>
+            <p className="text-slate-400 text-sm mb-4">Create your first summative exam to start tracking student performance</p>
+            <button onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors">
+              <Plus className="w-3.5 h-3.5" /><span>Create First Exam</span>
+            </button>
           </div>
         ) : (
           <div className="grid gap-3">

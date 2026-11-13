@@ -50,9 +50,12 @@ export function ReportCardHub() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Student Report Card</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Full-term academic performance report with PDF export</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-xl">📋</div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">Student Report Card</h1>
+            <p className="text-xs text-slate-500">Full-term academic performance report with PDF export</p>
+          </div>
         </div>
         {report && (
           <button onClick={handlePrint}
@@ -62,19 +65,23 @@ export function ReportCardHub() {
         )}
       </div>
 
-      <div>
-        <label className="text-xs font-semibold text-slate-600 mb-1 block">Select Student</label>
-        <select value={studentId} onChange={e => setStudentId(e.target.value)}
-          className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none max-w-xs">
-          <option value="">Choose a student…</option>
-          {students.map(s => <option key={s.id} value={s.id}>{s.name} — {s.class}/{s.section} (Roll {s.roll})</option>)}
-        </select>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Select Student</div>
+        <div className="flex flex-wrap gap-3 items-center">
+          <select value={studentId} onChange={e => setStudentId(e.target.value)}
+            className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none min-w-[260px]">
+            <option value="">Choose a student…</option>
+            {students.map(s => <option key={s.id} value={s.id}>{s.name} — {s.class}/{s.section} (Roll {s.roll})</option>)}
+          </select>
+          {studentId && <span className="text-xs text-indigo-600 font-semibold">Report auto-generates on selection</span>}
+        </div>
       </div>
 
       {!studentId ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div className="text-4xl mb-3">📋</div>
-          <p className="text-slate-500 text-sm">Select a student to generate their comprehensive report card</p>
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-3xl mx-auto mb-4">📋</div>
+          <h3 className="font-bold text-slate-700 mb-1">No student selected</h3>
+          <p className="text-slate-400 text-sm">Select a student above to generate their full academic report card with PDF export</p>
         </div>
       ) : loading ? (
         <div className="text-center py-12 text-slate-400 text-sm">Generating report…</div>

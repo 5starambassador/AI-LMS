@@ -108,34 +108,42 @@ export function TimetableHub() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Timetable Manager</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Build and manage weekly class schedules</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl">🗓️</div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">Timetable Manager</h1>
+            <p className="text-xs text-slate-500">Build and manage weekly class schedules</p>
+          </div>
         </div>
         {saved && (
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">Saved</span>
+          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-pulse">✓ Saved</span>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <select value={classId} onChange={e => { setClassId(e.target.value); setSectionId(''); }}
-          className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-teal-400 focus:outline-none">
-          <option value="">Select Class…</option>
-          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        {selectedClass && selectedClass.sections.length > 0 && (
-          <select value={sectionId} onChange={e => setSectionId(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-teal-400 focus:outline-none">
-            <option value="">All Sections</option>
-            {selectedClass.sections.map(s => <option key={s.id} value={s.id}>Section {s.name}</option>)}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Select Class</div>
+        <div className="flex flex-wrap gap-3 items-center">
+          <select value={classId} onChange={e => { setClassId(e.target.value); setSectionId(''); }}
+            className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none min-w-[160px]">
+            <option value="">Choose a class…</option>
+            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-        )}
+          {selectedClass && selectedClass.sections.length > 0 && (
+            <select value={sectionId} onChange={e => setSectionId(e.target.value)}
+              className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none">
+              <option value="">All Sections</option>
+              {selectedClass.sections.map(s => <option key={s.id} value={s.id}>Section {s.name}</option>)}
+            </select>
+          )}
+          {classId && <span className="text-xs text-slate-400 font-medium">Click any cell to add or edit a period</span>}
+        </div>
       </div>
 
       {!classId ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div className="text-4xl mb-3">🗓️</div>
-          <p className="text-slate-500 text-sm">Select a class to view or edit its timetable</p>
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-3xl mx-auto mb-4">📅</div>
+          <h3 className="font-bold text-slate-700 mb-1">No class selected</h3>
+          <p className="text-slate-400 text-sm">Choose a class above to view or build its weekly timetable</p>
         </div>
       ) : loading ? (
         <div className="text-center py-16 text-slate-400 text-sm">Loading timetable…</div>

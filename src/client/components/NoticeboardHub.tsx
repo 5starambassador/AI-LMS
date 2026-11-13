@@ -68,18 +68,21 @@ export function NoticeboardHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Noticeboard</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage school-wide and class announcements</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-xl">📢</div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">Noticeboard</h1>
+            <p className="text-xs text-slate-500">Manage school-wide and class announcements</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer bg-white border border-slate-200 rounded-xl px-3 py-1.5">
             <input type="checkbox" checked={includeInactive} onChange={e => setIncludeInactive(e.target.checked)} className="rounded" />
             Show inactive
           </label>
           <button onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors">
+            className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
             + New Notice
           </button>
         </div>
@@ -133,9 +136,10 @@ export function NoticeboardHub() {
       {loading ? (
         <div className="text-center py-12 text-slate-400 text-sm">Loading notices…</div>
       ) : banners.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div className="text-4xl mb-3">📢</div>
-          <p className="text-slate-500 text-sm">No notices yet. Create the first one above.</p>
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-2xl mx-auto mb-3">📢</div>
+          <h3 className="font-bold text-slate-700 mb-1">No notices yet</h3>
+          <p className="text-slate-400 text-sm">Click "+ New Notice" to publish your first campus announcement</p>
         </div>
       ) : (
         <div className="space-y-3">

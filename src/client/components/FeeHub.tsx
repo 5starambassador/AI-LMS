@@ -54,7 +54,7 @@ export function FeeHub() {
     finally { setLoading(false); }
   };
 
-  useEffect(load, [filterStatus]);
+  useEffect(() => { load(); }, [filterStatus]);
 
   useEffect(() => {
     apiGet('/api/reportcard/students').then(d => {
@@ -117,12 +117,15 @@ export function FeeHub() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Fee Status Tracker</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Track and manage student fee payments</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl">💳</div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">Fee Status Tracker</h1>
+            <p className="text-xs text-slate-500">Track and manage student fee payments</p>
+          </div>
         </div>
         <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
-          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors">
+          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
           {view === 'new' ? '← Back' : '+ Add Fee'}
         </button>
       </div>
@@ -206,9 +209,12 @@ export function FeeHub() {
           {loading ? (
             <div className="text-center py-12 text-slate-400 text-sm">Loading fees…</div>
           ) : fees.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <div className="text-4xl mb-3">💳</div>
-              <p className="text-slate-500 text-sm">No fee records found.</p>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl mx-auto mb-3">💳</div>
+              <h3 className="font-bold text-slate-700 mb-1">No fee records</h3>
+              <p className="text-slate-400 text-sm">
+                {filterStatus ? `No ${filterStatus.toLowerCase()} fees found.` : 'Click "+ Add Fee" to create the first fee record.'}
+              </p>
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

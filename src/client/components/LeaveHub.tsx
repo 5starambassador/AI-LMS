@@ -78,12 +78,15 @@ export function LeaveHub() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Leave Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Submit and manage staff leave requests</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-xl">🏖️</div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">Leave Management</h1>
+            <p className="text-xs text-slate-500">Submit and manage staff leave requests</p>
+          </div>
         </div>
         <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
-          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors">
+          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
           {view === 'new' ? '← Back to List' : '+ New Request'}
         </button>
       </div>
@@ -149,9 +152,12 @@ export function LeaveHub() {
           {loading ? (
             <div className="text-center py-12 text-slate-400 text-sm">Loading requests…</div>
           ) : leaves.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <div className="text-4xl mb-3">📅</div>
-              <p className="text-slate-500 text-sm">No leave requests found.</p>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-2xl mx-auto mb-3">📋</div>
+              <h3 className="font-bold text-slate-700 mb-1">No leave requests</h3>
+              <p className="text-slate-400 text-sm">
+                {filterStatus ? `No ${filterStatus.toLowerCase()} requests found.` : 'No requests yet — click "+ New Request" to submit one.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">

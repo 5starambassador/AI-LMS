@@ -53,9 +53,14 @@ export const MySpaceHub: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      <div>
-        <h2 className="text-xl font-extrabold text-slate-900">Educator Workspace</h2>
-        <p className="text-xs text-slate-500">Continuous Professional Development, Pacing Guides & Quality Observation Audits</p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+          <Sparkles className="w-5 h-5 text-indigo-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-slate-900">My Space</h2>
+          <p className="text-xs text-slate-500">Professional Development · Pacing Guides · Quality Observation Audits</p>
+        </div>
       </div>
 
       {/* 3 Interactive Cards - Ultra Light, Clean & Unique
