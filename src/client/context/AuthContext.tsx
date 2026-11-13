@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState({ user: data.user, token: data.token, isLoading: false });
       return { success: true };
     } catch {
-      return { success: false, error: 'Network error. Please check your connection.' };
+      return { success: false, error: 'Cannot reach the server. Please check your connection or try again shortly.' };
     }
   }, []);
 

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -n \"API,VITE\" -c \"blue,magenta\" \"tsx watch src/server.ts\" \"vite\"",
+    "dev": "concurrently --restart-tries 3 --restart-after 1000 -n \"API,VITE\" -c \"blue,magenta\" \"tsx watch src/server.ts\" \"vite\"",
     "dev:server": "tsx watch src/server.ts",
     "dev:client": "vite",
     "build": "vite build",
@@ -21,6 +21,9 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@fastify/cors": "^11.4.1",
     "@fastify/jwt": "^10.2.7",
@@ -46,11 +49,12 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.2.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "concurrently": "^10.0.6",
     "prisma": "5.22.0",
+    "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vite": "^6.3.4"
+    "vite": "^8.0.0"
   }
 }

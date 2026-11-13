@@ -34,6 +34,11 @@ export async function buildApp() {
       // Allow server-to-server requests with no origin (e.g. mobile apps, curl, cron jobs)
       if (!origin) return cb(null, true);
 
+      // In development, allow any localhost port (Vite may pick 3001, 3002, etc.)
+      if (ENV.NODE_ENV === 'development' && /^http:\/\/localhost:\d+$/.test(origin)) {
+        return cb(null, true);
+      }
+
       if (
         ENV.ALLOWED_ORIGINS.includes(origin) ||
         origin.endsWith('.achariya.in') ||

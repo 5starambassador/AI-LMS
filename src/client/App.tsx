@@ -31,50 +31,6 @@ function AppShell() {
   const [studentTab, setStudentTab] = useState<StudentTabType>('voicelab');
   const [accessDeniedAlert, setAccessDeniedAlert] = useState<string | null>(null);
 
-  // Parent portal: public route — no auth needed
-  const parentMatch = window.location.pathname.match(/^\/parent\/([^/]+)/);
-  if (parentMatch) {
-    return <ParentPortal token={parentMatch[1]} />;
-  }
-
-  // QR login: students land on /qr/<token> without prior auth
-  const qrMatch = window.location.pathname.match(/^\/qr\/([^/]+)/);
-  if (qrMatch) {
-    return (
-      <QrStudentPicker
-        token={qrMatch[1]}
-        onLoggedIn={(token, user) => {
-          loginWithToken(token, user as Parameters<typeof loginWithToken>[1]);
-          window.history.replaceState(null, '', '/student/voicelab');
-        }}
-      />
-    );
-  }
-
-  // Show loading spinner while session is being restored
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="inline-block w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Loading Achariya AI ONE…</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login page if not authenticated
-  if (!isAuthenticated || !currentUser) {
-    return (
-      <LoginPage
-        defaultPortal={window.location.pathname.startsWith('/student') ? 'STUDENT' : 'STAFF'}
-        onLoginSuccess={() => {
-          // Portal is set after login via applyRoute below
-        }}
-      />
-    );
-  }
-
   // URL Routing Engine: Maps path string to State
   const applyRoute = (pathname: string) => {
     const cleanPath = pathname.toLowerCase().replace(/\/$/, '') || '/';
@@ -147,6 +103,50 @@ function AppShell() {
   const handleLogout = () => {
     logout();
   };
+
+  // Parent portal: public route — no auth needed
+  const parentMatch = window.location.pathname.match(/^\/parent\/([^/]+)/);
+  if (parentMatch) {
+    return <ParentPortal token={parentMatch[1]} />;
+  }
+
+  // QR login: students land on /qr/<token> without prior auth
+  const qrMatch = window.location.pathname.match(/^\/qr\/([^/]+)/);
+  if (qrMatch) {
+    return (
+      <QrStudentPicker
+        token={qrMatch[1]}
+        onLoggedIn={(token, user) => {
+          loginWithToken(token, user as Parameters<typeof loginWithToken>[1]);
+          window.history.replaceState(null, '', '/student/voicelab');
+        }}
+      />
+    );
+  }
+
+  // Show loading spinner while session is being restored
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-sm text-slate-500">Loading Achariya AI ONE…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated || !currentUser) {
+    return (
+      <LoginPage
+        defaultPortal={window.location.pathname.startsWith('/student') ? 'STUDENT' : 'STAFF'}
+        onLoginSuccess={() => {
+          applyRoute(window.location.pathname);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-800">
