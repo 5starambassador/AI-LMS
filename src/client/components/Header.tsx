@@ -50,11 +50,14 @@ interface HeaderProps {
   onNavigate: (route: string) => void;
 }
 
+const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal', 'role-ach-curriculum'];
+
 interface NavGroup {
   label: string;
   icon: React.ReactNode;
   color: string;
   activeColor: string;
+  allowedRoles?: string[];
   items: { label: string; tab: ActiveTabType; route: string; icon: React.ReactNode; desc: string }[];
 }
 
@@ -87,6 +90,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <LayoutGrid className="w-3.5 h-3.5" />,
     color: 'text-orange-500',
     activeColor: 'bg-orange-50 text-orange-800 border-orange-200',
+    allowedRoles: ADMIN_ROLES,
     items: [
       { label: 'Timetable',   tab: 'timetable',   route: '/staff/timetable',   icon: <CalendarDays className="w-4 h-4 text-orange-500" />, desc: 'Class schedules & period planner' },
       { label: 'Noticeboard', tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & announcements' },
@@ -243,10 +247,27 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Home</span>
               </button>
 
-              {/* Grouped dropdowns */}
-              {NAV_GROUPS.map(group => (
+              {/* Grouped dropdowns — filtered by role */}
+              {NAV_GROUPS.filter(group =>
+                !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
+              ).map(group => (
                 <DropdownMenu key={group.label} group={group} activeTab={activeTab} onNavigate={onNavigate} />
               ))}
+
+              {/* Standalone Leave for teachers (not in Operations group) */}
+              {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
+                <button
+                  onClick={() => onNavigate('/staff/leaves')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                    activeTab === 'leaves'
+                      ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
+                  }`}
+                >
+                  <UmbrellaOff className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Leave</span>
+                </button>
+              )}
 
               {/* AI Tools — standalone */}
               <button
@@ -310,7 +331,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
               <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm">
-                {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : 'P'}
+                {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : (currentUser?.fullName?.[0] ?? 'U')}
               </div>
               <div className="hidden md:block text-left">
                 <div className="text-xs font-bold leading-tight text-slate-900">
@@ -318,14 +339,14 @@ export const Header: React.FC<HeaderProps> = ({
                     ? 'Dr. V. Rajakumaran'
                     : currentPortal === 'STUDENT'
                     ? 'Aarav Sundaram'
-                    : currentUser?.fullName || 'Dr. Priya Sivaraman'}
+                    : currentUser?.fullName || '—'}
                 </div>
                 <div className="text-[10px] text-slate-500 font-medium">
                   {currentPortal === 'SUPERADMIN'
                     ? 'Super Admin · Trust President'
                     : currentPortal === 'STUDENT'
                     ? 'Scholar · Grade 5A'
-                    : 'Senior Faculty · Grade 5'}
+                    : currentUser?.roleName || 'Staff'}
                 </div>
               </div>
             </div>
