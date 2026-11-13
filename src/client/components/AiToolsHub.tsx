@@ -32,7 +32,11 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-export const AiToolsHub: React.FC = () => {
+interface AiToolsHubProps {
+  onNavigateToExamBuilder?: () => void;
+}
+
+export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder }) => {
   // 9 Distinct dedicated feature modals matching each of the 9 cards from Chrysalis
   const [activeModal, setActiveModal] = useState<
     | 'autograde'
@@ -253,18 +257,29 @@ export const AiToolsHub: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Tile 3: Exam Builder */}
           <div
-            onClick={() => setActiveModal('examBuilder')}
-            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group flex items-start space-x-4"
+            onClick={() => {
+              if (onNavigateToExamBuilder) {
+                onNavigateToExamBuilder();
+              } else {
+                setActiveModal('examBuilder');
+              }
+            }}
+            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group flex items-start space-x-4"
           >
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                Exam Builder
-              </h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-purple-700 transition-colors">
+                  Exam Builder
+                </h3>
+                <span className="text-[10px] bg-purple-100 text-purple-800 font-extrabold px-2 py-0.5 rounded-full">
+                  Full Studio
+                </span>
+              </div>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Generate and configure exams with AI and Bloom's Taxonomy weighting.
+                Step-by-step curriculum learning outcome selector & multi-section question blueprint studio.
               </p>
             </div>
           </div>

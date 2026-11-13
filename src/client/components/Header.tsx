@@ -28,6 +28,7 @@ export type ActiveTabType =
   | 'attendance'
   | 'worksheet'
   | 'aitools'
+  | 'exam-builder'
   | 'myspace'
   | 'insights'
   | 'exams'
@@ -80,9 +81,10 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
     items: [
-      { label: 'Exams',    tab: 'exams',      route: '/staff/exams',      icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
-      { label: 'Insights', tab: 'insights',   route: '/staff/insights',   icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
-      { label: 'Reports',  tab: 'reportcard', route: '/staff/reportcard', icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
+      { label: 'Exam Builder', tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />, desc: 'Curriculum outcomes & blueprint builder' },
+      { label: 'Exams',        tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
+      { label: 'Insights',     tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
+      { label: 'Reports',      tab: 'reportcard',   route: '/staff/reportcard',   icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
     ]
   },
   {

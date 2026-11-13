@@ -22,6 +22,7 @@ import { ReportCardHub } from './components/ReportCardHub';
 import { LeaveHub } from './components/LeaveHub';
 import { FeeHub } from './components/FeeHub';
 import { ParentPortal } from './components/ParentPortal';
+import { ExamBuilderStudio } from './components/ExamBuilderStudio';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -54,6 +55,8 @@ function AppShell() {
         setActiveTab('homework');
       } else if (cleanPath === '/staff/worksheet' || cleanPath === '/worksheet') {
         setActiveTab('worksheet');
+      } else if (cleanPath === '/staff/exam-builder' || cleanPath === '/exam-builder') {
+        setActiveTab('exam-builder');
       } else if (cleanPath === '/staff/aitools' || cleanPath === '/aitools') {
         setActiveTab('aitools');
       } else if (cleanPath === '/staff/myspace' || cleanPath === '/myspace') {
@@ -223,7 +226,13 @@ function AppShell() {
                 }}
               />
             )}
-            {activeTab === 'aitools' && <AiToolsHub />}
+            {activeTab === 'exam-builder' && (
+              <ExamBuilderStudio
+                onBackToHub={() => navigateTo('/staff/aitools')}
+                onExamGenerated={() => navigateTo('/staff/exams')}
+              />
+            )}
+            {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
             {activeTab === 'myspace' && <MySpaceHub />}
             {activeTab === 'insights' && <ScoreInsights />}
             {activeTab === 'exams' && <ExamHub />}
