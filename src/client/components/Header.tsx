@@ -197,39 +197,43 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
 
-          {/* Portal switcher */}
-          <div className="hidden md:flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 text-xs flex-shrink-0">
-            <button
-              onClick={() => onNavigate('/staff/home')}
-              className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
-                currentPortal === 'STAFF'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Educator LMS
-            </button>
-            <button
-              onClick={() => onNavigate('/student/voicelab')}
-              className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all flex items-center gap-1 ${
-                currentPortal === 'STUDENT'
-                  ? 'bg-white text-teal-700 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <span>🎙️</span><span>VoiceLab AI</span>
-            </button>
-            <button
-              onClick={() => onNavigate('/superadmin')}
-              className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
-                currentPortal === 'SUPERADMIN'
-                  ? 'bg-white text-indigo-700 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Trust HQ
-            </button>
-          </div>
+          {/* Portal switcher — hidden for students; Trust HQ only for super-admins */}
+          {currentUser?.roleKey !== 'role-ach-student' && currentUser?.roleKey !== 'role-ach-parent' && (
+            <div className="hidden md:flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 text-xs flex-shrink-0">
+              <button
+                onClick={() => onNavigate('/staff/home')}
+                className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
+                  currentPortal === 'STAFF'
+                    ? 'bg-white text-slate-900 shadow-xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Educator LMS
+              </button>
+              <button
+                onClick={() => onNavigate('/student/voicelab')}
+                className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all flex items-center gap-1 ${
+                  currentPortal === 'STUDENT'
+                    ? 'bg-white text-teal-700 shadow-xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>🎙️</span><span>VoiceLab AI</span>
+              </button>
+              {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
+                <button
+                  onClick={() => onNavigate('/superadmin')}
+                  className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
+                    currentPortal === 'SUPERADMIN'
+                      ? 'bg-white text-indigo-700 shadow-xs font-bold'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Trust HQ
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Staff nav */}
           {currentPortal === 'STAFF' && (
