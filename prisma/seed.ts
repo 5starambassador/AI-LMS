@@ -48,6 +48,7 @@ async function main() {
     { code: 'hpc:publish',    domain: 'hpc', description: 'Sign and publish progress cards' },
     // Operations
     { code: 'ops:attendance:write',  domain: 'operations', description: 'Record daily attendance' },
+    { code: 'ops:attendance:record', domain: 'operations', description: 'Admin: manage fee, leave approval, timetable, noticeboard' },
     { code: 'ops:batch:migrate',     domain: 'operations', description: 'Run end-of-year batch cohort migration' },
     { code: 'ops:banner:create',     domain: 'operations', description: 'Create noticeboard banners' },
     { code: 'ops:resource:create',   domain: 'operations', description: 'Create resource buckets and items' },

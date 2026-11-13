@@ -111,7 +111,7 @@ export const AiToolsHub: React.FC = () => {
   const runOcrTestBench = async () => {
     setIsOcrProcessing(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('achariya_token');
       const res = await fetch('/api/score/ocr/transcribe-handwriting', {
         method: 'POST',
         headers: {
@@ -877,7 +877,7 @@ export const AiToolsHub: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <button
                     onClick={() => {
-                      const token = localStorage.getItem('token');
+                      const token = localStorage.getItem('achariya_token');
                       window.open('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf' + (token ? `?token=${token}` : ''), '_blank');
                     }}
                     className="py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"
@@ -888,7 +888,7 @@ export const AiToolsHub: React.FC = () => {
 
                   <button
                     onClick={() => {
-                      const token = localStorage.getItem('token');
+                      const token = localStorage.getItem('achariya_token');
                       window.open('/renders/exams/ACH-EXAM-2026-T1/batch-print-all.pdf' + (token ? `?token=${token}` : ''), '_blank');
                     }}
                     className="py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"

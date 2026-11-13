@@ -19,9 +19,9 @@ export function NoticeboardHub() {
 
   const load = () => {
     setLoading(true);
-    apiGet(`/api/noticeboard?includeInactive=${includeInactive}`).then(d => {
+    apiGet<any>(`/api/noticeboard?includeInactive=${includeInactive}`).then(d => {
       if (d.success) setBanners(d.banners ?? []);
-    }).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   };
 
   useEffect(load, [includeInactive]);

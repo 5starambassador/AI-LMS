@@ -42,7 +42,7 @@ export async function operationsRoutes(fastify: FastifyInstance) {
 
   // QR scan live feed — teacher polls this to see who has checked in
   fastify.get('/api/operations/attendance/qr-session/:token/live',
-    { preHandler: [requirePermission('ops:attendance:record')] },
+    { preHandler: [requirePermission('ops:attendance:write')] },
     OperationsController.qrAttendanceLive
   );
 }

@@ -25,12 +25,15 @@ export function LeaveHub() {
   const [acting, setActing] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('');
 
+  const [loadError, setLoadError] = useState('');
+
   const load = () => {
     setLoading(true);
+    setLoadError('');
     const qs = filterStatus ? `?status=${filterStatus}` : '';
-    apiGet(`/api/leave${qs}`).then(d => {
+    apiGet<any>(`/api/leave${qs}`).then(d => {
       if (d.success) setLeaves(d.leaves ?? []);
-    }).finally(() => setLoading(false));
+    }).catch(() => setLoadError('Failed to load leave requests. Please try again.')).finally(() => setLoading(false));
   };
 
   useEffect(load, [filterStatus]);
@@ -84,6 +87,10 @@ export function LeaveHub() {
           {view === 'new' ? '← Back to List' : '+ New Request'}
         </button>
       </div>
+
+      {loadError && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-rose-700 text-sm">{loadError}</div>
+      )}
 
       {view === 'new' ? (
         <div className="bg-white rounded-2xl border border-teal-200 p-6 shadow-sm max-w-lg">

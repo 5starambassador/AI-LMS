@@ -31,9 +31,9 @@ export function TimetableHub() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    apiGet('/api/academic/classes-with-sections').then(d => {
+    apiGet<any>('/api/academic/classes-with-sections').then(d => {
       if (d.success) setClasses(d.classes ?? []);
-    });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export function TimetableHub() {
     setLoading(true);
     const qs = new URLSearchParams({ classId });
     if (sectionId) qs.set('sectionId', sectionId);
-    apiGet(`/api/timetable?${qs}`).then(d => {
+    apiGet<any>(`/api/timetable?${qs}`).then(d => {
       if (d.success) {
         setPeriods((d.periods ?? []).map((p: Record<string, unknown>) => ({
           ...p,
           teacherName: (p.teacher as Record<string, string> | null)?.fullName ?? '',
         })));
       }
-    }).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [classId, sectionId]);
 
   const getPeriod = (day: number, pNum: number) =>

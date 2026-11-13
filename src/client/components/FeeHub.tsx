@@ -28,6 +28,7 @@ export function FeeHub() {
   const [fees, setFees] = useState<FeeRecord[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [view, setView] = useState<'list' | 'new'>('list');
   const [filterStatus, setFilterStatus] = useState('');
   const [form, setForm] = useState({ studentId: '', feeType: 'TUITION', amount: '', dueDate: '', remarks: '' });
@@ -35,16 +36,22 @@ export function FeeHub() {
   const [marking, setMarking] = useState<string | null>(null);
   const [students, setStudents] = useState<{ id: string; name: string; roll: string }[]>([]);
 
-  const load = () => {
+  const load = async () => {
     setLoading(true);
-    const qs = filterStatus ? `?status=${filterStatus}` : '';
-    Promise.all([
-      apiGet(`/api/fees${qs}`),
-      apiGet('/api/fees/summary'),
-    ]).then(([f, s]) => {
+    try {
+      const qs = filterStatus ? `?status=${filterStatus}` : '';
+      const token = localStorage.getItem('achariya_token');
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const [fr, sr] = await Promise.all([
+        fetch(`/api/fees${qs}`, { headers }),
+        fetch('/api/fees/summary', { headers }),
+      ]);
+      if (fr.status === 403 || sr.status === 403) { setAccessDenied(true); return; }
+      const [f, s] = await Promise.all([fr.json(), sr.json()]);
       if (f.success) setFees(f.fees ?? []);
       if (s.success) setSummary(s.summary);
-    }).finally(() => setLoading(false));
+    } catch { /* network error — keep empty state */ }
+    finally { setLoading(false); }
   };
 
   useEffect(load, [filterStatus]);
@@ -96,6 +103,16 @@ export function FeeHub() {
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+
+  if (accessDenied) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-3xl">🔒</div>
+        <h2 className="text-xl font-bold text-slate-800">Access Restricted</h2>
+        <p className="text-slate-500 max-w-sm">Fee management is available to school administrators only. Contact your school admin for fee-related queries.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

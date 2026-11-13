@@ -72,7 +72,7 @@ export const AttendanceHub: React.FC = () => {
   const pollLive = useCallback(async (token: string) => {
     try {
       const res = await fetch(`/api/operations/attendance/qr-session/${token}/live`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('achariya_token') ?? ''}` }
       });
       const data = await res.json();
       if (data.success) {
@@ -90,7 +90,7 @@ export const AttendanceHub: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`
+          Authorization: `Bearer ${localStorage.getItem('achariya_token') ?? ''}`
         },
         body: JSON.stringify({ ttlMinutes: 30 })
       });
@@ -136,19 +136,19 @@ export const AttendanceHub: React.FC = () => {
 
   useEffect(() => {
     apiGet<{ students: Array<{
-      id: string; name: string; admissionNumber: string;
-      parentPhone?: string; parentEmail?: string;
+      id: string; fullName: string;
+      studentProfile?: { admissionNumber?: string; parentPhone?: string; parentEmail?: string } | null;
     }> }>('/api/operations/students')
       .then(data => {
-        setScholars(data.students.map((s, idx) => ({
+        setScholars(data.students.map((s) => ({
           id: s.id,
-          name: s.name,
-          roll: s.admissionNumber,
+          name: s.fullName ?? '',
+          roll: s.studentProfile?.admissionNumber ?? '',
           status: 'PRESENT' as const,
           arrival: '08:15 AM',
           remarks: 'On time',
-          parentPhone: s.parentPhone ?? '-',
-          parentEmail: s.parentEmail ?? '-',
+          parentPhone: s.studentProfile?.parentPhone ?? '-',
+          parentEmail: s.studentProfile?.parentEmail ?? '-',
           totalPresent: 0,
           totalAbsent: 0,
           totalLate: 0,
@@ -230,8 +230,8 @@ export const AttendanceHub: React.FC = () => {
   };
 
   const filteredScholars = scholars.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.roll.toLowerCase().includes(searchQuery.toLowerCase())
+    (s.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.roll ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const presentCount = scholars.filter(s => s.status === 'PRESENT').length;

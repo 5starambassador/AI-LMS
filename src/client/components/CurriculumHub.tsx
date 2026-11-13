@@ -49,7 +49,7 @@ export const CurriculumHub: React.FC = () => {
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('achariya_token');
       const params = new URLSearchParams();
       if (selectedGrade !== 'ALL') params.append('grade', selectedGrade);
       if (selectedSubject !== 'ALL') params.append('subjectId', selectedSubject);
@@ -72,7 +72,7 @@ export const CurriculumHub: React.FC = () => {
   // Open book details
   const openBookModal = async (book: Book, view: 'flipbook' | 'syllabus' | 'qrcode') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('achariya_token');
       const res = await fetch(`/api/academic/books/${book.id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });

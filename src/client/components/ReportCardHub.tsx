@@ -30,17 +30,17 @@ export function ReportCardHub() {
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    apiGet('/api/reportcard/students').then(d => {
+    apiGet<any>('/api/reportcard/students').then(d => {
       if (d.success) setStudents(d.students ?? []);
-    });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!studentId) { setReport(null); return; }
     setLoading(true);
-    apiGet(`/api/reportcard/${studentId}`).then(d => {
+    apiGet<any>(`/api/reportcard/${studentId}`).then(d => {
       if (d.success) setReport(d as Report);
-    }).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [studentId]);
 
   const handlePrint = () => window.print();
