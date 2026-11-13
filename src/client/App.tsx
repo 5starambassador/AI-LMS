@@ -23,6 +23,7 @@ import { LeaveHub } from './components/LeaveHub';
 import { FeeHub } from './components/FeeHub';
 import { ParentPortal } from './components/ParentPortal';
 import { ExamBuilderStudio } from './components/ExamBuilderStudio';
+import { LearningGapStudio } from './components/LearningGapStudio';
 import { ShieldAlert } from 'lucide-react';
 
 function AppShell() {
@@ -44,6 +45,8 @@ function AppShell() {
         setStudentTab('homework');
       } else if (cleanPath === '/student/voice') {
         setStudentTab('voice');
+      } else if (cleanPath === '/student/gaps' || cleanPath === '/student/learning-gaps') {
+        setStudentTab('gaps');
       } else {
         setStudentTab('voicelab');
       }
@@ -57,6 +60,8 @@ function AppShell() {
         setActiveTab('worksheet');
       } else if (cleanPath === '/staff/exam-builder' || cleanPath === '/exam-builder') {
         setActiveTab('exam-builder');
+      } else if (cleanPath === '/staff/learning-gaps' || cleanPath === '/learning-gaps') {
+        setActiveTab('learning-gaps');
       } else if (cleanPath === '/staff/aitools' || cleanPath === '/aitools') {
         setActiveTab('aitools');
       } else if (cleanPath === '/staff/myspace' || cleanPath === '/myspace') {
@@ -232,6 +237,7 @@ function AppShell() {
                 onExamGenerated={() => navigateTo('/staff/exams')}
               />
             )}
+            {activeTab === 'learning-gaps' && <LearningGapStudio />}
             {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
             {activeTab === 'myspace' && <MySpaceHub />}
             {activeTab === 'insights' && <ScoreInsights />}
@@ -254,6 +260,7 @@ function AppShell() {
                 onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}
               />
             )}
+            {studentTab === 'gaps' && <LearningGapStudio initialStudentMode={true} />}
           </div>
         )}
 

@@ -170,27 +170,40 @@ export const ScoreInsights: React.FC = () => {
             <p className="text-xs text-slate-500">Aggregated from homework evaluations and quiz submissions — updated live</p>
           </div>
 
-          {/* View switcher */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+          {/* View switcher & Learning Gap Studio Link */}
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setView('overview')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${view === 'overview' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
+              onClick={() => {
+                window.history.pushState(null, '', '/staff/learning-gaps');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
             >
-              Overview
+              <Zap className="w-3.5 h-3.5 text-purple-200" />
+              <span>AI Learning Gap Studio →</span>
             </button>
-            <button
-              onClick={() => setView('performers')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${view === 'performers' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
-            >
-              Performers
-            </button>
-            <button
-              onClick={() => setView('sessions')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${view === 'sessions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
-            >
-              <Zap className="w-3 h-3" />
-              Sessions
-            </button>
+
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+              <button
+                onClick={() => setView('overview')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${view === 'overview' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setView('performers')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${view === 'performers' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
+              >
+                Performers
+              </button>
+              <button
+                onClick={() => setView('sessions')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${view === 'sessions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
+              >
+                <Zap className="w-3 h-3" />
+                Sessions
+              </button>
+            </div>
           </div>
         </div>
       </div>

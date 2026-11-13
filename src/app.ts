@@ -20,6 +20,7 @@ import { noticeboardRoutes } from './routes/noticeboard.routes.js';
 import { reportcardRoutes } from './routes/reportcard.routes.js';
 import { leaveRoutes } from './routes/leave.routes.js';
 import { feeRoutes } from './routes/fee.routes.js';
+import { learningGapsRoutes } from './routes/learning-gaps.routes.js';
 
 export async function buildApp() {
   const app = fastify({
@@ -119,6 +120,7 @@ export async function buildApp() {
   await app.register(reportcardRoutes);
   await app.register(leaveRoutes);
   await app.register(feeRoutes);
+  await app.register(learningGapsRoutes);
 
   // ─── Static Assets ─────────────────────────────────────────────────────────
 

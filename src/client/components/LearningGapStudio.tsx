@@ -1,0 +1,1484 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Compass,
+  Target,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  BookOpen,
+  Award,
+  Layers,
+  ChevronRight,
+  ChevronDown,
+  RotateCcw,
+  User,
+  GraduationCap,
+  Building2,
+  FileText,
+  Clock,
+  Zap,
+  Filter,
+  Search,
+  Download,
+  Printer,
+  Check,
+  X,
+  HelpCircle,
+  Send,
+  Calendar,
+  Eye,
+  PlayCircle,
+  TrendingUp,
+  BrainCircuit,
+  ShieldCheck,
+  BookMarked
+} from 'lucide-react';
+import { apiGet, apiPost } from '../lib/api';
+
+export interface LearningGapItem {
+  id: string;
+  gapCode: string;
+  studentId: string;
+  studentName: string;
+  campusId: string;
+  campusName: string;
+  grade: string;
+  gradeNumber: number;
+  subject: string;
+  chapter: string;
+  conceptId: string;
+  conceptName: string;
+  gapCategory: 'FOUNDATIONAL' | 'CONCEPTUAL' | 'APPLICATION' | 'PROCEDURAL' | 'RETENTION';
+  status:
+    | 'IDENTIFIED'
+    | 'DIAGNOSIS_PENDING'
+    | 'CONFIRMED'
+    | 'INTERVENTION_ASSIGNED'
+    | 'FOUNDATION_LEARNING'
+    | 'FOUNDATION_ASSESSMENT'
+    | 'CURRENT_GRADE_RELEARNING'
+    | 'REASSESSMENT_PENDING'
+    | 'MASTERED'
+    | 'CLOSED';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  assessmentRef?: string;
+  assessmentTitle?: string;
+  diagnosticScore: number;
+  diagnosticEvidenceJson?: string;
+  identifiedPrerequisiteId?: string;
+  identifiedPrerequisiteName?: string;
+  recommendedLowerGrade?: string;
+  recommendedIntervention?: string;
+  teacherId?: string;
+  teacherName?: string;
+  teacherNotes?: string;
+  assignmentDate?: string;
+  targetDate?: string;
+  foundationAssessmentScore?: number | null;
+  currentGradeReassessmentScore?: number | null;
+  closureDate?: string | null;
+  concept?: {
+    conceptCode: string;
+    difficulty: string;
+    learningOutcome: string;
+    masteryThreshold: number;
+  };
+  pathway?: {
+    currentPhase: string;
+    foundationGrade: string;
+    foundationScore: number | null;
+    foundationMastered: boolean;
+    reassessmentScore: number | null;
+    reassessmentMastered: boolean;
+  };
+}
+
+export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
+  initialStudentMode = false
+}) => {
+  // Navigation tabs within the Learning Gap Studio
+  const [activeTab, setActiveTab] = useState<
+    'student-portal' | 'teacher-dashboard' | 'learning-academy' | 'student-report'
+  >(initialStudentMode ? 'student-portal' : 'teacher-dashboard');
+
+  // Loading & Data States
+  const [loading, setLoading] = useState(true);
+  const [gaps, setGaps] = useState<LearningGapItem[]>([]);
+  const [selectedGapId, setSelectedGapId] = useState<string | null>(null);
+  const [activePathwayData, setActivePathwayData] = useState<any | null>(null);
+  const [summaryMetrics, setSummaryMetrics] = useState<any | null>(null);
+  const [campusComparison, setCampusComparison] = useState<any[]>([]);
+  const [conceptHeatmaps, setConceptHeatmaps] = useState<any[]>([]);
+  const [curriculumRecs, setCurriculumRecs] = useState<any[]>([]);
+
+  // Filter States
+  const [filterGrade, setFilterGrade] = useState('ALL');
+  const [filterSubject, setFilterSubject] = useState('ALL');
+  const [filterCategory, setFilterCategory] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Interactive Assessment Test State (for Student Portal)
+  const [testMode, setTestMode] = useState<'NONE' | 'FOUNDATION' | 'REASSESSMENT'>('NONE');
+  const [currentTestAnswers, setCurrentTestAnswers] = useState<Record<string, string>>({});
+  const [testResult, setTestResult] = useState<any | null>(null);
+  const [submittingTest, setSubmittingTest] = useState(false);
+
+  // Teacher Action Modal State
+  const [showTeacherActionModal, setShowTeacherActionModal] = useState(false);
+  const [teacherActionType, setTeacherActionType] = useState<string>('APPROVE_INTERVENTION');
+  const [teacherActionNotes, setTeacherActionNotes] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Notification Banner
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  // 1. Fetch Register & Analytics
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [gapsRes, summaryRes, campusRes, heatmapsRes, recsRes] = await Promise.all([
+        apiGet<any>('/api/learning-gaps/register'),
+        apiGet<any>('/api/learning-gaps/analytics/summary'),
+        apiGet<any>('/api/learning-gaps/analytics/campus-comparison'),
+        apiGet<any>('/api/learning-gaps/analytics/concept-heatmaps'),
+        apiGet<any>('/api/learning-gaps/analytics/curriculum-recommendations')
+      ]);
+
+      if (gapsRes.success) {
+        setGaps(gapsRes.data);
+        if (!selectedGapId && gapsRes.data.length > 0) {
+          // Default to the first gap (Aarav Sundaram Grade 6 Percentage)
+          setSelectedGapId(gapsRes.data[0].id);
+        }
+      }
+      if (summaryRes.success) setSummaryMetrics(summaryRes.data);
+      if (campusRes.success) setCampusComparison(campusRes.data);
+      if (heatmapsRes.success) setConceptHeatmaps(heatmapsRes.data);
+      if (recsRes.success) setCurriculumRecs(recsRes.data);
+    } catch (err: any) {
+      console.error('Failed to load learning gap data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  // 2. Fetch Active Pathway when selectedGapId changes
+  useEffect(() => {
+    if (!selectedGapId) return;
+    const fetchPathway = async () => {
+      try {
+        const res = await apiGet<any>(`/api/learning-gaps/${selectedGapId}/pathway`);
+        if (res.success) {
+          setActivePathwayData(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching pathway:', err);
+      }
+    };
+    fetchPathway();
+  }, [selectedGapId]);
+
+  // Selected Gap Object
+  const currentGap = gaps.find(g => g.id === selectedGapId) || gaps[0];
+
+  // Filtered Gaps List
+  const filteredGaps = gaps.filter(g => {
+    if (filterGrade !== 'ALL' && g.grade !== filterGrade) return false;
+    if (filterSubject !== 'ALL' && g.subject !== filterSubject) return false;
+    if (filterCategory !== 'ALL' && g.gapCategory !== filterCategory) return false;
+    if (filterStatus !== 'ALL' && g.status !== filterStatus) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        g.studentName.toLowerCase().includes(q) ||
+        g.conceptName.toLowerCase().includes(q) ||
+        g.gapCode.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
+
+  // Handle Completing a step in Student Foundation / Current Relearn
+  const handleCompleteStep = async (itemId: string, phaseNum: number) => {
+    if (!selectedGapId) return;
+    try {
+      const res = await apiPost<any>(`/api/learning-gaps/${selectedGapId}/pathway/complete-step`, {
+        itemId,
+        phaseNumber: phaseNum
+      });
+      if (res.success) {
+        showToast('✓ Step completed! Progress saved.');
+        // Refresh pathway
+        const pRes = await apiGet<any>(`/api/learning-gaps/${selectedGapId}/pathway`);
+        if (pRes.success) setActivePathwayData(pRes.data);
+      }
+    } catch (err: any) {
+      showToast('Error saving step: ' + err.message);
+    }
+  };
+
+  // Handle Submitting Foundation Check
+  const handleSubmitFoundationTest = async () => {
+    if (!selectedGapId) return;
+    setSubmittingTest(true);
+    try {
+      const res = await apiPost<any>(
+        `/api/learning-gaps/${selectedGapId}/pathway/submit-foundation-test`,
+        { answers: currentTestAnswers }
+      );
+      setTestResult(res);
+      if (res.isPassed) {
+        showToast('🎉 Prerequisite Mastered! Unlocking Current-Grade Relearning.');
+      } else {
+        showToast('Foundation check incomplete. Additional practice recommended.');
+      }
+      loadDashboardData();
+    } catch (err: any) {
+      showToast('Submission error: ' + err.message);
+    } finally {
+      setSubmittingTest(false);
+    }
+  };
+
+  // Handle Submitting Current Grade Reassessment
+  const handleSubmitReassessment = async () => {
+    if (!selectedGapId) return;
+    setSubmittingTest(true);
+    try {
+      const res = await apiPost<any>(
+        `/api/learning-gaps/${selectedGapId}/pathway/submit-reassessment`,
+        { answers: currentTestAnswers }
+      );
+      setTestResult(res);
+      if (res.isMastered) {
+        showToast('🏆 Concept Mastered! Learning Gap is officially closed.');
+      } else {
+        showToast('Reassessment score below mastery threshold. Further practice advised.');
+      }
+      loadDashboardData();
+    } catch (err: any) {
+      showToast('Submission error: ' + err.message);
+    } finally {
+      setSubmittingTest(false);
+    }
+  };
+
+  // Handle Teacher Intervention Action
+  const handleExecuteTeacherAction = async () => {
+    if (!selectedGapId) return;
+    setActionLoading(true);
+    try {
+      const res = await apiPost<any>(`/api/learning-gaps/${selectedGapId}/teacher-action`, {
+        action: teacherActionType,
+        notes: teacherActionNotes
+      });
+      if (res.success) {
+        showToast(`✓ Action ${teacherActionType} applied successfully.`);
+        setShowTeacherActionModal(false);
+        setTeacherActionNotes('');
+        loadDashboardData();
+      }
+    } catch (err: any) {
+      showToast('Action failed: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 pb-20 animate-in fade-in duration-200">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2 border border-slate-700 animate-in slide-in-from-top-4">
+          <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+          <span className="font-semibold">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* 1. TOP HEADER & LEARNING CYCLE STATUS BAR                                */}
+      {/* ======================================================================= */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+              <BrainCircuit className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                  Achariya Learning Gap & Mastery Studio
+                </h1>
+                <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-purple-200">
+                  AI Academic Intelligence
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Precision Root-Cause Diagnosis · Multi-Grade Prerequisite Redirection · Reassessment & Mastery Verification
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Metrics Bar */}
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="bg-purple-50 border border-purple-200/80 rounded-2xl px-4 py-2 text-center">
+              <div className="text-lg font-black text-purple-700">
+                {summaryMetrics?.closureRate ?? 20}%
+              </div>
+              <div className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">
+                Gap Closure Rate
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl px-4 py-2 text-center">
+              <div className="text-lg font-black text-amber-700">
+                {summaryMetrics?.criticalGaps ?? 2}
+              </div>
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
+                Critical Gaps
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl px-4 py-2 text-center">
+              <div className="text-lg font-black text-emerald-700">
+                {summaryMetrics?.masteredGaps ?? 1}
+              </div>
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                Concepts Mastered
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 7-Stage Core Learning Cycle Banner */}
+        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 overflow-x-auto">
+          <div className="flex items-center justify-between min-w-[700px] text-[11px] font-bold">
+            <div className="flex items-center space-x-1.5 text-purple-700">
+              <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">1</span>
+              <span>1. ASSESS</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-indigo-700">
+              <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">2</span>
+              <span>2. DIAGNOSE</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-blue-700">
+              <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">3</span>
+              <span>3. IDENTIFY PREREQUISITES</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-amber-700">
+              <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px]">4</span>
+              <span>4. REDIRECT TO LOWER GRADE</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-sky-700">
+              <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">5</span>
+              <span>5. RELEARN CURRENT</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-teal-700">
+              <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">6</span>
+              <span>6. REASSESS</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <div className="flex items-center space-x-1.5 text-emerald-700">
+              <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">7</span>
+              <span>7. MASTER & CLOSE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* View Switcher Tabs */}
+        <div className="flex items-center space-x-2 border-b border-slate-200/80 pt-1">
+          <button
+            onClick={() => setActiveTab('teacher-dashboard')}
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              activeTab === 'teacher-dashboard'
+                ? 'border-purple-600 text-purple-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Teacher Intervention Workbench</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('student-portal')}
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              activeTab === 'student-portal'
+                ? 'border-purple-600 text-purple-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>Student Learning & Remediation Portal</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('learning-academy')}
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              activeTab === 'learning-academy'
+                ? 'border-purple-600 text-purple-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Learning Academy Central & HOC</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('student-report')}
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              activeTab === 'student-report'
+                ? 'border-purple-600 text-purple-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Individual Gap & Mastery Report</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ======================================================================= */}
+      {/* VIEW A: TEACHER INTERVENTION WORKBENCH                                   */}
+      {/* ======================================================================= */}
+      {activeTab === 'teacher-dashboard' && (
+        <div className="space-y-6">
+          {/* Filters Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 flex-1 min-w-[240px]">
+              <Search className="w-4 h-4 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search by student name, concept or gap code..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <select
+                value={filterGrade}
+                onChange={e => setFilterGrade(e.target.value)}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
+              >
+                <option value="ALL">All Grades</option>
+                <option value="Grade 5">Grade 5</option>
+                <option value="Grade 6">Grade 6</option>
+              </select>
+
+              <select
+                value={filterCategory}
+                onChange={e => setFilterCategory(e.target.value)}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
+              >
+                <option value="ALL">All Gap Categories</option>
+                <option value="FOUNDATIONAL">Foundational Gap</option>
+                <option value="CONCEPTUAL">Conceptual Gap</option>
+                <option value="APPLICATION">Application Gap</option>
+                <option value="PROCEDURAL">Procedural Gap</option>
+              </select>
+
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="INTERVENTION_ASSIGNED">Intervention Assigned</option>
+                <option value="FOUNDATION_LEARNING">Foundation Learning</option>
+                <option value="CURRENT_GRADE_RELEARNING">Current Relearning</option>
+                <option value="MASTERED">Mastered & Closed</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Master-Detail Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column: Learning Gap Cards List */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 flex items-center justify-between">
+                <span>Active Learning Gaps ({filteredGaps.length})</span>
+                <span className="text-[11px] text-purple-700 font-bold">Select student to inspect</span>
+              </div>
+
+              <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
+                {filteredGaps.map(gap => {
+                  const isSelected = gap.id === (currentGap?.id || selectedGapId);
+                  return (
+                    <div
+                      key={gap.id}
+                      onClick={() => setSelectedGapId(gap.id)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-purple-50/60 border-purple-400 shadow-sm ring-2 ring-purple-500/20'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] font-mono font-bold text-slate-400">
+                            {gap.gapCode}
+                          </span>
+                          <h3 className="text-xs font-extrabold text-slate-900 mt-0.5">
+                            {gap.studentName}
+                          </h3>
+                          <div className="text-[11px] text-slate-500 font-medium">
+                            {gap.grade} · {gap.subject}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span
+                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                              gap.priority === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                : gap.priority === 'HIGH'
+                                ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                : 'bg-blue-100 text-blue-800 border-blue-200'
+                            }`}
+                          >
+                            {gap.priority}
+                          </span>
+                          <div className="text-xs font-black text-rose-600 mt-1">
+                            {gap.diagnosticScore}% diag
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                        <div className="font-semibold text-slate-700 truncate max-w-[200px]">
+                          {gap.conceptName}
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                            gap.status === 'MASTERED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : gap.status === 'CURRENT_GRADE_RELEARNING'
+                              ? 'bg-sky-100 text-sky-800'
+                              : 'bg-purple-100 text-purple-800'
+                          }`}
+                        >
+                          {gap.status.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column: In-Depth Diagnostic Evidence & Teacher Action Center */}
+            <div className="lg:col-span-7 space-y-5">
+              {currentGap ? (
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
+                  {/* Student & Gap Summary Header */}
+                  <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-mono text-slate-400 font-bold">{currentGap.gapCode}</span>
+                        <span
+                          className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase border ${
+                            currentGap.gapCategory === 'FOUNDATIONAL'
+                              ? 'bg-amber-100 text-amber-900 border-amber-200'
+                              : 'bg-purple-100 text-purple-900 border-purple-200'
+                          }`}
+                        >
+                          {currentGap.gapCategory} GAP
+                        </span>
+                      </div>
+                      <h2 className="text-base font-black text-slate-900 mt-1">
+                        {currentGap.conceptName}
+                      </h2>
+                      <p className="text-xs text-slate-500 font-medium">
+                        Student: <strong className="text-slate-800">{currentGap.studentName}</strong> · {currentGap.grade} · {currentGap.campusName}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          setTeacherActionType('APPROVE_INTERVENTION');
+                          setShowTeacherActionModal(true);
+                        }}
+                        className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-1"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Teacher Action</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Multi-Grade Root Cause Diagnostic Blueprint (The Core Highlight) */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-50 to-purple-500/10 border border-amber-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 text-amber-900 font-black text-xs">
+                        <Target className="w-4 h-4 text-amber-600" />
+                        <span>DIAGNOSTIC EVIDENCE & ROOT-CAUSE PREREQUISITE</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded">
+                        Target Lower Grade: {currentGap.recommendedLowerGrade || 'Grade 5'}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-700 space-y-1.5 font-medium leading-relaxed">
+                      <p>
+                        <strong>Root Cause Identified:</strong> The student is failing{' '}
+                        <span className="text-purple-800 font-bold">{currentGap.conceptName} ({currentGap.grade})</span>{' '}
+                        because of an unmastered prerequisite in{' '}
+                        <span className="text-amber-800 font-bold">{currentGap.identifiedPrerequisiteName}</span>.
+                      </p>
+                      <p className="text-slate-600 text-[11px]">
+                        <strong>Why Redirection is Essential:</strong> Without first scaling fractions to a denominator of 100, calculating percentages of quantities creates severe cognitive friction. Directing the student directly to Grade 5 foundational content solves the underlying root problem.
+                      </p>
+                    </div>
+
+                    {/* Prerequisite Flow Chart Widget */}
+                    <div className="pt-2 flex items-center space-x-2 text-xs font-bold">
+                      <div className="bg-white px-3 py-1.5 rounded-xl border border-amber-300 text-amber-900 shadow-2xs">
+                        Grade 4: Division & Parts of Whole
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                      <div className="bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-400 text-amber-900 shadow-2xs">
+                        Grade 5: Equivalent Fractions (Root Gap)
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                      <div className="bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-300 text-purple-900 shadow-2xs">
+                        Grade 6: Percentage Mastery (Target)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 5-Phase Pathway Progress Tracker */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                      <span>Remediation Pathway Itinerary</span>
+                      <span className="text-purple-700 font-mono">
+                        Phase: {currentGap.pathway?.currentPhase?.replace(/_/g, ' ') || 'Phase 1 Foundation'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-center text-[10px]">
+                      <div className={`p-2.5 rounded-xl border font-bold ${
+                        ['FOUNDATION_LEARNING', 'CURRENT_GRADE_RELEARNING', 'MASTERED'].includes(currentGap.status)
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                          : 'bg-purple-50 border-purple-300 text-purple-800'
+                      }`}>
+                        Phase 1
+                        <div className="text-[9px] font-normal mt-0.5">Grade 5 Foundation</div>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border font-bold ${
+                        currentGap.foundationAssessmentScore !== null && currentGap.foundationAssessmentScore !== undefined
+                          ? currentGap.foundationAssessmentScore >= 80
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                            : 'bg-amber-50 border-amber-300 text-amber-800'
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        Phase 2
+                        <div className="text-[9px] font-normal mt-0.5">
+                          {currentGap.foundationAssessmentScore !== null && currentGap.foundationAssessmentScore !== undefined
+                            ? `${currentGap.foundationAssessmentScore}% Check`
+                            : 'Foundation Check'}
+                        </div>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border font-bold ${
+                        ['CURRENT_GRADE_RELEARNING', 'MASTERED'].includes(currentGap.status)
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        Phase 3
+                        <div className="text-[9px] font-normal mt-0.5">Grade 6 Relearn</div>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border font-bold ${
+                        currentGap.currentGradeReassessmentScore !== null && currentGap.currentGradeReassessmentScore !== undefined
+                          ? currentGap.currentGradeReassessmentScore >= 85
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                            : 'bg-amber-50 border-amber-300 text-amber-800'
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        Phase 4
+                        <div className="text-[9px] font-normal mt-0.5">
+                          {currentGap.currentGradeReassessmentScore !== null && currentGap.currentGradeReassessmentScore !== undefined
+                            ? `${currentGap.currentGradeReassessmentScore}% Reassess`
+                            : 'Reassessment'}
+                        </div>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border font-bold ${
+                        currentGap.status === 'MASTERED' || currentGap.status === 'CLOSED'
+                          ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        Phase 5
+                        <div className="text-[9px] font-normal mt-0.5">Mastery & Close</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clinical Teacher Observations & Audit Trail */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                      <span>Clinical Teacher Notes & Intervention Log</span>
+                      <span className="text-[10px] text-slate-400 font-mono">Assigned by: {currentGap.teacherName || 'Dr. Priya Sivaraman'}</span>
+                    </div>
+                    <p className="text-xs text-slate-600 italic">
+                      "{currentGap.teacherNotes || 'Confirmed foundational weakness in fraction-to-hundred scaling during classroom observation. Approved student redirection to Grade 5 Equivalent Fractions.'}"
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl p-12 text-center border border-slate-200">
+                  <p className="text-xs text-slate-500 font-bold">No gap selected. Please select from the list.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* VIEW B: STUDENT LEARNING & REMEDIATION PORTAL (Interactive 5-Phase)      */}
+      {/* ======================================================================= */}
+      {activeTab === 'student-portal' && (
+        <div className="space-y-6">
+          {/* Student Welcome Banner */}
+          <div className="rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-700 to-indigo-800 text-white p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Student Learning Pathway
+                </span>
+                <span className="text-xs text-purple-200">Grade 6 Mathematics</span>
+              </div>
+              <h2 className="text-xl font-black tracking-tight mt-1">
+                Aarav's Foundation & Mastery Expedition
+              </h2>
+              <p className="text-xs text-purple-100 mt-1 max-w-xl">
+                We are building your superpowers! Mastering these previous-grade fraction secrets will make your Grade 6 percentage problems simple, quick, and fun.
+              </p>
+            </div>
+
+            <div className="text-right bg-white/10 p-3.5 rounded-2xl backdrop-blur-sm border border-white/20 shrink-0">
+              <div className="text-xs font-bold text-purple-200 uppercase tracking-wider">Current Focus</div>
+              <div className="text-sm font-black text-white mt-0.5">
+                {currentGap?.status === 'CURRENT_GRADE_RELEARNING'
+                  ? 'Grade 6: Percentage Calculations'
+                  : currentGap?.status === 'MASTERED'
+                  ? 'Concept Mastered 🏆'
+                  : 'Grade 5: Equivalent Fractions'}
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Phase Flow for Student */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: 5-Phase Interactive Navigation */}
+            <div className="lg:col-span-4 space-y-3">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+                Your Learning Steps
+              </h3>
+
+              {/* Step 1: Foundation Learning */}
+              <div
+                onClick={() => setTestMode('NONE')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  testMode === 'NONE'
+                    ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/20'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                    PHASE 1: LOWER GRADE FOUNDATION
+                  </span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                </div>
+                <h4 className="text-xs font-extrabold text-slate-900 mt-2">
+                  Grade 5: Equivalent Fractions & Scaling
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Learn how to scale any fraction to base 100 before tackling percentages.
+                </p>
+              </div>
+
+              {/* Step 2: Foundation Check */}
+              <div
+                onClick={() => {
+                  setTestMode('FOUNDATION');
+                  setTestResult(null);
+                  setCurrentTestAnswers({});
+                }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  testMode === 'FOUNDATION'
+                    ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/20'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                    PHASE 2: FOUNDATION CHECK
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">Min 80% to pass</span>
+                </div>
+                <h4 className="text-xs font-extrabold text-slate-900 mt-2">
+                  Take Grade 5 Verification Test
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  3 quick questions to confirm you have mastered fraction scaling.
+                </p>
+              </div>
+
+              {/* Step 3: Current Grade Relearn */}
+              <div
+                onClick={() => setTestMode('NONE')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  ['CURRENT_GRADE_RELEARNING', 'MASTERED'].includes(currentGap?.status || '')
+                    ? 'bg-sky-50/80 border-sky-300'
+                    : 'bg-slate-50 border-slate-200 opacity-60'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">
+                    PHASE 3: CURRENT GRADE RELEARN
+                  </span>
+                  {['CURRENT_GRADE_RELEARNING', 'MASTERED'].includes(currentGap?.status || '') && (
+                    <span className="text-[10px] font-bold text-emerald-600">Unlocked ✓</span>
+                  )}
+                </div>
+                <h4 className="text-xs font-extrabold text-slate-900 mt-2">
+                  Grade 6: 3-Step Percentage Formula
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Apply your new fraction skills to percentage of quantities and word problems.
+                </p>
+              </div>
+
+              {/* Step 4: Reassessment */}
+              <div
+                onClick={() => {
+                  setTestMode('REASSESSMENT');
+                  setTestResult(null);
+                  setCurrentTestAnswers({});
+                }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  testMode === 'REASSESSMENT'
+                    ? 'bg-purple-50/80 border-purple-300 ring-2 ring-purple-400/20'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                    PHASE 4: FINAL REASSESSMENT
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">Min 85% to master</span>
+                </div>
+                <h4 className="text-xs font-extrabold text-slate-900 mt-2">
+                  Take Grade 6 Mastery Reassessment
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Earn your official Achariya Concept Mastery Certificate!
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Interactive Lesson Viewer or Interactive Quiz */}
+            <div className="lg:col-span-8">
+              {/* INTERACTIVE TEST RUNNER: FOUNDATION CHECK OR REASSESSMENT */}
+              {testMode !== 'NONE' ? (
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div>
+                      <span className="text-[10px] font-extrabold text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full uppercase">
+                        {testMode === 'FOUNDATION' ? 'Phase 2: Foundation Check' : 'Phase 4: Mastery Reassessment'}
+                      </span>
+                      <h3 className="text-sm font-black text-slate-900 mt-1">
+                        {testMode === 'FOUNDATION'
+                          ? 'Grade 5 Equivalent Fractions Verification Test'
+                          : 'Grade 6 Percentage Mastery Reassessment'}
+                      </h3>
+                    </div>
+
+                    <button
+                      onClick={() => setTestMode('NONE')}
+                      className="text-xs text-slate-500 hover:text-slate-800 font-bold"
+                    >
+                      ← Back to Lesson
+                    </button>
+                  </div>
+
+                  {/* Test Questions List */}
+                  {testResult ? (
+                    /* Test Result Scorecard */
+                    <div className="p-6 rounded-2xl bg-gradient-to-tr from-slate-50 to-purple-50/30 border border-purple-200 space-y-4 text-center">
+                      <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-2xl font-black shadow-md bg-white text-purple-700">
+                        {testResult.score}%
+                      </div>
+                      <h4 className="text-base font-black text-slate-900">
+                        {testResult.isPassed || testResult.isMastered
+                          ? '🎉 Mastery Goal Achieved!'
+                          : 'Keep Going! Additional Practice Recommended'}
+                      </h4>
+                      <p className="text-xs text-slate-600 max-w-md mx-auto">
+                        {testResult.message}
+                      </p>
+
+                      <div className="text-left space-y-2 mt-4 pt-4 border-t border-slate-200">
+                        <div className="text-xs font-bold text-slate-700">Question Feedback:</div>
+                        {testResult.feedbackList?.map((fb: any, idx: number) => (
+                          <div key={idx} className="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1">
+                            <div className="flex items-center justify-between font-bold">
+                              <span>Q{idx + 1}: {fb.questionText}</span>
+                              <span className={fb.isCorrect ? 'text-emerald-600' : 'text-rose-600'}>
+                                {fb.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              Your answer: <strong>{fb.studentAnswer || '(none)'}</strong> · Correct: <strong className="text-emerald-700">{fb.correctAnswer}</strong>
+                            </div>
+                            {fb.explanation && (
+                              <div className="text-[11px] text-indigo-700 italic">
+                                Insight: {fb.explanation}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setTestMode('NONE');
+                          loadDashboardData();
+                        }}
+                        className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+                      >
+                        Continue Journey →
+                      </button>
+                    </div>
+                  ) : (
+                    /* Active Questions Form */
+                    <div className="space-y-6">
+                      {(testMode === 'FOUNDATION'
+                        ? activePathwayData?.assessmentQuestions?.foundationCheck
+                        : activePathwayData?.assessmentQuestions?.reassessmentMastery
+                      )?.map((q: any, qIdx: number) => (
+                        <div key={q.id} className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <span className="text-xs font-extrabold text-slate-800">
+                              Question {qIdx + 1}
+                            </span>
+                            <span className="text-[10px] font-mono text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-bold">
+                              Cognitive: {q.cognitiveSkill || 'UNDERSTAND'}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-slate-800 font-medium">{q.questionText}</p>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {q.options?.map((opt: string, oIdx: number) => {
+                              const isSelected = currentTestAnswers[q.id] === opt;
+                              return (
+                                <button
+                                  key={oIdx}
+                                  onClick={() =>
+                                    setCurrentTestAnswers(prev => ({ ...prev, [q.id]: opt }))
+                                  }
+                                  className={`p-2.5 rounded-xl border text-left text-xs font-semibold transition-all ${
+                                    isSelected
+                                      ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-purple-50/50'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="pt-2 flex justify-end">
+                        <button
+                          disabled={submittingTest}
+                          onClick={
+                            testMode === 'FOUNDATION'
+                              ? handleSubmitFoundationTest
+                              : handleSubmitReassessment
+                          }
+                          className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 disabled:opacity-50"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{submittingTest ? 'Evaluating Answers...' : 'Submit Assessment'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* INTERACTIVE LESSON CARDS: FOUNDATION & CURRENT GRADE */
+                <div className="space-y-6">
+                  {/* Step 1 Foundation Interactive Explainer Card */}
+                  <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div>
+                        <span className="text-[10px] font-extrabold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full uppercase">
+                          Lower Grade Foundation
+                        </span>
+                        <h3 className="text-sm font-black text-slate-900 mt-1">
+                          Grade 5: Master Equivalent Fractions & Base-100 Scaling
+                        </h3>
+                      </div>
+
+                      <button
+                        onClick={() => handleCompleteStep('item-f1', 1)}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center space-x-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Mark Understood</span>
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 text-xs text-slate-700 space-y-3">
+                      <h4 className="font-extrabold text-amber-900 text-xs flex items-center space-x-1">
+                        <span>💡</span>
+                        <span>The Golden Rule of Equivalent Fractions</span>
+                      </h4>
+                      <p className="leading-relaxed">
+                        To turn any fraction into a percentage, you must scale its denominator (bottom) to <strong>100</strong>.
+                        Whatever you multiply the bottom by, you MUST multiply the top by the exact same number!
+                      </p>
+
+                      {/* Visual Fraction Multiplier Card */}
+                      <div className="p-4 rounded-xl bg-white border border-amber-200 flex items-center justify-around font-mono text-center">
+                        <div>
+                          <div className="text-base font-black text-amber-700">3</div>
+                          <div className="border-t border-slate-400 w-8 mx-auto my-0.5" />
+                          <div className="text-base font-black text-slate-700">5</div>
+                        </div>
+
+                        <div className="text-slate-400 font-bold text-xs">
+                          × 20 (top & bottom)
+                          <ArrowRight className="w-4 h-4 mx-auto text-amber-600 mt-0.5" />
+                        </div>
+
+                        <div>
+                          <div className="text-base font-black text-purple-700">60</div>
+                          <div className="border-t border-slate-400 w-10 mx-auto my-0.5" />
+                          <div className="text-base font-black text-slate-900">100</div>
+                        </div>
+
+                        <div className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
+                          = 60%
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 2 Practice Worksheet Card */}
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">Quick Practice Checkpoint</span>
+                        <button
+                          onClick={() => handleCompleteStep('item-f2', 1)}
+                          className="text-[11px] font-bold text-purple-700 hover:underline"
+                        >
+                          Complete Worksheet ✓
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div className="p-3 bg-white rounded-xl border border-slate-200">
+                          <span className="text-[10px] text-slate-400 font-bold">Problem 1</span>
+                          <p className="font-bold text-slate-800 mt-0.5">Scale 7/20 to base 100:</p>
+                          <div className="text-emerald-700 font-mono font-bold mt-1">20 × 5 = 100 ➔ 7 × 5 = 35/100 (35%)</div>
+                        </div>
+
+                        <div className="p-3 bg-white rounded-xl border border-slate-200">
+                          <span className="text-[10px] text-slate-400 font-bold">Problem 2</span>
+                          <p className="font-bold text-slate-800 mt-0.5">Scale 4/25 to base 100:</p>
+                          <div className="text-emerald-700 font-mono font-bold mt-1">25 × 4 = 100 ➔ 4 × 4 = 16/100 (16%)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3 Current Grade Relearning Card */}
+                  <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div>
+                        <span className="text-[10px] font-extrabold text-purple-800 bg-purple-100 px-2.5 py-0.5 rounded-full uppercase">
+                          Current Grade Relearn
+                        </span>
+                        <h3 className="text-sm font-black text-slate-900 mt-1">
+                          Grade 6: The 3-Step Formula for Percentage of Quantities
+                        </h3>
+                      </div>
+
+                      <button
+                        onClick={() => handleCompleteStep('item-c1', 3)}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 flex items-center space-x-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Mark Mastered</span>
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-200/70 text-xs text-slate-700 space-y-3">
+                      <div className="p-3 rounded-xl bg-white border border-purple-200 font-mono text-center text-sm font-black text-purple-900">
+                        Value = (Percentage / 100) × Total Quantity
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="font-bold text-slate-800">Worked Example:</div>
+                        <p className="p-3 bg-white rounded-xl border border-slate-200 leading-relaxed">
+                          <strong>Problem:</strong> Calculate 25% of 240 students in the Achariya Sports Meet.<br />
+                          <strong>Step 1:</strong> 25% = 25/100 = 1/4.<br />
+                          <strong>Step 2:</strong> (1/4) × 240 = 240 ÷ 4 = <strong>60 students</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* VIEW C: LEARNING ACADEMY CENTRAL & HOC DASHBOARD                         */}
+      {/* ======================================================================= */}
+      {activeTab === 'learning-academy' && (
+        <div className="space-y-6">
+          {/* Multi-Campus Performance Comparison */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-slate-900">
+                  Consolidated Campus Learning Gap & Closure Rates
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Benchmarking remediation effectiveness across Achariya campuses
+                </p>
+              </div>
+
+              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-xl">
+                Academic Year 2026-2027
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {campusComparison.map(c => (
+                <div key={c.campusId} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">{c.campusName}</h4>
+                      <span className="text-[10px] font-mono text-slate-400 font-bold">{c.campusCode}</span>
+                    </div>
+                    <span className="text-xs font-black text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
+                      {c.closureRate}% Closure
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="bg-white p-2 rounded-xl border border-slate-200">
+                      <div className="font-black text-slate-900 text-xs">{c.totalGaps}</div>
+                      <div className="text-slate-400 text-[9px]">Total Gaps</div>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-rose-200 text-rose-700">
+                      <div className="font-black text-xs">{c.criticalGaps}</div>
+                      <div className="text-[9px]">Critical</div>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl border border-emerald-200 text-emerald-700">
+                      <div className="font-black text-xs">{c.masteredGaps}</div>
+                      <div className="text-[9px]">Mastered</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Systemic Prerequisite Bottlenecks Heatmap */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-slate-900">
+                  Concept Difficulty & Prerequisite Bottlenecks Heatmap
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Concepts with the highest frequency of student learning gaps
+                </p>
+              </div>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {conceptHeatmaps.map((ch, idx) => (
+                <div key={idx} className="py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-extrabold text-slate-900">{ch.conceptName}</span>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                        {ch.grade} · {ch.subject}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-amber-700 mt-0.5 font-medium">
+                      Root Prerequisite Bottlenecks:{' '}
+                      {Object.keys(ch.prerequisiteBottlenecks || {}).join(', ') || 'Direct Concept Application'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4 shrink-0 text-right">
+                    <div>
+                      <div className="text-xs font-black text-rose-600">
+                        {ch.affectedStudents} students
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-medium">
+                        Avg Score: {ch.averageDiagnosticScore}%
+                      </div>
+                    </div>
+
+                    <div className="w-20 bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-purple-600 h-full rounded-full"
+                        style={{ width: `${ch.closureRate}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Central Curriculum Improvement Recommendations */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center space-x-2 text-indigo-700">
+              <Sparkles className="w-5 h-5 text-purple-600" />
+              <h3 className="text-sm font-black text-slate-900">
+                AI Central Learning Academy Curriculum Recommendations
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {curriculumRecs.map(rec => (
+                <div key={rec.id} className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-200/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">
+                      {rec.priority} PRIORITY
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">{rec.subject} · {rec.grade}</span>
+                  </div>
+
+                  <h4 className="text-xs font-black text-slate-900">{rec.title}</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">{rec.finding}</p>
+
+                  <div className="pt-2 border-t border-indigo-100 space-y-1">
+                    <div className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">Action Items:</div>
+                    {rec.actionItems?.map((act: string, aIdx: number) => (
+                      <div key={aIdx} className="text-[11px] text-slate-700 flex items-start space-x-1.5">
+                        <span className="text-indigo-600 font-bold">•</span>
+                        <span>{act}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* VIEW D: INDIVIDUAL STUDENT LEARNING GAP & MASTERY REPORT                 */}
+      {/* ======================================================================= */}
+      {activeTab === 'student-report' && currentGap && (
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-6">
+          {/* Printable Report Header */}
+          <div className="flex items-start justify-between border-b pb-6 border-slate-200">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black tracking-widest text-purple-700 uppercase">
+                  ACHARIYA WORLD CLASS EDUCATION
+                </span>
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mt-1">
+                Individual Student Learning Gap & Mastery Report
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Official Concept Diagnosis, Prerequisite Path & Mastery Verification Log
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => window.print()}
+                className="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center space-x-1"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Student Profile Card */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Student Name</span>
+              <div className="font-extrabold text-slate-900 mt-0.5">{currentGap.studentName}</div>
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Grade & Cohort</span>
+              <div className="font-extrabold text-slate-900 mt-0.5">{currentGap.grade} - Section A</div>
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Campus</span>
+              <div className="font-extrabold text-slate-900 mt-0.5">{currentGap.campusName}</div>
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Reporting Date</span>
+              <div className="font-extrabold text-slate-900 mt-0.5">{new Date().toLocaleDateString()}</div>
+            </div>
+          </div>
+
+          {/* Gap Detail Table */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Concept Diagnosis & Prerequisite Mapping</h3>
+            <table className="w-full text-xs text-left border border-slate-200 rounded-xl overflow-hidden">
+              <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px]">
+                <tr>
+                  <th className="p-3">Target Concept</th>
+                  <th className="p-3">Diagnostic Score</th>
+                  <th className="p-3">Root Prerequisite</th>
+                  <th className="p-3">Foundation Check</th>
+                  <th className="p-3">Reassessment</th>
+                  <th className="p-3">Mastery Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td className="p-3 font-bold text-slate-900">{currentGap.conceptName}</td>
+                  <td className="p-3 text-rose-600 font-bold">{currentGap.diagnosticScore}%</td>
+                  <td className="p-3 text-amber-800 font-bold">{currentGap.identifiedPrerequisiteName}</td>
+                  <td className="p-3 text-emerald-700 font-bold">
+                    {currentGap.foundationAssessmentScore ? `${currentGap.foundationAssessmentScore}% ✓` : 'In Progress'}
+                  </td>
+                  <td className="p-3 text-purple-700 font-bold">
+                    {currentGap.currentGradeReassessmentScore ? `${currentGap.currentGradeReassessmentScore}% ✓` : 'Pending'}
+                  </td>
+                  <td className="p-3">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      currentGap.status === 'MASTERED'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {currentGap.status}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Teacher & Principal Attestation */}
+          <div className="pt-8 border-t border-slate-200 grid grid-cols-2 gap-8 text-xs text-center">
+            <div>
+              <div className="border-b border-slate-300 pb-8 text-slate-400 italic">Dr. Priya Sivaraman</div>
+              <div className="font-bold text-slate-700 mt-1">Assigned Senior Faculty</div>
+            </div>
+            <div>
+              <div className="border-b border-slate-300 pb-8 text-slate-400 italic">Meenakshi Sundaram / Dr. Rajesh K. Varma</div>
+              <div className="font-bold text-slate-700 mt-1">Campus Principal / Academic Lead</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* MODAL: TEACHER ACTION & CLINICAL OBSERVATIONS                           */}
+      {/* ======================================================================= */}
+      {showTeacherActionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center space-x-2 text-purple-700">
+                <GraduationCap className="w-5 h-5" />
+                <h3 className="font-extrabold text-sm text-slate-900">Teacher Intervention Action</h3>
+              </div>
+              <button
+                onClick={() => setShowTeacherActionModal(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Select Intervention Action
+                </label>
+                <select
+                  value={teacherActionType}
+                  onChange={e => setTeacherActionType(e.target.value)}
+                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800"
+                >
+                  <option value="APPROVE_INTERVENTION">Approve Lower-Grade Redirection</option>
+                  <option value="RECORD_OBSERVATION">Record Classroom Observation Note</option>
+                  <option value="TRIGGER_REASSESSMENT">Trigger Immediate Reassessment</option>
+                  <option value="RECOMMEND_CLOSURE">Recommend Gap Closure & Mastery</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Teacher Notes / Clinical Observation
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Enter observation notes, targeted guidance or feedback..."
+                  value={teacherActionNotes}
+                  onChange={e => setTeacherActionNotes(e.target.value)}
+                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setShowTeacherActionModal(false)}
+                className="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={actionLoading}
+                onClick={handleExecuteTeacherAction}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+              >
+                {actionLoading ? 'Saving...' : 'Confirm Action'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

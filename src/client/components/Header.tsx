@@ -17,7 +17,8 @@ import {
   ChevronDown,
   Home,
   BarChart2,
-  LayoutGrid
+  LayoutGrid,
+  Target
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -29,6 +30,7 @@ export type ActiveTabType =
   | 'worksheet'
   | 'aitools'
   | 'exam-builder'
+  | 'learning-gaps'
   | 'myspace'
   | 'insights'
   | 'exams'
@@ -38,7 +40,7 @@ export type ActiveTabType =
   | 'leaves'
   | 'fees';
 
-export type StudentTabType = 'voicelab' | 'voice' | 'homework';
+export type StudentTabType = 'voicelab' | 'voice' | 'homework' | 'gaps';
 
 interface HeaderProps {
   activeTab: ActiveTabType;
@@ -81,6 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
     items: [
+      { label: 'Learning Gap Studio', tab: 'learning-gaps', route: '/staff/learning-gaps', icon: <Target className="w-4 h-4 text-violet-600" />, desc: 'AI learning gap diagnosis & mastery closure' },
       { label: 'Exam Builder', tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />, desc: 'Curriculum outcomes & blueprint builder' },
       { label: 'Exams',        tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
       { label: 'Insights',     tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
@@ -310,6 +313,7 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <nav className="hidden sm:flex items-center gap-2 flex-1 text-xs">
               {[
+                { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'voice'    as StudentTabType, route: '/student/voice',    label: 'Read Aloud',          icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,  cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
                 { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio',      icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },

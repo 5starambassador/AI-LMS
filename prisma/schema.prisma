@@ -923,3 +923,186 @@ model FeePayment {
 
   @@map("fee_payments")
 }
+
+
+// ==========================================
+// 16. LEARNING GAP IDENTIFICATION & CLOSURE
+// ==========================================
+
+model CurriculumConcept {
+  id               String   @id @default(uuid())
+  conceptCode      String   @unique // e.g. "CON-MTH-G6-004"
+  academicYear     String   @default("2026-2027")
+  board            String   @default("CBSE")
+  grade            String   // e.g. "Grade 6"
+  gradeNumber      Int      // e.g. 6
+  subject          String   // e.g. "Mathematics"
+  unit             String?  // e.g. "Commercial Arithmetic"
+  chapter          String   // e.g. "Comparing Quantities & Percentages"
+  topic            String   // e.g. "Percentages"
+  subtopic         String?  // e.g. "Percentage Calculations"
+  name             String   // e.g. "Percentage of Quantities & Word Problems"
+  description      String
+  learningOutcome  String
+  difficulty       String   @default("MEDIUM") // EASY, MEDIUM, HARD, ADVANCED
+  masteryThreshold Float    @default(80.0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  prerequisites    ConceptPrerequisite[]      @relation("ConceptToPrereq")
+  dependentOnThis  ConceptPrerequisite[]      @relation("PrereqOfConcept")
+  resources        ConceptRemedialResource[]
+  learningGaps     LearningGap[]
+  assessments      ConceptAssessmentQuestion[]
+  questionMaps     QuestionConceptMap[]
+
+  @@map("curriculum_concepts")
+}
+
+model ConceptPrerequisite {
+  id                      String   @id @default(uuid())
+  conceptId               String
+  prerequisiteId          String
+  prerequisiteGrade       String   // e.g. "Grade 5", "Grade 4"
+  prerequisiteGradeNumber Int      // 5, 4
+  prerequisiteType        String   @default("FOUNDATIONAL") // FOUNDATIONAL, DIRECT, EXTENSION
+  diagnosticMisconception String?  // e.g. "Unable to compute equivalent fractions with base 100"
+  weight                  Float    @default(1.0)
+  createdAt               DateTime @default(now())
+
+  concept                 CurriculumConcept @relation("ConceptToPrereq", fields: [conceptId], references: [id], onDelete: Cascade)
+  prerequisite            CurriculumConcept @relation("PrereqOfConcept", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, prerequisiteId])
+  @@map("concept_prerequisites")
+}
+
+model ConceptRemedialResource {
+  id               String   @id @default(uuid())
+  conceptId        String
+  title            String
+  resourceType     String   // INTERACTIVE_EXPLAINER, VIDEO_LESSON, WORKBOOK_WORKSHEET, PRACTICE_ACTIVITY, VISUAL_MANIPULATIVE
+  gradeLevel       String   // "Grade 4", "Grade 5", "Grade 6"
+  contentJson      String   // Rich JSON with structured steps, visual cards, interactive checks
+  estimatedMinutes Int      @default(15)
+  orderIndex       Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  concept          CurriculumConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@map("concept_remedial_resources")
+}
+
+model ConceptAssessmentQuestion {
+  id                    String   @id @default(uuid())
+  conceptId             String
+  assessmentType        String   @default("DIAGNOSTIC") // DIAGNOSTIC, FOUNDATION_CHECK, REASSESSMENT_MASTERY
+  gradeLevel            String   // Grade 4, Grade 5, Grade 6
+  questionText          String
+  questionType          String   @default("MCQ") // MCQ, SHORT_ANSWER, NUMERICAL
+  optionsJson           String?  // JSON array for options
+  correctAnswer         String
+  explanation           String?
+  cognitiveSkill        String   @default("UNDERSTAND") // REMEMBER, UNDERSTAND, APPLY, ANALYZE, EVALUATE
+  misconceptionCategory String?  // ADDITIVE_REASONING_ERROR, DENOMINATOR_NEGLECT, DECIMAL_SHIFT_CONFUSION
+  marks                 Float    @default(1.0)
+  createdAt             DateTime @default(now())
+
+  concept               CurriculumConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@map("concept_assessment_questions")
+}
+
+model LearningGap {
+  id                          String    @id @default(uuid())
+  gapCode                     String    @unique // e.g. "GAP-2026-0001"
+  studentId                   String
+  studentName                 String
+  campusId                    String
+  campusName                  String
+  grade                       String    // "Grade 6"
+  gradeNumber                 Int       // 6
+  subject                     String    // "Mathematics"
+  chapter                     String
+  conceptId                   String
+  conceptName                 String
+  gapCategory                 String    @default("FOUNDATIONAL") // FOUNDATIONAL, CONCEPTUAL, APPLICATION, PROCEDURAL, RETENTION
+  status                      String    @default("IDENTIFIED") // IDENTIFIED, DIAGNOSIS_PENDING, CONFIRMED, INTERVENTION_ASSIGNED, FOUNDATION_LEARNING, FOUNDATION_ASSESSMENT, CURRENT_GRADE_RELEARNING, REASSESSMENT_PENDING, MASTERED, CLOSED
+  priority                    String    @default("HIGH") // CRITICAL, HIGH, MEDIUM, LOW
+  assessmentRef               String?   // Quiz ID or ScoreExam ID
+  assessmentTitle             String?
+  diagnosticScore             Float     // e.g. 33.3
+  diagnosticEvidenceJson      String?   // JSON question response breakdown and misconception analysis
+  identifiedPrerequisiteId    String?   // specific lower-grade concept that failed
+  identifiedPrerequisiteName  String?   // "Equivalent Fractions"
+  recommendedLowerGrade       String?   // "Grade 5"
+  recommendedIntervention     String?
+  teacherId                   String?
+  teacherName                 String?
+  teacherNotes                String?
+  assignmentDate              DateTime?
+  targetDate                  DateTime?
+  foundationAssessmentScore   Float?
+  currentGradeReassessmentScore Float?
+  closureDate                 DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  concept                     CurriculumConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  pathway                     RemediationPathway?
+  audits                      LearningGapAudit[]
+
+  @@map("learning_gaps")
+}
+
+model RemediationPathway {
+  id                             String   @id @default(uuid())
+  gapId                          String   @unique
+  currentPhase                   String   @default("PHASE_1_FOUNDATION") // PHASE_1_FOUNDATION, PHASE_2_FOUNDATION_TEST, PHASE_3_CURRENT_RELEARN, PHASE_4_CURRENT_TEST, PHASE_5_MASTERED
+  foundationGrade                String   // "Grade 5"
+  foundationConceptId            String
+  foundationConceptName          String
+  foundationResourcesCompleted   Boolean  @default(false)
+  foundationScore                Float?
+  foundationMastered             Boolean  @default(false)
+  currentGradeResourcesCompleted Boolean  @default(false)
+  reassessmentScore              Float?
+  reassessmentMastered           Boolean  @default(false)
+  pathwayPlanJson                String   // JSON of full 5-phase structured itinerary
+  studentProgressJson            String?  // JSON tracking completed steps, answers, time spent
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+
+  learningGap                    LearningGap @relation(fields: [gapId], references: [id], onDelete: Cascade)
+
+  @@map("remediation_pathways")
+}
+
+model LearningGapAudit {
+  id          String   @id @default(uuid())
+  gapId       String
+  fromStatus  String
+  toStatus    String
+  actorId     String?
+  actorName   String?
+  actorRole   String?
+  notes       String?
+  metricsJson String?
+  createdAt   DateTime @default(now())
+
+  learningGap LearningGap @relation(fields: [gapId], references: [id], onDelete: Cascade)
+
+  @@map("learning_gap_audits")
+}
+
+model QuestionConceptMap {
+  id                    String   @id @default(uuid())
+  quizQuestionId        String?
+  conceptId             String
+  cognitiveSkill        String   @default("UNDERSTAND")
+  misconceptionCategory String?
+
+  concept               CurriculumConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@map("question_concept_maps")
+}
