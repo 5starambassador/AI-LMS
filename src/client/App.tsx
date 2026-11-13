@@ -92,6 +92,18 @@ function AppShell() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Role-based portal enforcement — redirect to the correct portal for the logged-in role
+  useEffect(() => {
+    if (!currentUser) return;
+    const { roleKey } = currentUser;
+    if (roleKey === 'role-ach-student' && currentPortal !== 'STUDENT') {
+      navigateTo('/student/voicelab');
+    } else if (roleKey === 'role-ach-parent' && currentPortal !== 'STUDENT') {
+      // Parents use the token-based /parent/<token> route; redirect to login
+      navigateTo('/student/voicelab');
+    }
+  }, [currentUser?.roleKey, currentPortal]);
+
   // Programmatic Navigator
   const navigateTo = (route: string) => {
     if (window.location.pathname !== route) {
