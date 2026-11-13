@@ -11,4 +11,10 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
     { preHandler: [requirePermission('assessment:homework:grade')] },
     AnalyticsController.getScoreInsights
   );
+
+  fastify.get(
+    '/api/analytics/recent-quiz-sessions',
+    { preHandler: [requirePermission('assessment:homework:grade')] },
+    AnalyticsController.getRecentQuizSessions
+  );
 }

@@ -503,6 +503,200 @@ export class AssessmentController {
     });
   }
 
+  /**
+   * GET /api/assessment/quizzes/:id/session-report?studentId=xxx
+   * Learning Gaps / In-Class Session Report for a specific student's quiz attempt
+   */
+  static async getSessionReport(request: FastifyRequest, reply: FastifyReply) {
+    const { id: quizId } = request.params as { id: string };
+    const { studentId } = request.query as { studentId?: string };
+    const user = request.currentUser!;
+
+    const isAdmin = ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin', 'Teacher'].includes(user.roleName ?? '');
+    const targetStudentId = studentId || user.id;
+    if (!isAdmin && targetStudentId !== user.id) {
+      return reply.status(403).send({ success: false, error: 'Forbidden.' });
+    }
+
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      include: {
+        class:    { select: { id: true, name: true } },
+        section:  { select: { id: true, name: true } },
+        subject:  { select: { id: true, name: true } },
+        questions: { orderBy: { orderIndex: 'asc' } }
+      }
+    });
+    if (!quiz) return reply.status(404).send({ success: false, error: 'Quiz not found.' });
+
+    const submission = await prisma.quizSubmission.findFirst({
+      where: { quizId, studentId: targetStudentId },
+      orderBy: { submittedAt: 'desc' }
+    });
+    if (!submission) return reply.status(404).send({ success: false, error: 'No submission found for this student.' });
+
+    const student = await prisma.user.findUnique({
+      where: { id: targetStudentId },
+      select: {
+        id: true, fullName: true,
+        enrollments: {
+          select: {
+            rollNumber: true,
+            class:   { select: { name: true } },
+            section: { select: { name: true } }
+          },
+          take: 1
+        }
+      }
+    });
+
+    let answers: Record<string, any> = {};
+    try { answers = JSON.parse(submission.answersJson); } catch {}
+
+    const questionAnalysis = quiz.questions.map((q, idx) => {
+      const studentAnswer = answers[q.id] ?? null;
+      const skipped = studentAnswer === null || studentAnswer === '';
+      let isCorrect = false;
+      let correctVal: any;
+      try { correctVal = JSON.parse(q.correctAnswer); } catch { correctVal = q.correctAnswer; }
+      if (!skipped) {
+        try {
+          if (typeof correctVal === 'string' && typeof studentAnswer === 'string') {
+            isCorrect = correctVal.trim().toLowerCase() === studentAnswer.trim().toLowerCase();
+          } else {
+            isCorrect = JSON.stringify(correctVal) === JSON.stringify(studentAnswer);
+          }
+        } catch {}
+      }
+      return {
+        questionNumber: idx + 1,
+        questionId: q.id,
+        questionText: q.questionText,
+        questionType: q.questionType,
+        studentAnswer: skipped ? null : studentAnswer,
+        correctAnswer: correctVal,
+        isCorrect,
+        skipped,
+        marks: q.marks,
+        marksAwarded: isCorrect ? q.marks : 0,
+        conceptName: q.questionText.length > 60 ? q.questionText.substring(0, 57) + '…' : q.questionText
+      };
+    });
+
+    const correct   = questionAnalysis.filter(q =>  q.isCorrect).length;
+    const wrong     = questionAnalysis.filter(q => !q.isCorrect && !q.skipped).length;
+    const skippedCt = questionAnalysis.filter(q =>  q.skipped).length;
+    const attempted = quiz.questions.length - skippedCt;
+    const percentage = submission.totalMarks > 0
+      ? Math.round((submission.score / submission.totalMarks) * 1000) / 10 : 0;
+    const timeSpentMin = Math.max(0.1,
+      Math.round((submission.submittedAt.getTime() - submission.startedAt.getTime()) / 6000) / 10);
+
+    const gapQuestions = questionAnalysis.filter(q => !q.isCorrect);
+
+    // Gap lifecycle: compare against previous sessions in same subject
+    const prevSubs = await prisma.quizSubmission.findMany({
+      where: {
+        studentId: targetStudentId,
+        quizId: { not: quizId },
+        quiz: { subjectId: quiz.subjectId }
+      },
+      include: { quiz: { include: { questions: { orderBy: { orderIndex: 'asc' } } } } },
+      orderBy: { submittedAt: 'desc' },
+      take: 5
+    });
+
+    const prevWrongKeys = new Set<string>();
+    for (const ps of prevSubs) {
+      let pa: Record<string, any> = {};
+      try { pa = JSON.parse(ps.answersJson); } catch {}
+      for (const pq of ps.quiz.questions) {
+        const psa = pa[pq.id] ?? null;
+        const pSkip = psa === null || psa === '';
+        let pCorrect = false;
+        let pCV: any;
+        try { pCV = JSON.parse(pq.correctAnswer); } catch { pCV = pq.correctAnswer; }
+        if (!pSkip) {
+          try {
+            pCorrect = typeof pCV === 'string' && typeof psa === 'string'
+              ? pCV.trim().toLowerCase() === psa.trim().toLowerCase()
+              : JSON.stringify(pCV) === JSON.stringify(psa);
+          } catch {}
+        }
+        if (!pCorrect) prevWrongKeys.add(pq.questionText.substring(0, 50).toLowerCase().trim());
+      }
+    }
+
+    const isFirst = prevSubs.length === 0;
+    const gapLifecycle = gapQuestions.map(q => ({
+      questionNumber: q.questionNumber,
+      conceptName: q.conceptName,
+      status: (!isFirst && prevWrongKeys.has(q.questionText.substring(0, 50).toLowerCase().trim()))
+        ? 'carried_in' as const : 'new_here' as const
+    }));
+
+    const closedHereDetails = isFirst ? [] : questionAnalysis
+      .filter(q => q.isCorrect && prevWrongKeys.has(q.questionText.substring(0, 50).toLowerCase().trim()))
+      .map(q => ({ questionNumber: q.questionNumber, conceptName: q.conceptName }));
+
+    const gapConceptMap = new Map<string, { conceptName: string; questionNumbers: number[]; status: 'carried_in' | 'new_here' }>();
+    for (const g of gapLifecycle) {
+      if (gapConceptMap.has(g.conceptName)) {
+        gapConceptMap.get(g.conceptName)!.questionNumbers.push(g.questionNumber);
+      } else {
+        gapConceptMap.set(g.conceptName, { conceptName: g.conceptName, questionNumbers: [g.questionNumber], status: g.status });
+      }
+    }
+
+    return reply.send({
+      success: true,
+      report: {
+        quiz: {
+          id: quiz.id, title: quiz.title,
+          subject: quiz.subject.name,
+          class: quiz.class.name,
+          section: quiz.section?.name ?? null,
+          timeLimitMinutes: quiz.timeLimitMinutes,
+          totalQuestions: quiz.questions.length,
+          totalMarks: submission.totalMarks
+        },
+        student: {
+          id: targetStudentId,
+          name:        student?.fullName ?? 'Unknown Student',
+          class:       student?.enrollments[0]?.class?.name   ?? quiz.class.name,
+          section:     student?.enrollments[0]?.section?.name ?? quiz.section?.name ?? null,
+          rollNumber:  student?.enrollments[0]?.rollNumber    ?? null
+        },
+        session: { submittedAt: submission.submittedAt, timeSpentMinutes: timeSpentMin },
+        scoreCard: {
+          percentage, correct, wrong, skipped: skippedCt,
+          attempted, totalQuestions: quiz.questions.length,
+          score: submission.score, totalMarks: submission.totalMarks,
+          gapCount: gapQuestions.length
+        },
+        learningGaps: {
+          isFirstSession: isFirst,
+          carriedIn:  gapLifecycle.filter(g => g.status === 'carried_in').length,
+          closedHere: closedHereDetails.length,
+          newHere:    gapLifecycle.filter(g => g.status === 'new_here').length,
+          openNow:    gapLifecycle.length,
+          closedHereDetails,
+          openGaps: Array.from(gapConceptMap.values())
+        },
+        questionBreakdown: questionAnalysis.map(q => ({
+          questionNumber: q.questionNumber,
+          questionText:   q.questionText,
+          studentAnswer:  q.studentAnswer,
+          correctAnswer:  q.correctAnswer,
+          isCorrect:      q.isCorrect,
+          skipped:        q.skipped,
+          marks:          q.marks,
+          marksAwarded:   q.marksAwarded
+        }))
+      }
+    });
+  }
+
   // ==========================================
   // WORKSHEET OPERATIONS
   // ==========================================

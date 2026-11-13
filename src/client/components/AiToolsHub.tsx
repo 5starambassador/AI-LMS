@@ -876,9 +876,17 @@ export const AiToolsHub: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const token = localStorage.getItem('achariya_token');
-                      window.open('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf' + (token ? `?token=${token}` : ''), '_blank');
+                      const res = await fetch('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf', {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {}
+                      });
+                      if (!res.ok) { alert('Download failed: ' + (await res.json().then((d: any) => d.error).catch(() => res.statusText))); return; }
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = 'ACH-EXAM-2026-T1-batch.pdf'; a.click();
+                      setTimeout(() => URL.revokeObjectURL(url), 10000);
                     }}
                     className="py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"
                   >
@@ -888,8 +896,7 @@ export const AiToolsHub: React.FC = () => {
 
                   <button
                     onClick={() => {
-                      const token = localStorage.getItem('achariya_token');
-                      window.open('/renders/exams/ACH-EXAM-2026-T1/batch-print-all.pdf' + (token ? `?token=${token}` : ''), '_blank');
+                      window.open('/renders/exams/ACH-EXAM-2026-T1/batch-print-all.pdf', '_blank');
                     }}
                     className="py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"
                   >

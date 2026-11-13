@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   BarChart3, TrendingUp, Users, Award, AlertCircle,
-  BookOpen, FileCheck, Sparkles, ChevronUp, ChevronDown
+  BookOpen, FileCheck, Sparkles, ChevronUp, ChevronDown,
+  Zap, AlertTriangle
 } from 'lucide-react';
 import { apiGet } from '../lib/api';
+import { LearningGapsReport } from './LearningGapsReport';
 
 interface SubjectStat {
   name: string;
@@ -25,6 +27,20 @@ interface TrendPoint {
   date: string;
   hw: number;
   quiz: number;
+}
+
+interface SessionRow {
+  quizId: string;
+  studentId: string;
+  studentName: string;
+  quizTitle: string;
+  subject: string;
+  class: string;
+  percentage: number;
+  score: number;
+  totalMarks: number;
+  gapCount: number;
+  submittedAt: string;
 }
 
 interface InsightsData {
@@ -85,7 +101,10 @@ export const ScoreInsights: React.FC = () => {
   const [data, setData] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [view, setView] = useState<'overview' | 'performers'>('overview');
+  const [view, setView] = useState<'overview' | 'performers' | 'sessions'>('overview');
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [openReport, setOpenReport] = useState<{ quizId: string; studentId: string } | null>(null);
 
   useEffect(() => {
     apiGet<InsightsData & { success: boolean }>('/api/analytics/score-insights')
@@ -93,6 +112,26 @@ export const ScoreInsights: React.FC = () => {
       .catch(e => setError(e?.message ?? 'Could not load analytics data.'))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (view !== 'sessions') return;
+    setSessionsLoading(true);
+    apiGet<{ success: boolean; sessions: SessionRow[] }>('/api/analytics/recent-quiz-sessions')
+      .then(d => setSessions(d.sessions ?? []))
+      .catch(() => setSessions([]))
+      .finally(() => setSessionsLoading(false));
+  }, [view]);
+
+  // Session report drill-down
+  if (openReport) {
+    return (
+      <LearningGapsReport
+        quizId={openReport.quizId}
+        studentId={openReport.studentId}
+        onBack={() => setOpenReport(null)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -145,6 +184,13 @@ export const ScoreInsights: React.FC = () => {
             >
               Performers
             </button>
+            <button
+              onClick={() => setView('sessions')}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${view === 'sessions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
+            >
+              <Zap className="w-3 h-3" />
+              Sessions
+            </button>
           </div>
         </div>
       </div>
@@ -177,7 +223,78 @@ export const ScoreInsights: React.FC = () => {
         />
       </div>
 
-      {view === 'overview' ? (
+      {view === 'sessions' ? (
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-indigo-500" />
+            <h2 className="font-extrabold text-slate-900 text-sm">Recent Quiz Sessions</h2>
+            <span className="text-[10px] text-slate-400 font-normal">— click any row to view the full Learning Gaps report</span>
+          </div>
+
+          {sessionsLoading ? (
+            <div className="py-12 text-center">
+              <div className="inline-block w-6 h-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs text-slate-400 mt-2">Loading sessions…</p>
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="py-12 text-center">
+              <Zap className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+              <p className="text-xs text-slate-400 font-medium">No quiz sessions yet.</p>
+              <p className="text-[11px] text-slate-300 mt-1">Create a quiz and have students submit to see session reports here.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Student</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Quiz</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Subject</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Score</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Gaps</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase">Date</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {sessions.map((s, i) => (
+                    <tr key={i} className="hover:bg-slate-50 cursor-pointer" onClick={() => setOpenReport({ quizId: s.quizId, studentId: s.studentId })}>
+                      <td className="px-5 py-3 font-semibold text-slate-800">{s.studentName}</td>
+                      <td className="px-5 py-3 text-slate-600 max-w-[180px] truncate">{s.quizTitle}</td>
+                      <td className="px-5 py-3 text-slate-500">{s.subject}</td>
+                      <td className="px-5 py-3">
+                        <span className={`font-mono font-bold px-2 py-0.5 rounded-lg text-[11px] ${
+                          s.percentage >= 80 ? 'bg-emerald-50 text-emerald-700' :
+                          s.percentage >= 60 ? 'bg-teal-50 text-teal-700' :
+                          s.percentage >= 40 ? 'bg-amber-50 text-amber-700' :
+                          'bg-rose-50 text-rose-700'
+                        }`}>{s.percentage}%</span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {s.gapCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-amber-700 font-bold">
+                            <AlertTriangle className="w-3 h-3" /> {s.gapCount}
+                          </span>
+                        ) : (
+                          <span className="text-emerald-500 font-bold">0</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-slate-400 font-mono text-[10px]">
+                        {new Date(s.submittedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="text-indigo-600 font-bold text-[11px] hover:text-indigo-800 flex items-center gap-0.5">
+                          View →
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : view === 'overview' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Subject performance */}
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-4">

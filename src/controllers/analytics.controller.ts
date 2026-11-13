@@ -221,4 +221,83 @@ export class AnalyticsController {
       trend
     });
   }
+
+  /**
+   * GET /api/analytics/recent-quiz-sessions
+   * Last 30 quiz submissions with student name + gap count, for the Sessions tab.
+   */
+  static async getRecentQuizSessions(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const isAdmin = ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin'].includes(user.roleName ?? '');
+
+    const quizWhere: any = {};
+    if (!isAdmin) quizWhere.teacherId = user.id;
+
+    const quizIds = (await prisma.quiz.findMany({
+      where: quizWhere,
+      select: { id: true }
+    })).map(q => q.id);
+
+    if (quizIds.length === 0) {
+      return reply.send({ success: true, sessions: [] });
+    }
+
+    const submissions = await prisma.quizSubmission.findMany({
+      where: { quizId: { in: quizIds } },
+      include: {
+        quiz: {
+          include: {
+            subject: { select: { name: true } },
+            class:   { select: { name: true } },
+            questions: { orderBy: { orderIndex: 'asc' } }
+          }
+        }
+      },
+      orderBy: { submittedAt: 'desc' },
+      take: 30
+    });
+
+    const studentIds = [...new Set(submissions.map(s => s.studentId))];
+    const students = await prisma.user.findMany({
+      where: { id: { in: studentIds } },
+      select: { id: true, fullName: true }
+    });
+    const studentMap = new Map(students.map(s => [s.id, s.fullName]));
+
+    const sessions = submissions.map(sub => {
+      let answers: Record<string, any> = {};
+      try { answers = JSON.parse(sub.answersJson); } catch {}
+      let gapCount = 0;
+      for (const q of sub.quiz.questions) {
+        const sa = answers[q.id] ?? null;
+        if (sa === null || sa === '') { gapCount++; continue; }
+        let cv: any;
+        try { cv = JSON.parse(q.correctAnswer); } catch { cv = q.correctAnswer; }
+        let isCorrect = false;
+        try {
+          isCorrect = typeof cv === 'string' && typeof sa === 'string'
+            ? cv.trim().toLowerCase() === sa.trim().toLowerCase()
+            : JSON.stringify(cv) === JSON.stringify(sa);
+        } catch {}
+        if (!isCorrect) gapCount++;
+      }
+      const percentage = sub.totalMarks > 0
+        ? Math.round((sub.score / sub.totalMarks) * 1000) / 10 : 0;
+      return {
+        quizId:      sub.quizId,
+        studentId:   sub.studentId,
+        studentName: studentMap.get(sub.studentId) ?? 'Unknown',
+        quizTitle:   sub.quiz.title,
+        subject:     sub.quiz.subject.name,
+        class:       sub.quiz.class.name,
+        percentage,
+        score:       sub.score,
+        totalMarks:  sub.totalMarks,
+        gapCount,
+        submittedAt: sub.submittedAt
+      };
+    });
+
+    return reply.send({ success: true, sessions });
+  }
 }

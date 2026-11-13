@@ -34,6 +34,7 @@ export async function assessmentRoutes(fastify: FastifyInstance) {
   );
   fastify.get('/api/assessment/quizzes/:id', AssessmentController.getQuizDetails);
   fastify.post('/api/assessment/quizzes/:id/submit', AssessmentController.submitQuiz);
+  fastify.get('/api/assessment/quizzes/:id/session-report', AssessmentController.getSessionReport);
 
   // Worksheets — read: all authenticated; create: teachers only
   fastify.get('/api/assessment/worksheets', AssessmentController.listWorksheets);
