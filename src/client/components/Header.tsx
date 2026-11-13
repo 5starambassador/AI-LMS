@@ -68,10 +68,10 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-teal-600',
     activeColor: 'bg-teal-50 text-teal-800 border-teal-200',
     items: [
-      { label: 'Curriculum', tab: 'resources',   route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,   desc: 'Digital textbooks & flipbook reader' },
-      { label: 'Homework',   tab: 'homework',    route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,   desc: 'Assign and grade homework tasks' },
-      { label: 'Attendance', tab: 'attendance',  route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Roll call, QR scan & register' },
-      { label: 'Worksheet',  tab: 'worksheet',   route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,     desc: 'Build interactive worksheets' },
+      { label: 'Attendance', tab: 'attendance',  route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
+      { label: 'Curriculum', tab: 'resources',   route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,     desc: 'Digital textbooks & flipbook reader' },
+      { label: 'Homework',   tab: 'homework',    route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,    desc: 'Assign and grade homework tasks' },
+      { label: 'Worksheet',  tab: 'worksheet',   route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,      desc: 'Build interactive worksheets' },
     ]
   },
   {
@@ -93,8 +93,8 @@ const NAV_GROUPS: NavGroup[] = [
     allowedRoles: ADMIN_ROLES,
     items: [
       { label: 'Timetable',   tab: 'timetable',   route: '/staff/timetable',   icon: <CalendarDays className="w-4 h-4 text-orange-500" />, desc: 'Class schedules & period planner' },
-      { label: 'Noticeboard', tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & announcements' },
       { label: 'Leave',       tab: 'leaves',      route: '/staff/leaves',      icon: <UmbrellaOff className="w-4 h-4 text-rose-500" />,    desc: 'Staff leave requests & approvals' },
+      { label: 'Noticeboard', tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & announcements' },
       { label: 'Fees',        tab: 'fees',        route: '/staff/fees',        icon: <CreditCard className="w-4 h-4 text-emerald-600" />,  desc: 'Fee tracker & payment status' },
     ]
   },
@@ -258,6 +258,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <DropdownMenu key={group.label} group={group} activeTab={activeTab} onNavigate={onNavigate} />
               ))}
 
+              {/* ── Divider: academic / utility ── */}
+              <span className="w-px h-5 bg-slate-200 mx-1 flex-shrink-0" />
+
               {/* Standalone Leave for teachers (not in Operations group) */}
               {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
                 <button
@@ -273,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              {/* AI Tools — standalone */}
+              {/* AI Tools */}
               <button
                 onClick={() => onNavigate('/staff/aitools')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
@@ -286,7 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>AI Tools</span>
               </button>
 
-              {/* My Space — standalone */}
+              {/* My Space */}
               <button
                 onClick={() => onNavigate('/staff/myspace')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
