@@ -198,9 +198,9 @@ export function TimetableHub() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-4 py-3 text-left font-bold text-slate-500 w-24">Period</th>
+                  <th className="px-4 py-3 text-left font-bold text-slate-500 w-28 whitespace-nowrap">Period</th>
                   {DAYS.map(d => (
-                    <th key={d} className="px-3 py-3 text-left font-bold text-slate-700 min-w-[140px]">{d}</th>
+                    <th key={d} className="px-3 py-3 text-left font-bold text-slate-700 min-w-[160px]">{d}</th>
                   ))}
                 </tr>
               </thead>
@@ -209,7 +209,7 @@ export function TimetableHub() {
                   <tr key={def.n} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                     <td className="px-4 py-3">
                       <div className="text-sm font-bold text-slate-700">P{def.n}</div>
-                      <div className="text-[10px] text-slate-400">{def.start}–{def.end}</div>
+                      <div className="text-[10px] text-slate-400 whitespace-nowrap">{def.start}–{def.end}</div>
                     </td>
                     {DAYS.map((_, i) => {
                       const dayNum = i + 1;

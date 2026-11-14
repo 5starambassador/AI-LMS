@@ -1415,7 +1415,7 @@ export const LearningGapStudio: React.FC<{
                       </div>
 
                       <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                        <div className="font-semibold text-slate-700 truncate max-w-[200px]">
+                        <div className="font-semibold text-slate-700 truncate max-w-[280px]">
                           {gap.conceptName}
                         </div>
                         <span

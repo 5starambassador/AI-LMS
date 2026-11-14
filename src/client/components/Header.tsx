@@ -214,7 +214,7 @@ export const Header: React.FC<HeaderProps> = ({
       : `Staff · ${currentUser?.campus?.name || 'Achariya'}`;
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16 gap-2.5">
 
           {/* Brand */}
@@ -225,7 +225,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-xs font-bold text-base">
               ⚡
             </div>
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="font-extrabold text-xl tracking-tight text-slate-900">achariya</span>
               <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-black px-1.5 py-0.5 rounded-md tracking-wider whitespace-nowrap">
                 AI ONE
@@ -237,7 +237,7 @@ export const Header: React.FC<HeaderProps> = ({
           {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
             currentUser?.roleKey !== 'role-ach-student' &&
             currentUser?.roleKey !== 'role-ach-parent' && (
-            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0">
+            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1">
               {/* Home — always direct */}
               <button
                 onClick={() => onNavigate('/staff/home')}
@@ -387,7 +387,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {displayName}
                 </div>
                 {currentUser?.scope && (
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 flex-shrink-0">
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 leading-none inline-flex items-center rounded bg-indigo-50 text-indigo-700 border border-indigo-200 flex-shrink-0">
                     {currentUser.scope}
                   </span>
                 )}

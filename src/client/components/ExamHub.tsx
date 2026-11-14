@@ -633,18 +633,18 @@ export const ExamHub: React.FC = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wide border-b border-slate-200">
-                  <th className="py-3 px-4 text-left w-16">Roll No.</th>
+                  <th className="py-3 px-4 text-left w-28 whitespace-nowrap">Roll No.</th>
                   <th className="py-3 px-4 text-left">Student Name</th>
                   <th className="py-3 px-4 text-center w-40">Marks (out of {selectedExam.totalMarks})</th>
                   <th className="py-3 px-4 text-center w-24">%</th>
                   <th className="py-3 px-4 text-center w-20">Grade</th>
-                  <th className="py-3 px-4 text-center w-28">Mastery Tier</th>
+                  <th className="py-3 px-4 text-center w-36 whitespace-nowrap">Mastery Tier</th>
                 </tr>
               </thead>
               <tbody>
                 {computedRows.map(({ r, livePct, liveGrade, mastery }, i) => (
                   <tr key={r.studentId} className={`border-b border-slate-100 ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
-                    <td className="py-3 px-4 text-slate-500 text-xs">{r.rollNumber ?? '—'}</td>
+                    <td className="py-3 px-4 text-slate-500 text-xs whitespace-nowrap">{r.rollNumber ?? '—'}</td>
                     <td className="py-3 px-4 font-medium text-slate-800">{r.studentName}</td>
                     <td className="py-3 px-4 text-center">
                       <input

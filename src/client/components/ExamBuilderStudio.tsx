@@ -728,7 +728,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
       {/* 1. TOP GLOBAL CONTROL BAR (Exact match to Screenshots 1 & 2)              */}
       {/* ========================================================================= */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={onBackToHub}
@@ -1232,9 +1232,9 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                           <tr className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
                             <th className="py-2 w-16">MOVE</th>
                             <th className="py-2">QUESTION TYPE</th>
-                            <th className="py-2 w-28 text-center">COUNT</th>
-                            <th className="py-2 w-28 text-center">MARKS EACH</th>
-                            <th className="py-2 w-28 text-center">TOTAL MARKS</th>
+                            <th className="py-2 w-32 text-center whitespace-nowrap">COUNT</th>
+                            <th className="py-2 w-32 text-center whitespace-nowrap">MARKS EACH</th>
+                            <th className="py-2 w-32 text-center whitespace-nowrap">TOTAL MARKS</th>
                             <th className="py-2 w-12 text-center"></th>
                           </tr>
                         </thead>
@@ -1460,7 +1460,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
       {/* STICKY BOTTOM NAVIGATION BAR (Exact match to Screenshots 1, 2, 3, 4, 5)   */}
       {/* ========================================================================= */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-3.5 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="text-xs text-slate-500 font-medium">
             {activeStep === 1 ? (
               <span>

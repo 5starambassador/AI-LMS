@@ -208,7 +208,7 @@ function AppShell() {
 
       {/* Domain Partitioning Access-Denied Alert Notification */}
       {accessDeniedAlert && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
           <div className="p-4 bg-rose-50/90 border border-rose-200 text-rose-900 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in">
             <div className="flex items-center space-x-2.5">
               <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
@@ -238,7 +238,7 @@ function AppShell() {
       )}
 
       {/* Main Workspace Body: Routed Standalone Pages */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
+      <main className="flex-1 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
         <React.Suspense fallback={<div className="py-16 text-center text-xs font-semibold text-slate-400">Loading studio workspace…</div>}>
           {/* VIEW 1: EDUCATOR & FACULTY PORTAL (Comprehensive Standalone Workspaces) */}
           {currentPortal === 'STAFF' && (
@@ -314,7 +314,7 @@ function AppShell() {
 
       {/* Footer Demonstration Helper Bar - Ultra Light & Minimalist */}
       <footer className="bg-white/80 border-t border-slate-200/80 py-4 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-slate-800">Achariya AI ONE · Enterprise Learning Ecosystem</span>
             <span>·</span>

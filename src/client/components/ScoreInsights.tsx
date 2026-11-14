@@ -70,14 +70,14 @@ function ScoreBar({ value, color = 'teal', label }: { value: number; color?: str
   };
   return (
     <div className="flex items-center gap-2">
-      {label && <span className="text-[11px] text-slate-500 w-20 shrink-0 truncate">{label}</span>}
+      {label && <span className="text-[11px] text-slate-500 w-28 shrink-0 truncate">{label}</span>}
       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${colorMap[color] ?? 'bg-teal-500'}`}
           style={{ width: `${Math.min(value, 100)}%` }}
         />
       </div>
-      <span className="text-[11px] font-mono font-bold text-slate-700 w-9 text-right">{value}%</span>
+      <span className="text-[11px] font-mono font-bold text-slate-700 w-12 shrink-0 text-right">{value}%</span>
     </div>
   );
 }
@@ -318,7 +318,7 @@ export const ScoreInsights: React.FC = () => {
                   {sessions.map((s, i) => (
                     <tr key={i} className="hover:bg-slate-50 cursor-pointer" onClick={() => setOpenReport({ quizId: s.quizId, studentId: s.studentId })}>
                       <td className="px-5 py-3 font-semibold text-slate-800">{s.studentName}</td>
-                      <td className="px-5 py-3 text-slate-600 max-w-[180px] truncate">{s.quizTitle}</td>
+                      <td className="px-5 py-3 text-slate-600 max-w-[260px] truncate">{s.quizTitle}</td>
                       <td className="px-5 py-3 text-slate-500">{s.subject}</td>
                       <td className="px-5 py-3">
                         <span className={`font-mono font-bold px-2 py-0.5 rounded-lg text-[11px] ${

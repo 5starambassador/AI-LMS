@@ -288,12 +288,12 @@ export function ReportCardHub() {
               <div className="space-y-3">
                 {report.homework.map(row => (
                   <div key={row.subject} className="flex items-center gap-4">
-                    <div className="w-28 text-xs font-semibold text-slate-700 truncate shrink-0">{row.subject}</div>
+                    <div className="w-36 text-xs font-semibold text-slate-700 truncate shrink-0">{row.subject}</div>
                     <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-teal-500 rounded-full" style={{ width: `${row.avgPercent ?? 0}%` }} />
                     </div>
-                    <div className="text-xs font-bold text-slate-700 w-10 text-right">{row.avgPercent ?? '—'}%</div>
-                    <div className="text-xs text-slate-400 w-16 text-right shrink-0">{row.submissions} tasks</div>
+                    <div className="text-xs font-bold text-slate-700 w-12 text-right shrink-0">{row.avgPercent ?? '—'}%</div>
+                    <div className="text-xs text-slate-400 w-20 text-right shrink-0 whitespace-nowrap">{row.submissions} tasks</div>
                   </div>
                 ))}
               </div>
