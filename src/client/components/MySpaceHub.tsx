@@ -38,6 +38,112 @@ export const MySpaceHub: React.FC = () => {
   // PPG Planner State
   const [selectedSubject, setSelectedSubject] = useState<'Mathematics' | 'English' | 'Science'>('Mathematics');
   const [rebalancedNotice, setRebalancedNotice] = useState(false);
+  const [isHolidayRebalanced, setIsHolidayRebalanced] = useState(false);
+
+  const PPG_SCHEDULES: Record<'Mathematics' | 'English' | 'Science', Array<{ week: string; topic: string; periods: string; pedagogy: string; status: string; statusColor: string }>> = {
+    Mathematics: [
+      {
+        week: 'Week 1 (Nov 2 - Nov 6)',
+        topic: 'Unit 4: Geometry - Types of Angles & Classification',
+        periods: '5 Periods (Periods 50 - 54)',
+        pedagogy: 'Hands-on Protractor & Compass manipulative lab',
+        status: 'Completed',
+        statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      },
+      {
+        week: 'Week 2 (Nov 9 - Nov 13)',
+        topic: 'Unit 5: Perimeter & Area of 2D Shapes',
+        periods: '5 Periods (Periods 55 - 59)',
+        pedagogy: 'Graph sheet square counting & formula induction',
+        status: 'In Progress (Period 56 Today)',
+        statusColor: 'bg-amber-100 text-amber-800 border-amber-200'
+      },
+      {
+        week: 'Week 3 (Nov 16 - Nov 20)',
+        topic: 'Unit 6: Fractions & Mixed Numbers Operations',
+        periods: isHolidayRebalanced ? '4 Periods + 2 Rebalanced Buffer' : '6 Periods (Periods 60 - 65)',
+        pedagogy: 'CPA model: Strip folding & number line representation',
+        status: isHolidayRebalanced ? 'Holiday Rebalanced' : 'Upcoming',
+        statusColor: isHolidayRebalanced ? 'bg-teal-100 text-teal-800 border-teal-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+      },
+      {
+        week: 'Week 4 (Nov 23 - Nov 27)',
+        topic: 'Unit 7: Decimals and Place Value Expansions',
+        periods: '5 Periods (Periods 66 - 70)',
+        pedagogy: 'Currency & metric measurement application tasks',
+        status: 'Upcoming',
+        statusColor: 'bg-slate-100 text-slate-700 border-slate-200'
+      }
+    ],
+    English: [
+      {
+        week: 'Week 1 (Nov 2 - Nov 6)',
+        topic: 'Unit 4: Coastal Winds Listening & Descriptive Prose',
+        periods: '5 Periods (Periods 50 - 54)',
+        pedagogy: 'VoiceLab binaural comprehension & inference mapping',
+        status: 'Completed',
+        statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      },
+      {
+        week: 'Week 2 (Nov 9 - Nov 13)',
+        topic: 'Unit 5: Oral Expressiveness, Pitch & Roleplay Dubbing',
+        periods: '5 Periods (Periods 55 - 59)',
+        pedagogy: 'Paired dialogue recording & VoiceLab fluency feedback',
+        status: 'In Progress (Period 56 Today)',
+        statusColor: 'bg-amber-100 text-amber-800 border-amber-200'
+      },
+      {
+        week: 'Week 3 (Nov 16 - Nov 20)',
+        topic: 'Unit 6: Whispering Mangroves — Oral Reading Fluency (WCPM)',
+        periods: isHolidayRebalanced ? '4 Periods + 2 Rebalanced Buffer' : '6 Periods (Periods 60 - 65)',
+        pedagogy: 'Timed prosody drills & before/after voice benchmarking',
+        status: isHolidayRebalanced ? 'Holiday Rebalanced' : 'Upcoming',
+        statusColor: isHolidayRebalanced ? 'bg-teal-100 text-teal-800 border-teal-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+      },
+      {
+        week: 'Week 4 (Nov 23 - Nov 27)',
+        topic: 'Unit 7: Academic Vocabulary & Contextual Sentence Synthesis',
+        periods: '5 Periods (Periods 66 - 70)',
+        pedagogy: 'Morphological word cards & peer critique workshop',
+        status: 'Upcoming',
+        statusColor: 'bg-slate-100 text-slate-700 border-slate-200'
+      }
+    ],
+    Science: [
+      {
+        week: 'Week 1 (Nov 2 - Nov 6)',
+        topic: 'Unit 4: Canopy Light Absorption & Stomatal Structure',
+        periods: '5 Periods (Periods 50 - 54)',
+        pedagogy: 'Leaf peel microscopy & experiential botanical observation',
+        status: 'Completed',
+        statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      },
+      {
+        week: 'Week 2 (Nov 9 - Nov 13)',
+        topic: 'Unit 5: Chloroplast Pigments & Paper Chromatography Lab',
+        periods: '5 Periods (Periods 55 - 59)',
+        pedagogy: '5E hands-on pigment separation & spectroscopy inquiry',
+        status: 'In Progress (Period 56 Today)',
+        statusColor: 'bg-amber-100 text-amber-800 border-amber-200'
+      },
+      {
+        week: 'Week 3 (Nov 16 - Nov 20)',
+        topic: 'Unit 6: Trophic Energy Transfer & Lindeman 10% Law',
+        periods: isHolidayRebalanced ? '4 Periods + 2 Rebalanced Buffer' : '6 Periods (Periods 60 - 65)',
+        pedagogy: 'Quantitative pyramid modeling & energy calculation tasks',
+        status: isHolidayRebalanced ? 'Holiday Rebalanced' : 'Upcoming',
+        statusColor: isHolidayRebalanced ? 'bg-teal-100 text-teal-800 border-teal-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+      },
+      {
+        week: 'Week 4 (Nov 23 - Nov 27)',
+        topic: 'Unit 7: Renewable Solar Micro-Grid & Water Conservation',
+        periods: '5 Periods (Periods 66 - 70)',
+        pedagogy: 'Hypothesis design & campus prototype walkthrough',
+        status: 'Upcoming',
+        statusColor: 'bg-slate-100 text-slate-700 border-slate-200'
+      }
+    ]
+  };
 
   // Walkthrough State
   const [walkthroughTab, setWalkthroughTab] = useState<'audit' | 'history'>('audit');
@@ -50,6 +156,16 @@ export const MySpaceHub: React.FC = () => {
   const [strengths, setStrengths] = useState('Superb use of Concrete-Pictorial-Abstract (CPA) manipulative lab for angle classification. Scholars demonstrated active peer learning.');
   const [growthAreas, setGrowthAreas] = useState('Allow 30 seconds more wait-time before calling on eager volunteers to empower reflective learners.');
   const [auditSubmitted, setAuditSubmitted] = useState(false);
+  const [auditHistory, setAuditHistory] = useState([
+    { date: 'Nov 6, 2026', subject: 'Grade 5A - Math', observer: 'Campus Principal', score: '4.9 / 5.0', tag: 'Exemplary' },
+    { date: 'Oct 21, 2026', subject: 'Grade 5A - English', observer: 'Cluster Coordinator', score: '4.7 / 5.0', tag: 'Proficient' },
+    { date: 'Oct 04, 2026', subject: 'Grade 5A - Science', observer: 'Academic Director', score: '4.9 / 5.0', tag: 'Exemplary' },
+    { date: 'Sep 15, 2026', subject: 'Grade 5A - Math', observer: 'Campus Principal', score: '4.8 / 5.0', tag: 'Exemplary' }
+  ]);
+  const liveCompositeScore = (
+    (auditScores.instructional + auditScores.engagement + auditScores.formative + auditScores.atmosphere) /
+    4
+  ).toFixed(2);
 
   return (
     <div className="space-y-6 pb-16">
@@ -419,13 +535,14 @@ export const MySpaceHub: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => {
+                    setIsHolidayRebalanced(true);
                     setRebalancedNotice(true);
-                    setTimeout(() => setRebalancedNotice(false), 3000);
+                    setTimeout(() => setRebalancedNotice(false), 3500);
                   }}
                   className="px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 rounded-lg font-bold flex items-center space-x-1.5 transition-colors shadow-xs"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Run Holiday Rebalance</span>
+                  <span>{isHolidayRebalanced ? 'Rebalanced ✓' : 'Run Holiday Rebalance'}</span>
                 </button>
               </div>
             </div>
@@ -452,8 +569,12 @@ export const MySpaceHub: React.FC = () => {
                 </div>
                 <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-1">
                   <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider">Buffer Available</span>
-                  <div className="text-xl font-black text-sky-700">+4 Buffer Periods</div>
-                  <span className="text-[11px] text-sky-600">Zero deficit / No extra classes needed</span>
+                  <div className="text-xl font-black text-sky-700">
+                    {isHolidayRebalanced ? '+2 Buffer Periods' : '+4 Buffer Periods'}
+                  </div>
+                  <span className="text-[11px] text-sky-600">
+                    {isHolidayRebalanced ? '2 buffer periods applied for State Holiday' : 'Zero deficit / No extra classes needed'}
+                  </span>
                 </div>
               </div>
 
@@ -465,40 +586,7 @@ export const MySpaceHub: React.FC = () => {
                 </h4>
 
                 <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-200">
-                  {[
-                    {
-                      week: 'Week 1 (Nov 2 - Nov 6)',
-                      topic: 'Unit 4: Geometry - Types of Angles & Classification',
-                      periods: '5 Periods (Periods 50 - 54)',
-                      pedagogy: 'Hands-on Protractor & Compass manipulative lab',
-                      status: 'Completed',
-                      statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                    },
-                    {
-                      week: 'Week 2 (Nov 9 - Nov 13)',
-                      topic: 'Unit 5: Perimeter & Area of 2D Shapes',
-                      periods: '5 Periods (Periods 55 - 59)',
-                      pedagogy: 'Graph sheet square counting & formula induction',
-                      status: 'In Progress (Period 56 Today)',
-                      statusColor: 'bg-amber-100 text-amber-800 border-amber-200'
-                    },
-                    {
-                      week: 'Week 3 (Nov 16 - Nov 20)',
-                      topic: 'Unit 6: Fractions & Mixed Numbers Operations',
-                      periods: '6 Periods (Periods 60 - 65)',
-                      pedagogy: 'CPA model: Strip folding & number line representation',
-                      status: 'Upcoming',
-                      statusColor: 'bg-slate-100 text-slate-700 border-slate-200'
-                    },
-                    {
-                      week: 'Week 4 (Nov 23 - Nov 27)',
-                      topic: 'Unit 7: Decimals and Place Value Expansions',
-                      periods: '5 Periods (Periods 66 - 70)',
-                      pedagogy: 'Currency & metric measurement application tasks',
-                      status: 'Upcoming',
-                      statusColor: 'bg-slate-100 text-slate-700 border-slate-200'
-                    }
-                  ].map((row, i) => (
+                  {PPG_SCHEDULES[selectedSubject].map((row, i) => (
                     <div key={i} className="p-4 bg-white hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
@@ -581,7 +669,7 @@ export const MySpaceHub: React.FC = () => {
                 }`}
               >
                 <BarChart2 className="w-3.5 h-3.5" />
-                <span>Audit History & Trend Analytics (4)</span>
+                <span>Audit History &amp; Trend Analytics ({auditHistory.length})</span>
               </button>
             </div>
 
@@ -592,7 +680,7 @@ export const MySpaceHub: React.FC = () => {
                   {auditSubmitted && (
                     <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
                       <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <span>Observation Audit successfully recorded! Feedback has been indexed into the Academic Leadership Dashboard with composite score: 4.85 / 5.0.</span>
+                      <span>Observation Audit successfully recorded! Feedback has been indexed into the Academic Leadership Dashboard with composite score: {liveCompositeScore} / 5.0.</span>
                     </div>
                   )}
 
@@ -704,7 +792,19 @@ export const MySpaceHub: React.FC = () => {
                   {/* Submit Button */}
                   <div className="pt-2">
                     <button
-                      onClick={() => setAuditSubmitted(true)}
+                      onClick={() => {
+                        setAuditSubmitted(true);
+                        const scoreNum = Number(liveCompositeScore);
+                        const newRecord = {
+                          date: 'Nov 14, 2026 (Just Now)',
+                          subject: 'Grade 5A - Math (Period 2)',
+                          observer: 'Dr. Rajesh K. Varma (Principal)',
+                          score: `${liveCompositeScore} / 5.0`,
+                          tag: scoreNum >= 4.75 ? 'Exemplary' : scoreNum >= 3.75 ? 'Proficient' : 'Developing'
+                        };
+                        setAuditHistory(prev => [newRecord, ...prev]);
+                        showToast(`Classroom walkthrough logged (${liveCompositeScore} / 5.0)`);
+                      }}
                       className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"
                     >
                       <Send className="w-4 h-4" />
@@ -714,18 +814,18 @@ export const MySpaceHub: React.FC = () => {
                 </div>
               )}
 
-              {walkthroughTab === 'history' && (
+              {walkthroughTab === 'history' && (() => {
+                const avgScore = (
+                  auditHistory.reduce((acc, item) => acc + parseFloat(item.score), 0) /
+                  (auditHistory.length || 1)
+                ).toFixed(2);
+                return (
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Recent Classroom Observation Audits (Average Score: 4.8 / 5.0)
+                    Recent Classroom Observation Audits (Average Score: {avgScore} / 5.0)
                   </h4>
 
-                  {[
-                    { date: 'Nov 6, 2026', subject: 'Grade 5A - Math', observer: 'Campus Principal', score: '4.9 / 5.0', tag: 'Exemplary' },
-                    { date: 'Oct 21, 2026', subject: 'Grade 5A - English', observer: 'Cluster Coordinator', score: '4.7 / 5.0', tag: 'Proficient' },
-                    { date: 'Oct 04, 2026', subject: 'Grade 5A - Science', observer: 'Academic Director', score: '4.9 / 5.0', tag: 'Exemplary' },
-                    { date: 'Sep 15, 2026', subject: 'Grade 5A - Math', observer: 'Campus Principal', score: '4.8 / 5.0', tag: 'Exemplary' }
-                  ].map((rec, i) => (
+                  {auditHistory.map((rec, i) => (
                     <div key={i} className="p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between text-xs">
                       <div>
                         <div className="flex items-center space-x-2">
@@ -742,7 +842,8 @@ export const MySpaceHub: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Modal Footer */}

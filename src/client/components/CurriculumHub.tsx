@@ -44,7 +44,7 @@ export const CurriculumHub: React.FC = () => {
 
   useEffect(() => {
     fetchBooks();
-  }, [selectedGrade, selectedSubject]);
+  }, [selectedGrade]);
 
   const fetchBooks = async () => {
     try {
@@ -52,7 +52,6 @@ export const CurriculumHub: React.FC = () => {
       const token = localStorage.getItem('achariya_token');
       const params = new URLSearchParams();
       if (selectedGrade !== 'ALL') params.append('grade', selectedGrade);
-      if (selectedSubject !== 'ALL') params.append('subjectId', selectedSubject);
 
       const res = await fetch(`/api/academic/books?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -116,7 +115,14 @@ export const CurriculumHub: React.FC = () => {
       (b.publisher && b.publisher.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (b.class?.name && b.class.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (b.subject?.name && b.subject.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchSearch;
+    const subjText = `${b.subject?.code || ''} ${b.subject?.name || ''} ${b.title}`.toLowerCase();
+    const matchSubject =
+      selectedSubject === 'ALL' ||
+      (selectedSubject === 'ENGLISH' && (subjText.includes('eng') || subjText.includes('lingua') || subjText.includes('oratory'))) ||
+      (selectedSubject === 'MATHEMATICS' && (subjText.includes('mth') || subjText.includes('math'))) ||
+      (selectedSubject === 'SCIENCE' && (subjText.includes('sci') || subjText.includes('world around') || subjText.includes('physics') || subjText.includes('biology'))) ||
+      (selectedSubject === 'AI' && (subjText.includes('ai') || subjText.includes('algorithmic') || subjText.includes('coding') || subjText.includes('computational')));
+    return matchSearch && matchSubject;
   });
 
   const grades = [
@@ -232,8 +238,8 @@ export const CurriculumHub: React.FC = () => {
         </div>
 
         {/* Search & Subject Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-          <div className="relative w-full sm:w-80">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2">
+          <div className="relative w-full lg:w-80">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -244,8 +250,27 @@ export const CurriculumHub: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center space-x-2 text-xs w-full sm:w-auto justify-end">
-            <span className="text-slate-400 font-semibold">Showing {filteredBooks.length} Books</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            {[
+              { id: 'ALL', label: 'All Subjects' },
+              { id: 'ENGLISH', label: 'English' },
+              { id: 'MATHEMATICS', label: 'Mathematics' },
+              { id: 'SCIENCE', label: 'Science' },
+              { id: 'AI', label: 'AI & Coding' }
+            ].map(subj => (
+              <button
+                key={subj.id}
+                onClick={() => setSelectedSubject(subj.id)}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                  selectedSubject === subj.id
+                    ? 'bg-teal-600 text-white shadow-xs'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/70'
+                }`}
+              >
+                {subj.label}
+              </button>
+            ))}
+            <span className="text-slate-400 font-semibold pl-2">Showing {filteredBooks.length} Books</span>
           </div>
         </div>
       </div>
@@ -372,7 +397,79 @@ export const CurriculumHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 1: INTERACTIVE DUAL-PAGE FLIPBOOK READER                            */}
       {/* ========================================================================= */}
-      {activeView === 'flipbook' && selectedBook && (
+      {activeView === 'flipbook' && selectedBook && (() => {
+        const spreads = [
+          {
+            leftTag: `${selectedBook.subject?.name || 'Science'} · Unit 1`,
+            leftTitle: '1. The Living Canopy & Solar Energy Absorption',
+            leftBody:
+              'Centuries of botanical observation across the Coromandel coastline have revealed the intricate architecture of tropical leaf cells. Beneath the waxy cuticle, palisade mesophyll cells harbor millions of chloroplast organelles, capturing photons across the blue and red spectral bands.',
+            leftTermTitle: 'Key Scientific Terminology:',
+            leftTerms: 'Photon Absorption · Thylakoid Grana · Stomatal Transpiration · Calvin Cycle',
+            rightTag: 'Reflective Synthesis',
+            rightTitle: '2. Mathematical Modeling of Ecological Energy Flows',
+            rightBody:
+              "According to Lindeman's 10% efficiency rule, only approximately ten percent of chemical energy is transferred from one trophic level to the next. Primary producers synthesize 10,000 kJ of biomass energy, supporting 1,000 kJ in primary consumers.",
+            rightPromptTitle: 'Classroom Investigation Prompt:',
+            rightPrompt:
+              'Calculate the trophic energy quotient when secondary consumers consume 850 grams of primary consumer biomass.',
+            audio:
+              'Chapter 1, Pages 1 and 2: The Living Canopy and Mathematical Modeling of Ecological Energy Flows. Chlorophyll absorbs solar photons to synthesize biomass while only ten percent transfers up each trophic level.'
+          },
+          {
+            leftTag: `${selectedBook.subject?.name || 'Science'} · Lab Protocol`,
+            leftTitle: '3. Experiential Inquiry: Chloroplast Micro-Spectroscopy',
+            leftBody:
+              'In this hands-on laboratory session, scholars extract chlorophyll pigments using paper chromatography. Observe how distinct bands of chlorophyll a, chlorophyll b, xanthophylls, and carotenoids separate along the capillary gradient.',
+            leftTermTitle: 'Laboratory Apparatus & Pigments:',
+            leftTerms: 'Chlorophyll a · Chlorophyll b · Xanthophylls · Capillary Gradient',
+            rightTag: 'Hypothesis Formulation',
+            rightTitle: '4. Critical Thinking & Stomatal Regulation',
+            rightBody:
+              'How might rising sea surface temperatures and localized humidity fluctuations alter stomatal aperture conductance in coastal flora? Formulate a testable scientific hypothesis with clearly identified independent and dependent variables.',
+            rightPromptTitle: 'Inquiry Investigation Prompt:',
+            rightPrompt:
+              'Compare midday stomatal closure rates between sunlit canopy leaves and shaded lower-story fern fronds.',
+            audio:
+              'Pages 3 and 4: Chloroplast Micro-Spectroscopy and Stomatal Regulation. Scholars separate photosynthetic pigments using paper chromatography and investigate humidity-driven stomatal closure.'
+          },
+          {
+            leftTag: `${selectedBook.subject?.name || 'Science'} · Field Study`,
+            leftTitle: '5. Coastal Mangrove Adaptation & Osmoregulation',
+            leftBody:
+              'Along brackish lagoons near Puducherry, mangrove species thrive in saline tidal waters by filtering salts at the root endodermis and projecting upward breathing roots known as pneumatophores for gaseous exchange.',
+            leftTermTitle: 'Ecological Adaptations:',
+            leftTerms: 'Pneumatophores · Halophyte Adaptation · Osmotic Gradient · Tidal Surge Buffer',
+            rightTag: 'Interdisciplinary Math',
+            rightTitle: '6. Applied Geometry in Botanical Phyllotaxis',
+            rightBody:
+              'Leaf arrangement around stems often follows the golden angle of approximately 137.5 degrees so upper leaves cast minimal shadow on lower photosynthetic blades during peak tropical sunlight.',
+            rightPromptTitle: 'Geometry Field Task:',
+            rightPrompt:
+              'Measure the divergence angle between five successive leaves on a campus sapling and compare with 137.5 degrees.',
+            audio:
+              'Pages 5 and 6: Coastal Mangrove Adaptation and Botanical Phyllotaxis. Explore halophytic salt exclusion alongside golden-angle leaf geometry.'
+          },
+          {
+            leftTag: `${selectedBook.subject?.name || 'Science'} · Capstone Design`,
+            leftTitle: '7. Synthesis: Campus Solar Rainwater Micro-Grid',
+            leftBody:
+              'Scholars integrate solar photovoltaic panels, rainwater harvesting cisterns, and automated soil moisture probes to design a zero-waste micro-irrigation loop for the school botanical garden.',
+            leftTermTitle: 'Sustainability Systems:',
+            leftTerms: 'Solar Photovoltaic Yield · Soil Moisture Telemetry · Evapotranspiration · Water Balance',
+            rightTag: 'NEP 2020 Competency',
+            rightTitle: '8. Chapter Mastery Check & Competency Reflection',
+            rightBody:
+              'Synthesize your quantitative calculations, spectroscopy chromatogram observations, and geometric divergence measurements into a structured student portfolio brief ready for Holistic Progress Card review.',
+            rightPromptTitle: 'Competency Capstone Prompt:',
+            rightPrompt:
+              'Design a 3-metric evaluation rubric measuring how automated drip irrigation improves sapling survival over 30 days.',
+            audio:
+              'Pages 7 and 8: Campus Solar Rainwater Micro-Grid and Chapter Mastery Reflection. Connect clean solar energy engineering with real-world ecological stewardship.'
+          }
+        ];
+        const spread = spreads[currentSpread] || spreads[0];
+        return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[95vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
             {/* Top Toolbar */}
@@ -391,13 +488,7 @@ export const CurriculumHub: React.FC = () => {
 
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => {
-                    const text =
-                      currentSpread === 0
-                        ? 'Chapter 1: Foundations and Natural Systems. In this lesson, scholars discover how living organisms interact with atmospheric energy. Chlorophyll absorbs solar radiation, creating glucose and emitting oxygen for atmospheric equilibrium.'
-                        : 'Chapter 2: Quantitative Analysis and Laboratory Applications. Scholars calculate the thermodynamic energy conversion efficiency across ecosystem trophic levels.';
-                    speakSpreadText(text);
-                  }}
+                  onClick={() => speakSpreadText(spread.audio)}
                   className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center space-x-1.5 border transition-all ${
                     isSpeaking
                       ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
@@ -427,25 +518,21 @@ export const CurriculumHub: React.FC = () => {
               <div className="bg-white p-7 rounded-2xl shadow-sm border border-slate-200/80 space-y-4 flex flex-col justify-between min-h-[380px]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b pb-1">
-                    <span>{selectedBook.subject?.name} · Unit 1</span>
+                    <span>{spread.leftTag}</span>
                     <span>Page {currentSpread * 2 + 1}</span>
                   </div>
 
                   <h4 className="text-base font-extrabold text-slate-900 leading-snug">
-                    {currentSpread === 0
-                      ? '1. The Living Canopy & Solar Energy Absorption'
-                      : '3. Experiential Inquiry: Chloroplast Micro-Spectroscopy'}
+                    {spread.leftTitle}
                   </h4>
 
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    {currentSpread === 0
-                      ? 'Centuries of botanical observation across the Coromandel coastline have revealed the intricate architecture of tropical leaf cells. Beneath the waxy cuticle, palisade mesophyll cells harbor millions of chloroplast organelles, capturing photons across the blue and red spectral bands.'
-                      : 'In this hands-on laboratory session, scholars extract chlorophyll pigments using paper chromatography. Observe how distinct bands of chlorophyll a, chlorophyll b, xanthophylls, and carotenoids separate along the capillary gradient.'}
+                    {spread.leftBody}
                   </p>
 
                   <div className="p-3 bg-teal-50/70 border border-teal-200 rounded-xl text-[11px] text-teal-900 space-y-1">
-                    <strong className="block text-teal-950 font-bold">Key Scientific Terminology:</strong>
-                    <span>Photon Absorption · Thylakoid Grana · Stomatal Transpiration · Calvin Cycle</span>
+                    <strong className="block text-teal-950 font-bold">{spread.leftTermTitle}</strong>
+                    <span>{spread.leftTerms}</span>
                   </div>
                 </div>
 
@@ -459,25 +546,21 @@ export const CurriculumHub: React.FC = () => {
               <div className="bg-white p-7 rounded-2xl shadow-sm border border-slate-200/80 space-y-4 flex flex-col justify-between min-h-[380px]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b pb-1">
-                    <span>Reflective Synthesis</span>
+                    <span>{spread.rightTag}</span>
                     <span>Page {currentSpread * 2 + 2}</span>
                   </div>
 
                   <h4 className="text-base font-extrabold text-slate-900 leading-snug">
-                    {currentSpread === 0
-                      ? '2. Mathematical Modeling of Ecological Energy Flows'
-                      : '4. Critical Thinking & Real-World Application'}
+                    {spread.rightTitle}
                   </h4>
 
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    {currentSpread === 0
-                      ? "According to Lindeman's 10% efficiency rule, only approximately ten percent of chemical energy is transferred from one trophic level to the next. Primary producers synthesize 10,000 kJ of biomass energy, supporting 1,000 kJ in primary consumers."
-                      : 'How might rising sea surface temperatures and localized humidity fluctuations alter stomatal aperture conductance in coastal flora? Formulate a testable scientific hypothesis with independent and dependent variables.'}
+                    {spread.rightBody}
                   </p>
 
                   <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl text-[11px] text-indigo-900 space-y-1">
-                    <strong className="block text-indigo-950 font-bold">Classroom Investigation Prompt:</strong>
-                    <span>Calculate the trophic energy quotient when secondary consumers consume 850 grams of primary consumer biomass.</span>
+                    <strong className="block text-indigo-950 font-bold">{spread.rightPromptTitle}</strong>
+                    <span>{spread.rightPrompt}</span>
                   </div>
                 </div>
 
@@ -522,7 +605,8 @@ export const CurriculumHub: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* MODAL 2: CHAPTER SYLLABUS & LESSON PLANS                                  */}
