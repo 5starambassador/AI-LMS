@@ -298,6 +298,44 @@ const DEFAULT_GAPS: LearningGapItem[] = [
       reassessmentScore: null,
       reassessmentMastered: false
     }
+  },
+  {
+    id: 'gap-demo-006',
+    gapCode: 'GAP-2026-SCI-006',
+    studentId: 'ach-stu-diya-02',
+    studentName: 'Diya Krishnan',
+    campusId: 'camp-pud-01',
+    campusName: 'Achariya World Class Academy (Main Campus)',
+    grade: 'Grade 7',
+    gradeNumber: 7,
+    subject: 'Sciences',
+    chapter: 'Thermal Physics: Heat & Energy Transfer',
+    conceptId: 'con-sci-heat',
+    conceptName: 'Conduction, Convection & Thermal Equilibrium',
+    gapCategory: 'CONCEPTUAL',
+    status: 'FOUNDATION_LEARNING',
+    priority: 'HIGH',
+    diagnosticScore: 52,
+    identifiedPrerequisiteId: 'con-sci-matter',
+    identifiedPrerequisiteName: 'States of Matter & Particle Kinetic Energy',
+    recommendedLowerGrade: 'Grade 6',
+    teacherName: 'Dr. Anandhi Rajagopal',
+    foundationAssessmentScore: 76,
+    currentGradeReassessmentScore: null,
+    concept: {
+      conceptCode: 'CON-SCI-G7-HEAT',
+      difficulty: 'MEDIUM',
+      learningOutcome: 'Explain particle energy transfer mechanisms across solids, liquids, and gases.',
+      masteryThreshold: 85
+    },
+    pathway: {
+      currentPhase: 'PHASE_1_FOUNDATION',
+      foundationGrade: 'Grade 6',
+      foundationScore: 76,
+      foundationMastered: false,
+      reassessmentScore: null,
+      reassessmentMastered: false
+    }
   }
 ];
 
@@ -375,6 +413,7 @@ export const LearningGapStudio: React.FC<{
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleGapCount, setVisibleGapCount] = useState<number>(20);
 
   // Interactive Assessment Test State (for Student Portal)
   const [testMode, setTestMode] = useState<'NONE' | 'FOUNDATION' | 'REASSESSMENT'>('NONE');
@@ -886,18 +925,20 @@ export const LearningGapStudio: React.FC<{
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center space-x-2 border-b border-slate-200/80 pt-1">
-          <button
-            onClick={() => setActiveTab('teacher-dashboard')}
-            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
-              activeTab === 'teacher-dashboard'
-                ? 'border-purple-600 text-purple-700'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <GraduationCap className="w-4 h-4" />
-            <span>Teacher Intervention Workbench</span>
-          </button>
+        <div className="flex flex-wrap items-center space-x-2 border-b border-slate-200/80 pt-1">
+          {!initialStudentMode && (
+            <button
+              onClick={() => setActiveTab('teacher-dashboard')}
+              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+                activeTab === 'teacher-dashboard'
+                  ? 'border-purple-600 text-purple-700'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>Teacher Intervention Workbench</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('student-portal')}
@@ -911,17 +952,19 @@ export const LearningGapStudio: React.FC<{
             <span>Student Learning & Remediation Portal</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('learning-academy')}
-            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
-              activeTab === 'learning-academy'
-                ? 'border-purple-600 text-purple-700'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>Learning Academy Central & HOC</span>
-          </button>
+          {!initialStudentMode && (
+            <button
+              onClick={() => setActiveTab('learning-academy')}
+              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+                activeTab === 'learning-academy'
+                  ? 'border-purple-600 text-purple-700'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Learning Academy Central & HOC</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('student-report')}
@@ -1082,15 +1125,28 @@ export const LearningGapStudio: React.FC<{
                     <span className="text-[11px] text-slate-500">Aarav, Priya, Ananya + 1 more</span>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setShowBridgeWorksheetModal(true);
-                      showToast('Generated 1-Page Bridge Worksheet with 2D QR Verification Anchor');
-                    }}
-                    className="text-[11px] font-bold text-purple-700 hover:text-purple-900 hover:underline flex items-center space-x-1"
-                  >
-                    <span>Print Worksheet 🖨️</span>
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = effectiveGaps.find(g => g.id === 'gap-demo-002') || effectiveGaps[0];
+                        if (target) setSelectedGapId(target.id);
+                        showToast('Focused Circle Alpha cohort: Grade 5 Equivalent Fractions & Scaling');
+                      }}
+                      className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline"
+                    >
+                      Inspect Cohort →
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBridgeWorksheetModal(true);
+                        showToast('Generated 1-Page Bridge Worksheet with 2D QR Verification Anchor');
+                      }}
+                      className="text-[11px] font-bold text-purple-700 hover:text-purple-900 hover:underline flex items-center space-x-1"
+                    >
+                      <span>Print Worksheet 🖨️</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1119,14 +1175,27 @@ export const LearningGapStudio: React.FC<{
                     <span className="text-[11px] text-slate-500">Kavya N., Karthik M.</span>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      showToast('Circle Beta: 10-Minute Manipulative Drill ready for Grade 4 review.');
-                    }}
-                    className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center space-x-1"
-                  >
-                    <span>View 10-Min Plan →</span>
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = effectiveGaps.find(g => g.id === 'gap-demo-003') || effectiveGaps[0];
+                        if (target) setSelectedGapId(target.id);
+                        showToast('Focused Circle Beta cohort: Grade 4 Division & Equal Sharing');
+                      }}
+                      className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline"
+                    >
+                      Inspect Cohort →
+                    </button>
+                    <button
+                      onClick={() => {
+                        showToast('Circle Beta: 10-Minute Manipulative Drill ready for Grade 4 review.');
+                      }}
+                      className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center space-x-1"
+                    >
+                      <span>View 10-Min Plan →</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1227,20 +1296,43 @@ export const LearningGapStudio: React.FC<{
               />
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <select
                 value={filterGrade}
-                onChange={e => setFilterGrade(e.target.value)}
+                onChange={e => {
+                  setFilterGrade(e.target.value);
+                  setVisibleGapCount(20);
+                }}
                 className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
               >
                 <option value="ALL">All Grades</option>
-                <option value="Grade 5">Grade 5</option>
-                <option value="Grade 6">Grade 6</option>
+                {['Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].map(gr => (
+                  <option key={gr} value={gr}>{gr}</option>
+                ))}
+              </select>
+
+              <select
+                value={filterSubject}
+                onChange={e => {
+                  setFilterSubject(e.target.value);
+                  setVisibleGapCount(20);
+                }}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
+              >
+                <option value="ALL">All Subjects</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Sciences">Sciences</option>
+                <option value="English">English</option>
+                <option value="Social Science">Social Science</option>
+                <option value="Computer Science">Computer Science</option>
               </select>
 
               <select
                 value={filterCategory}
-                onChange={e => setFilterCategory(e.target.value)}
+                onChange={e => {
+                  setFilterCategory(e.target.value);
+                  setVisibleGapCount(20);
+                }}
                 className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
               >
                 <option value="ALL">All Gap Categories</option>
@@ -1252,14 +1344,17 @@ export const LearningGapStudio: React.FC<{
 
               <select
                 value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
+                onChange={e => {
+                  setFilterStatus(e.target.value);
+                  setVisibleGapCount(20);
+                }}
                 className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 cursor-pointer"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="INTERVENTION_ASSIGNED">Intervention Assigned</option>
                 <option value="FOUNDATION_LEARNING">Foundation Learning</option>
                 <option value="CURRENT_GRADE_RELEARNING">Current Relearning</option>
-                <option value="MASTERED">Mastered & Closed</option>
+                <option value="MASTERED">Mastered &amp; Closed</option>
               </select>
             </div>
           </div>
@@ -1270,11 +1365,13 @@ export const LearningGapStudio: React.FC<{
             <div className="lg:col-span-5 space-y-3">
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 flex items-center justify-between">
                 <span>Active Learning Gaps ({filteredGaps.length})</span>
-                <span className="text-[11px] text-purple-700 font-bold">Select student to inspect</span>
+                <span className="text-[11px] text-purple-700 font-bold">
+                  Showing {Math.min(visibleGapCount, filteredGaps.length)} of {filteredGaps.length}
+                </span>
               </div>
 
               <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
-                {filteredGaps.map(gap => {
+                {filteredGaps.slice(0, visibleGapCount).map(gap => {
                   const isSelected = gap.id === (currentGap?.id || selectedGapId);
                   return (
                     <div
@@ -1336,6 +1433,15 @@ export const LearningGapStudio: React.FC<{
                     </div>
                   );
                 })}
+                {filteredGaps.length > visibleGapCount && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleGapCount(c => c + 20)}
+                    className="w-full py-2.5 rounded-2xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold transition-colors"
+                  >
+                    Load More Scholars ({filteredGaps.length - visibleGapCount} remaining) →
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1461,17 +1567,13 @@ export const LearningGapStudio: React.FC<{
                     </div>
 
                     {/* Prerequisite Flow Chart Widget */}
-                    <div className="pt-2 flex items-center space-x-2 text-xs font-bold">
-                      <div className="bg-white px-3 py-1.5 rounded-xl border border-amber-300 text-amber-900 shadow-2xs">
-                        Grade 4: Division & Parts of Whole
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="pt-2 flex flex-wrap items-center gap-2 text-xs font-bold">
                       <div className="bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-400 text-amber-900 shadow-2xs">
-                        Grade 5: Equivalent Fractions (Root Gap)
+                        {currentGap.recommendedLowerGrade || 'Lower Grade'}: {currentGap.identifiedPrerequisiteName || 'Foundational Prerequisite'} (Root Gap)
                       </div>
                       <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
                       <div className="bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-300 text-purple-900 shadow-2xs">
-                        Grade 6: Percentage Mastery (Target)
+                        {currentGap.grade}: {currentGap.conceptName} (Target)
                       </div>
                     </div>
                   </div>
@@ -1578,13 +1680,13 @@ export const LearningGapStudio: React.FC<{
                 <span className="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                   Student Learning Pathway
                 </span>
-                <span className="text-xs text-purple-200">Grade 6 Mathematics</span>
+                <span className="text-xs text-purple-200">{currentGap?.grade || 'Grade 6'} {currentGap?.subject || 'Mathematics'}</span>
               </div>
               <h2 className="text-xl font-black tracking-tight mt-1">
-                Aarav's Foundation & Mastery Expedition
+                {(currentGap?.studentName || 'Scholar').split(' ')[0]}&apos;s Foundation &amp; Mastery Expedition
               </h2>
               <p className="text-xs text-purple-100 mt-1 max-w-xl">
-                We are building your superpowers! Mastering these previous-grade fraction secrets will make your Grade 6 percentage problems simple, quick, and fun.
+                We are building your superpowers! Mastering {currentGap?.recommendedLowerGrade || 'Lower Grade'} {currentGap?.identifiedPrerequisiteName || 'foundations'} will make {currentGap?.grade || 'current-grade'} {currentGap?.conceptName || 'concepts'} simple, quick, and fun.
               </p>
             </div>
 
@@ -1601,10 +1703,10 @@ export const LearningGapStudio: React.FC<{
                 <div className="text-[10px] font-bold text-purple-200 uppercase tracking-wider">Current Focus</div>
                 <div className="text-xs font-black text-white mt-0.5">
                   {currentGap?.status === 'CURRENT_GRADE_RELEARNING'
-                    ? 'Grade 6: Percentage Calculations'
+                    ? `${currentGap.grade}: ${currentGap.conceptName}`
                     : currentGap?.status === 'MASTERED'
                     ? 'Concept Mastered 🏆'
-                    : 'Grade 5: Equivalent Fractions'}
+                    : `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${currentGap?.identifiedPrerequisiteName || 'Prerequisite Bridge'}`}
                 </div>
               </div>
             </div>
@@ -1634,10 +1736,10 @@ export const LearningGapStudio: React.FC<{
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 </div>
                 <h4 className="text-xs font-extrabold text-slate-900 mt-2">
-                  Grade 5: Equivalent Fractions & Scaling
+                  {currentGap?.recommendedLowerGrade || 'Lower Grade'}: {currentGap?.identifiedPrerequisiteName || 'Prerequisite Bridge'}
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Learn how to scale any fraction to base 100 before tackling percentages.
+                  Build prerequisite mastery before tackling {currentGap?.grade || 'target'} topics.
                 </p>
               </div>
 
@@ -1661,10 +1763,10 @@ export const LearningGapStudio: React.FC<{
                   <span className="text-[10px] font-bold text-slate-400">Min 80% to pass</span>
                 </div>
                 <h4 className="text-xs font-extrabold text-slate-900 mt-2">
-                  Take Grade 5 Verification Test
+                  Take {currentGap?.recommendedLowerGrade || 'Foundation'} Verification Test
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  3 quick questions to confirm you have mastered fraction scaling.
+                  Quick diagnostic questions to confirm your prerequisite mastery.
                 </p>
               </div>
 
@@ -1686,10 +1788,10 @@ export const LearningGapStudio: React.FC<{
                   )}
                 </div>
                 <h4 className="text-xs font-extrabold text-slate-900 mt-2">
-                  Grade 6: 3-Step Percentage Formula
+                  {currentGap?.grade || 'Current Grade'}: {currentGap?.conceptName || 'Target Concept'}
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Apply your new fraction skills to percentage of quantities and word problems.
+                  Apply your foundational mastery to {currentGap?.subject || 'curriculum'} problems.
                 </p>
               </div>
 
@@ -1713,7 +1815,7 @@ export const LearningGapStudio: React.FC<{
                   <span className="text-[10px] font-bold text-slate-400">Min 85% to master</span>
                 </div>
                 <h4 className="text-xs font-extrabold text-slate-900 mt-2">
-                  Take Grade 6 Mastery Reassessment
+                  Take {currentGap?.grade || 'Current'} Mastery Reassessment
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Earn your official Achariya Concept Mastery Certificate!
@@ -1733,8 +1835,8 @@ export const LearningGapStudio: React.FC<{
                       </span>
                       <h3 className="text-sm font-black text-slate-900 mt-1">
                         {testMode === 'FOUNDATION'
-                          ? 'Grade 5 Equivalent Fractions Verification Test'
-                          : 'Grade 6 Percentage Mastery Reassessment'}
+                          ? `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${currentGap?.identifiedPrerequisiteName || 'Verification Test'}`
+                          : `${currentGap?.grade || 'Current'}: ${currentGap?.conceptName || 'Mastery Reassessment'}`}
                       </h3>
                     </div>
 
@@ -1776,8 +1878,15 @@ export const LearningGapStudio: React.FC<{
                           </p>
                           <button
                             onClick={() => {
+                              setCompanionMode('STEP_BY_STEP');
                               setShowCompanionModal(true);
-                              handleAskCompanion('STEP_BY_STEP', `I want to achieve 100% mastery! Please guide me step-by-step through the question I missed in ${testMode === 'FOUNDATION' ? 'Equivalent Fractions' : 'Percentage Calculations'}.`);
+                              handleSendCompanionMessage(
+                                `I want to achieve 100% mastery! Please guide me step-by-step through the question I missed in ${
+                                  testMode === 'FOUNDATION'
+                                    ? currentGap?.identifiedPrerequisiteName || 'Equivalent Fractions'
+                                    : currentGap?.conceptName || 'Percentage Calculations'
+                                }.`
+                              );
                             }}
                             className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-black transition-all flex items-center space-x-1.5 shadow-xs"
                           >
@@ -1895,7 +2004,7 @@ export const LearningGapStudio: React.FC<{
                           Lower Grade Foundation
                         </span>
                         <h3 className="text-sm font-black text-slate-900 mt-1">
-                          Grade 5: Master Equivalent Fractions & Base-100 Scaling
+                          {currentGap?.recommendedLowerGrade || 'Grade 5'}: Master {currentGap?.identifiedPrerequisiteName || 'Equivalent Fractions & Base-100 Scaling'}
                         </h3>
                       </div>
 
@@ -2035,7 +2144,7 @@ export const LearningGapStudio: React.FC<{
                           Current Grade Relearn
                         </span>
                         <h3 className="text-sm font-black text-slate-900 mt-1">
-                          Grade 6: The 3-Step Formula for Percentage of Quantities
+                          {currentGap?.grade || 'Grade 6'}: Mastery Guide for {currentGap?.conceptName || 'Percentage of Quantities'}
                         </h3>
                       </div>
 
