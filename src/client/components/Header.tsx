@@ -147,7 +147,7 @@ function DropdownMenu({
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1.5 w-56 bg-white rounded-2xl shadow-lg border border-slate-200/80 py-1.5 z-50">
+        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-slate-200/80 py-1.5 z-50">
           <div className="px-3 py-1.5 mb-1 border-b border-slate-100">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.label}</p>
           </div>
@@ -215,7 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-14 gap-2.5">
+        <div className="flex items-center h-16 gap-2.5">
 
           {/* Brand */}
           <button
@@ -383,7 +383,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="hidden md:block text-left min-w-0">
               <div className="flex items-center gap-1.5">
-                <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[140px]">
+                <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[165px]">
                   {displayName}
                 </div>
                 {currentUser?.scope && (
@@ -393,7 +393,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
               <div
-                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[195px]"
+                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[220px]"
                 title={
                   currentUser?.campus?.name ||
                   (currentUser?.scope === 'GLOBAL'

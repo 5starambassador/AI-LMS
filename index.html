@@ -37,16 +37,43 @@
             fontFamily: {
               sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
               mono: ['"JetBrains Mono"', 'monospace']
+            },
+            fontSize: {
+              xs: ['0.875rem', { lineHeight: '1.375rem' }],     // 14px (up from 12px)
+              sm: ['0.9375rem', { lineHeight: '1.45rem' }],     // 15px (up from 14px)
+              base: ['1.03125rem', { lineHeight: '1.6rem' }],   // 16.5px (up from 16px)
+              lg: ['1.1875rem', { lineHeight: '1.75rem' }],     // 19px (up from 18px)
+              xl: ['1.3125rem', { lineHeight: '1.85rem' }],     // 21px (up from 20px)
+              '2xl': ['1.5625rem', { lineHeight: '2.05rem' }]   // 25px (up from 24px)
             }
           }
         }
       }
     </script>
     <style>
+      html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+      }
       body {
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
         background-color: #F8FAFC;
         color: #0F172A;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+      }
+      /* Enterprise Readability Floor for arbitrary micro-pixel utility classes */
+      .text-\[9px\] {
+        font-size: 0.75rem !important;      /* 12px (was 9px) */
+        line-height: 1.1rem !important;
+      }
+      .text-\[10px\] {
+        font-size: 0.78125rem !important;   /* 12.5px (was 10px) */
+        line-height: 1.15rem !important;
+      }
+      .text-\[11px\] {
+        font-size: 0.84375rem !important;   /* 13.5px (was 11px) */
+        line-height: 1.25rem !important;
       }
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
