@@ -25,6 +25,7 @@ const ExamHub = React.lazy(() => import('./components/ExamHub').then(m => ({ def
 const ReportCardHub = React.lazy(() => import('./components/ReportCardHub').then(m => ({ default: m.ReportCardHub })));
 const ExamBuilderStudio = React.lazy(() => import('./components/ExamBuilderStudio').then(m => ({ default: m.ExamBuilderStudio })));
 const LearningGapStudio = React.lazy(() => import('./components/LearningGapStudio').then(m => ({ default: m.LearningGapStudio })));
+const StudentIntelligenceStudio = React.lazy(() => import('./components/StudentIntelligenceStudio').then(m => ({ default: m.StudentIntelligenceStudio })));
 const SuperAdminPanel = React.lazy(() => import('./components/SuperAdminPanel').then(m => ({ default: m.SuperAdminPanel })));
 
 function AppShell() {
@@ -48,6 +49,8 @@ function AppShell() {
         setStudentTab('voice');
       } else if (cleanPath === '/student/gaps' || cleanPath === '/student/learning-gaps') {
         setStudentTab('gaps');
+      } else if (cleanPath === '/student/intelligence') {
+        setStudentTab('intelligence');
       } else {
         setStudentTab('voicelab');
       }
@@ -63,6 +66,8 @@ function AppShell() {
         setActiveTab('exam-builder');
       } else if (cleanPath === '/staff/learning-gaps' || cleanPath === '/learning-gaps') {
         setActiveTab('learning-gaps');
+      } else if (cleanPath === '/staff/student-intelligence' || cleanPath === '/student-intelligence') {
+        setActiveTab('student-intelligence');
       } else if (cleanPath === '/staff/aitools' || cleanPath === '/aitools') {
         setActiveTab('aitools');
       } else if (cleanPath === '/staff/myspace' || cleanPath === '/myspace') {
@@ -239,7 +244,16 @@ function AppShell() {
                   onExamGenerated={() => navigateTo('/staff/exams')}
                 />
               )}
-              {activeTab === 'learning-gaps' && <LearningGapStudio />}
+              {activeTab === 'learning-gaps' && (
+                <LearningGapStudio
+                  onNavigateToIntelligence={() => navigateTo('/staff/student-intelligence')}
+                />
+              )}
+              {activeTab === 'student-intelligence' && (
+                <StudentIntelligenceStudio
+                  onNavigateToGaps={() => navigateTo('/staff/learning-gaps')}
+                />
+              )}
               {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
               {activeTab === 'myspace' && <MySpaceHub />}
               {activeTab === 'insights' && <ScoreInsights />}
@@ -262,7 +276,18 @@ function AppShell() {
                   onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}
                 />
               )}
-              {studentTab === 'gaps' && <LearningGapStudio initialStudentMode={true} />}
+              {studentTab === 'gaps' && (
+                <LearningGapStudio
+                  initialStudentMode={true}
+                  onNavigateToIntelligence={() => navigateTo('/student/intelligence')}
+                />
+              )}
+              {studentTab === 'intelligence' && (
+                <StudentIntelligenceStudio
+                  initialStudentMode={true}
+                  onNavigateToGaps={() => navigateTo('/student/gaps')}
+                />
+              )}
             </div>
           )}
 

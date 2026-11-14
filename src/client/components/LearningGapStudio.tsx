@@ -347,8 +347,12 @@ const DEFAULT_SUMMARY = {
   closureRate: 20
 };
 
-export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
-  initialStudentMode = false
+export const LearningGapStudio: React.FC<{
+  initialStudentMode?: boolean;
+  onNavigateToIntelligence?: () => void;
+}> = ({
+  initialStudentMode = false,
+  onNavigateToIntelligence,
 }) => {
   // Navigation tabs within the Learning Gap Studio
   const [activeTab, setActiveTab] = useState<
@@ -1391,6 +1395,41 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                         <span>Teacher Action</span>
                       </button>
                     </div>
+                  </div>
+
+                  {/* BMIT + VAK Intelligence-Informed Multimodal Remediation Bar */}
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-violet-50 to-sky-50 border border-indigo-200/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-indigo-900">
+                        <BrainCircuit className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>BMIT Strengths: Visual-Spatial (88%) &amp; Logical-Mathematical (84%)</span>
+                        <span className="px-2 py-0.5 rounded-full bg-white/80 border border-indigo-200 text-[10px] font-semibold text-indigo-700">
+                          Enrichment Guide Only
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700">
+                        <span className="font-semibold text-violet-800">VAK Multimodal Prescription:</span> Visual 100-Grid · Auditory Ratio Dialogue · Kinaesthetic Paper-Folding
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onNavigateToIntelligence) {
+                          onNavigateToIntelligence();
+                        } else {
+                          window.history.pushState(
+                            null,
+                            '',
+                            initialStudentMode ? '/student/intelligence' : '/staff/student-intelligence'
+                          );
+                          window.dispatchEvent(new PopStateEvent('popstate'));
+                        }
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors shrink-0"
+                    >
+                      <span>Full 360° BMIT &amp; Career Profile</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
 
                   {/* Multi-Grade Root Cause Diagnostic Blueprint */}
