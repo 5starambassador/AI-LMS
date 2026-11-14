@@ -781,64 +781,64 @@ export const LearningGapStudio: React.FC<{
       {/* 1. TOP HEADER & LEARNING CYCLE STATUS BAR                                */}
       {/* ======================================================================= */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center space-x-3.5 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0">
               <BrainCircuit className="w-6 h-6" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-black text-slate-900 tracking-tight">
-                  Achariya AI-Powered Adaptive Learning & Gap Closure System
-                </h1>
-                <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-purple-200">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-purple-200 whitespace-nowrap shrink-0">
                   AI-FIRST
                 </span>
-                <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-300 flex items-center space-x-1 shadow-2xs">
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-300 inline-flex items-center space-x-1 shadow-2xs whitespace-nowrap shrink-0">
                   <span>★</span>
                   <span>100% LEARNING REQUIRED</span>
                 </span>
               </div>
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-snug">
+                Achariya AI-Powered Adaptive Learning &amp; Gap Closure System
+              </h1>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Precision Root-Cause Diagnosis · Multi-Grade Prerequisite Redirection · Reassessment & 100% Mastery Guarantee
+                Precision Root-Cause Diagnosis · Multi-Grade Prerequisite Redirection · Reassessment &amp; 100% Mastery Guarantee
               </p>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="flex items-center space-x-3 shrink-0">
-            <div className="bg-gradient-to-tr from-amber-50 to-amber-100/70 border border-amber-300 rounded-2xl px-4 py-2 text-center shadow-2xs">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+            <div className="bg-gradient-to-tr from-amber-50 to-amber-100/70 border border-amber-300 rounded-2xl px-3.5 py-2 text-center shadow-2xs">
               <div className="text-lg font-black text-amber-800">
                 100%
               </div>
-              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider">
+              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider whitespace-nowrap">
                 Mastery Target
               </div>
             </div>
 
-            <div className="bg-purple-50 border border-purple-200/80 rounded-2xl px-4 py-2 text-center">
+            <div className="bg-purple-50 border border-purple-200/80 rounded-2xl px-3.5 py-2 text-center">
               <div className="text-lg font-black text-purple-700">
                 {summaryMetrics?.closureRate ?? 20}%
               </div>
-              <div className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">
+              <div className="text-[10px] font-bold text-purple-600 uppercase tracking-wider whitespace-nowrap">
                 Gap Closure Rate
               </div>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl px-4 py-2 text-center">
+            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl px-3.5 py-2 text-center">
               <div className="text-lg font-black text-amber-700">
                 {summaryMetrics?.criticalGaps ?? 2}
               </div>
-              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider whitespace-nowrap">
                 Critical Gaps
               </div>
             </div>
 
-            <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl px-4 py-2 text-center">
+            <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl px-3.5 py-2 text-center">
               <div className="text-lg font-black text-emerald-700">
                 {summaryMetrics?.masteredGaps ?? 1}
               </div>
-              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">
                 Concepts Mastered
               </div>
             </div>
@@ -1072,12 +1072,14 @@ export const LearningGapStudio: React.FC<{
                 </p>
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
-                  <div className="flex items-center -space-x-1.5 text-[10px] font-bold">
-                    <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center border border-white">AS</span>
-                    <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center border border-white">PS</span>
-                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center border border-white">AR</span>
-                    <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center border border-white">+1</span>
-                    <span className="text-[11px] text-slate-500 ml-3">Aarav, Priya, Ananya + 1 more</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center -space-x-1.5 text-[10px] font-bold shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center border border-white">AS</span>
+                      <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center border border-white">PS</span>
+                      <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center border border-white">AR</span>
+                      <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center border border-white">+1</span>
+                    </div>
+                    <span className="text-[11px] text-slate-500">Aarav, Priya, Ananya + 1 more</span>
                   </div>
 
                   <button
@@ -1109,10 +1111,12 @@ export const LearningGapStudio: React.FC<{
                 </p>
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
-                  <div className="flex items-center -space-x-1.5 text-[10px] font-bold">
-                    <span className="w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center border border-white">KN</span>
-                    <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center border border-white">KM</span>
-                    <span className="text-[11px] text-slate-500 ml-3">Kavya N., Karthik M.</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center -space-x-1.5 text-[10px] font-bold shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center border border-white">KN</span>
+                      <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center border border-white">KM</span>
+                    </div>
+                    <span className="text-[11px] text-slate-500">Kavya N., Karthik M.</span>
                   </div>
 
                   <button

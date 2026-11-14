@@ -119,7 +119,6 @@ function DropdownMenu({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isGroupActive = group.items.some(i => i.tab === activeTab);
-  const activeItem = group.items.find(i => i.tab === activeTab);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -140,7 +139,8 @@ function DropdownMenu({
         }`}
       >
         <span className={isGroupActive ? '' : group.color}>{group.icon}</span>
-        <span>{isGroupActive ? (activeItem?.label ?? group.label) : group.label}</span>
+        <span>{group.label}</span>
+        {isGroupActive && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
         <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -186,19 +186,19 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-14 gap-4">
+        <div className="flex items-center h-14 gap-2.5">
 
           {/* Brand */}
           <button
             onClick={() => onNavigate('/staff/home')}
-            className="flex items-center gap-2.5 flex-shrink-0"
+            className="flex items-center gap-2 flex-shrink-0"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-xs font-bold text-base">
               ⚡
             </div>
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1.5 whitespace-nowrap">
               <span className="font-extrabold text-xl tracking-tight text-slate-900">achariya</span>
-              <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-black px-1.5 py-0.5 rounded-md tracking-wider">
+              <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-black px-1.5 py-0.5 rounded-md tracking-wider whitespace-nowrap">
                 AI ONE
               </span>
             </div>
@@ -206,10 +206,10 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Portal switcher — hidden for students; Trust HQ only for super-admins */}
           {currentUser?.roleKey !== 'role-ach-student' && currentUser?.roleKey !== 'role-ach-parent' && (
-            <div className="hidden md:flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 text-xs flex-shrink-0">
+            <div className="hidden md:flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 text-[11px] flex-shrink-0">
               <button
                 onClick={() => onNavigate('/staff/home')}
-                className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all whitespace-nowrap ${
                   currentPortal === 'STAFF'
                     ? 'bg-white text-slate-900 shadow-xs font-bold'
                     : 'text-slate-500 hover:text-slate-800'
@@ -219,7 +219,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button
                 onClick={() => onNavigate('/student/voicelab')}
-                className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all flex items-center gap-1 whitespace-nowrap ${
                   currentPortal === 'STUDENT'
                     ? 'bg-white text-teal-700 shadow-xs font-bold'
                     : 'text-slate-500 hover:text-slate-800'
@@ -230,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({
               {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
                 <button
                   onClick={() => onNavigate('/superadmin')}
-                  className={`px-3 py-1.5 rounded-[10px] font-semibold transition-all ${
+                  className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all whitespace-nowrap ${
                     currentPortal === 'SUPERADMIN'
                       ? 'bg-white text-indigo-700 shadow-xs font-bold'
                       : 'text-slate-500 hover:text-slate-800'
@@ -244,7 +244,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Staff nav */}
           {currentPortal === 'STAFF' && (
-            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0">
+            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
               {/* Home — always direct */}
               <button
                 onClick={() => onNavigate('/staff/home')}
@@ -268,6 +268,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Direct Flagship AI Studio Pills */}
               <button
                 onClick={() => onNavigate('/staff/learning-gaps')}
+                title="AI Learning Gap & Remediation Studio"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                   activeTab === 'learning-gaps'
                     ? 'bg-violet-50 text-violet-800 border-violet-200 shadow-xs font-bold'
@@ -275,11 +276,12 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <Target className="w-3.5 h-3.5 text-violet-600" />
-                <span>Learning Gap Studio</span>
+                <span>Gap Studio</span>
               </button>
 
               <button
                 onClick={() => onNavigate('/staff/student-intelligence')}
+                title="Student 360°, BMIT, VAK, E-Portfolio & Career AI"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                   activeTab === 'student-intelligence'
                     ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
@@ -287,7 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                <span>360° BMIT &amp; Career</span>
+                <span>360° BMIT</span>
               </button>
 
               {/* ── Divider: academic / utility ── */}
@@ -338,7 +340,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Student nav */}
           {currentPortal === 'STUDENT' && (
-            <nav className="hidden sm:flex items-center gap-2 flex-1 text-xs">
+            <nav className="hidden sm:flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto text-xs">
               {[
                 { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
@@ -361,34 +363,31 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           )}
 
-          {/* Right: campus + user */}
-          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-            <div className="hidden 2xl:flex items-center bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
-              <span className="font-semibold text-slate-700 truncate max-w-[140px]">
-                {currentUser?.campus?.name || 'Achariya World Class Academy'}
-              </span>
+          {/* Right: consolidated campus status + user profile */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-2 border-l border-slate-200">
+            <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
+              {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : (currentUser?.fullName?.[0] ?? 'U')}
             </div>
-
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
-                {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : (currentUser?.fullName?.[0] ?? 'U')}
+            <div className="hidden md:block text-left min-w-0">
+              <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[140px]">
+                {currentPortal === 'SUPERADMIN'
+                  ? 'Dr. V. Rajakumaran'
+                  : currentPortal === 'STUDENT'
+                  ? 'Aarav Sundaram'
+                  : currentUser?.fullName || '—'}
               </div>
-              <div className="hidden md:block text-left">
-                <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[145px]">
+              <div
+                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[155px]"
+                title={currentUser?.campus?.name || 'Achariya World Class Academy'}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
+                <span className="truncate">
                   {currentPortal === 'SUPERADMIN'
-                    ? 'Dr. V. Rajakumaran'
-                    : currentPortal === 'STUDENT'
-                    ? 'Aarav Sundaram'
-                    : currentUser?.fullName || '—'}
-                </div>
-                <div className="text-[10px] text-slate-500 font-medium">
-                  {currentPortal === 'SUPERADMIN'
-                    ? 'Super Admin · Trust President'
+                    ? 'Super Admin · Central Campus'
                     : currentPortal === 'STUDENT'
                     ? 'Scholar · Grade 5A'
-                    : currentUser?.roleName || 'Staff'}
-                </div>
+                    : `${currentUser?.roleName || 'Staff'} · ${currentUser?.campus?.name || 'Achariya'}`}
+                </span>
               </div>
             </div>
           </div>
