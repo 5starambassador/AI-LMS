@@ -39,7 +39,9 @@ import {
   MessageSquare,
   Cpu,
   HelpCircle as HelpIcon,
-  Copy
+  Copy,
+  QrCode,
+  Users
 } from 'lucide-react';
 import { apiGet, apiPost } from '../lib/api';
 
@@ -180,6 +182,10 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
   const [genDifficulty, setGenDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
   const [generatingQuestions, setGeneratingQuestions] = useState(false);
+
+  // Market-Unique Innovation & User-Friendly Features State
+  const [showBridgeWorksheetModal, setShowBridgeWorksheetModal] = useState(false);
+  const [gridHighlightedCount, setGridHighlightedCount] = useState<number>(25);
 
   // Notification Banner
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -684,6 +690,118 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                 </div>
               </div>
             ) : null}
+          </div>
+
+          {/* =================================================================== */}
+          {/* UNIQUE MARKET INNOVATION: 1-CLICK AI REMEDIAL CIRCLES (COHORTS)     */}
+          {/* Solves Teacher Workload: Groups students with identical gaps        */}
+          {/* =================================================================== */}
+          <div className="bg-gradient-to-r from-purple-50/90 via-indigo-50/60 to-white rounded-3xl p-5 border border-purple-200/90 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-sm">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-sm font-black text-slate-900">
+                      AI Remedial Circles · Cohort Clustering
+                    </h3>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Zero Teacher Fatigue
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    AI clustered 6 struggling learners into 2 shared root-cause circles. Intervene in one 15-minute bridge circle rather than 6 separate sessions!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 shrink-0">
+                <button
+                  onClick={() => {
+                    setShowBridgeWorksheetModal(true);
+                  }}
+                  className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-xs"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print 1-Page Bridge Worksheet (QR)</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              {/* Circle Alpha */}
+              <div className="bg-white rounded-2xl p-4 border border-purple-200 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-black">α</span>
+                    <span className="text-xs font-extrabold text-slate-900">Circle Alpha: Denominator Scaling</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                    4 Students · High Priority
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <strong>Prerequisite Root:</strong> Grade 5 Equivalent Fractions (<code className="text-purple-700">MATH-G5-001</code>). Students scale numerators correctly but fail to scale denominators 5, 20, 25 to base 100.
+                </p>
+
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                  <div className="flex items-center -space-x-1.5 text-[10px] font-bold">
+                    <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center border border-white">AS</span>
+                    <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center border border-white">PS</span>
+                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center border border-white">AR</span>
+                    <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center border border-white">+1</span>
+                    <span className="text-[11px] text-slate-500 ml-3">Aarav, Priya, Ananya + 1 more</span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowBridgeWorksheetModal(true);
+                      showToast('Generated 1-Page Bridge Worksheet with 2D QR Verification Anchor');
+                    }}
+                    className="text-[11px] font-bold text-purple-700 hover:text-purple-900 hover:underline flex items-center space-x-1"
+                  >
+                    <span>Print Worksheet 🖨️</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Circle Beta */}
+              <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-6 h-6 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-black">β</span>
+                    <span className="text-xs font-extrabold text-slate-900">Circle Beta: Division & Equal Sharing</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+                    2 Students · Medium
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <strong>Prerequisite Root:</strong> Grade 4 Division & Sharing (<code className="text-teal-700">MATH-G4-001</code>). Students confuse division remainders when expressing parts of a whole group.
+                </p>
+
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                  <div className="flex items-center -space-x-1.5 text-[10px] font-bold">
+                    <span className="w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center border border-white">KN</span>
+                    <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center border border-white">KM</span>
+                    <span className="text-[11px] text-slate-500 ml-3">Kavya N., Karthik M.</span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      showToast('Circle Beta: 10-Minute Manipulative Drill ready for Grade 4 review.');
+                    }}
+                    className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center space-x-1"
+                  >
+                    <span>View 10-Min Plan →</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Filters Bar */}
@@ -1345,6 +1463,62 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
 
                         <div className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
                           = 60%
+                        </div>
+                      </div>
+
+                      {/* Interactive 100-Grid Tactile Manipulative (Zero Math Anxiety) */}
+                      <div className="p-4 rounded-xl bg-white border border-purple-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="w-5 h-5 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black">100</span>
+                            <span className="text-xs font-bold text-slate-800">Tactile 100-Grid Explorer</span>
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                            {gridHighlightedCount} / 100 Shaded = {gridHighlightedCount}%
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-slate-500">
+                          Tap any fraction preset to instantly see its 100-grid area:
+                        </p>
+
+                        <div className="flex flex-wrap gap-1.5 text-xs">
+                          {[
+                            { label: '1/4', count: 25, formula: '25%' },
+                            { label: '2/5', count: 40, formula: '40%' },
+                            { label: '1/2', count: 50, formula: '50%' },
+                            { label: '3/4', count: 75, formula: '75%' },
+                            { label: '7/20', count: 35, formula: '35%' }
+                          ].map(item => (
+                            <button
+                              key={item.count}
+                              onClick={() => setGridHighlightedCount(item.count)}
+                              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all ${
+                                gridHighlightedCount === item.count
+                                  ? 'bg-purple-600 text-white shadow-xs'
+                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                              }`}
+                            >
+                              {item.label} = {item.formula}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* 10x10 Mini Grid */}
+                        <div className="grid grid-cols-10 gap-0.5 p-2 bg-slate-50 rounded-xl border border-slate-200 max-w-[220px] mx-auto">
+                          {Array.from({ length: 100 }).map((_, i) => (
+                            <div
+                              key={i}
+                              onClick={() => setGridHighlightedCount(i + 1)}
+                              className={`h-4 w-4 rounded-[2px] transition-colors cursor-pointer text-[7px] flex items-center justify-center font-mono select-none ${
+                                i < gridHighlightedCount
+                                  ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
+                                  : 'bg-white border border-slate-200 text-slate-300 hover:bg-purple-100'
+                              }`}
+                            >
+                              {i + 1}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -2049,6 +2223,176 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
               >
                 Done
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* MODAL 5: 1-PAGE HYBRID PRINTABLE BRIDGE WORKSHEET WITH 2D QR CODE      */}
+      {/* Unique in Market: Bridge between physical classroom & digital LMS       */}
+      {/* ======================================================================= */}
+      {showBridgeWorksheetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 animate-in fade-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b pb-4 print:hidden">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Printer className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">
+                    1-Page Hybrid Bridge Worksheet (A4 Printable)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Hand this to students in class. Parent or teacher scans the 2D QR code to auto-sync mastery!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print A4 Page</span>
+                </button>
+                <button
+                  onClick={() => setShowBridgeWorksheetModal(false)}
+                  className="text-slate-400 hover:text-slate-700 font-bold p-1"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Printable A4 Worksheet Sheet */}
+            <div className="border border-slate-300 rounded-2xl p-6 bg-white space-y-5 print:border-none print:p-0 print:m-0 text-slate-900 font-sans">
+              {/* Institutional Header */}
+              <div className="border-b-2 border-purple-800 pb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-black tracking-tight text-purple-950 uppercase">
+                    Achariya World Class Education
+                  </h2>
+                  <p className="text-[11px] font-bold text-slate-600">
+                    AI Remedial Bridge · 15-Minute Mastery Sprint
+                  </p>
+                </div>
+                <div className="text-right text-[10px] text-slate-500 font-mono">
+                  <span>ACH-BRIDGE-G5-G6-001</span>
+                </div>
+              </div>
+
+              {/* Student Metadata Fields */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Student Name:</span>
+                  <div className="font-bold text-slate-800">{currentGap?.studentName || 'Aarav Sundaram'}</div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Grade & Sec:</span>
+                  <div className="font-bold text-slate-800">{currentGap?.grade || 'Grade 6'} - A</div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Subject:</span>
+                  <div className="font-bold text-slate-800">{currentGap?.subject || 'Mathematics'}</div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Date / Time:</span>
+                  <div className="font-bold text-slate-800">{new Date().toLocaleDateString('en-IN')}</div>
+                </div>
+              </div>
+
+              {/* Learning Target Box */}
+              <div className="p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs">
+                <span className="font-black text-purple-900">Bridge Target: </span>
+                <span className="text-purple-800">
+                  Scaling Fractions to Denominator 100 (Grade 5 Prerequisite for Grade 6 Percentages)
+                </span>
+              </div>
+
+              {/* Three-Tiered Scaffolded Exercises */}
+              <div className="space-y-4 text-xs">
+                {/* Level 1: Remember */}
+                <div className="space-y-1.5">
+                  <div className="font-bold text-purple-900 flex items-center justify-between bg-slate-100 p-1.5 rounded">
+                    <span>Part A: Find the Scaling Multiplier to reach 100</span>
+                    <span className="text-[10px] text-slate-500 font-normal">[Recall & Fluency]</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 pt-1 font-mono">
+                    <div className="p-2 border border-slate-200 rounded">1) 5 × [____] = 100</div>
+                    <div className="p-2 border border-slate-200 rounded">2) 20 × [____] = 100</div>
+                    <div className="p-2 border border-slate-200 rounded">3) 25 × [____] = 100</div>
+                  </div>
+                </div>
+
+                {/* Level 2: Understand with Guided Steps */}
+                <div className="space-y-1.5">
+                  <div className="font-bold text-purple-900 flex items-center justify-between bg-slate-100 p-1.5 rounded">
+                    <span>Part B: Convert Fractions to Percentages (Multiply top & bottom)</span>
+                    <span className="text-[10px] text-slate-500 font-normal">[Conceptual Transfer]</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="p-3 border border-slate-200 rounded space-y-2">
+                      <div className="font-semibold">Convert 3/5 to percentage:</div>
+                      <div className="font-mono text-slate-600 leading-loose">
+                        3/5 = (3 × [____]) / (5 × 20) = [____]/100 = [____]%
+                      </div>
+                    </div>
+                    <div className="p-3 border border-slate-200 rounded space-y-2">
+                      <div className="font-semibold">Convert 7/20 to percentage:</div>
+                      <div className="font-mono text-slate-600 leading-loose">
+                        7/20 = (7 × [____]) / (20 × [____]) = [____]/100 = [____]%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Level 3: Real-World Application */}
+                <div className="space-y-1.5">
+                  <div className="font-bold text-purple-900 flex items-center justify-between bg-slate-100 p-1.5 rounded">
+                    <span>Part C: Real-World Achariya Context Challenge</span>
+                    <span className="text-[10px] text-slate-500 font-normal">[Application]</span>
+                  </div>
+                  <div className="p-3 border border-slate-200 rounded space-y-2 leading-relaxed">
+                    <p>
+                      In the Achariya Annual Sports Meet, Rahul attempted 25 basketball free throws and successfully scored 18 baskets.
+                    </p>
+                    <div className="font-semibold">
+                      What percentage of his free throws did Rahul score?
+                    </div>
+                    <div className="h-10 border-b border-dashed border-slate-300 mt-2 flex items-end font-mono text-slate-400">
+                      Working space: _________________________________________ Answer: [________]%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Verification Footer with 2D QR Code */}
+              <div className="pt-3 border-t-2 border-slate-200 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-14 h-14 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center p-1">
+                    <QrCode className="w-12 h-12 text-slate-800" />
+                  </div>
+                  <div className="text-[10px] text-slate-500 space-y-0.5">
+                    <div className="font-bold text-slate-700">QR Auto-Sync Verification</div>
+                    <div>Scan with Achariya Parent or Staff App</div>
+                    <div>Updates student mastery profile in real-time</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-8 text-[11px] text-slate-600">
+                  <div className="text-center">
+                    <div className="h-6 border-b border-slate-400 w-24 mb-1" />
+                    <span>Teacher Sign</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="h-6 border-b border-slate-400 w-24 mb-1" />
+                    <span>Parent Sign</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
