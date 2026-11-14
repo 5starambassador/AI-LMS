@@ -17,7 +17,8 @@ import {
   Target,
   BrainCircuit,
   ScanLine,
-  ShieldCheck
+  ShieldCheck,
+  Search
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
 import { apiFetch } from '../lib/api';
@@ -71,6 +72,41 @@ const DEFAULT_QUIZZES: Quiz[] = [
   }
 ];
 
+const DEFAULT_SCHOLARS: Student[] = [
+  {
+    id: 'ach-stu-aarav-01',
+    userKey: 'ACH-2026-001',
+    fullName: 'Aarav Sundaram',
+    email: 'aarav.s@achariya.in',
+    enrollments: [{ rollNumber: 'ACH-05A-01', class: { id: 'cls-5', name: 'Grade 5' }, section: { id: 'sec-a', name: 'Innovation Studio A' } }],
+    studentProfile: { bloodGroup: 'O+ Positive', heightCm: 142.5, weightKg: 35.8, parentName: 'Sundaram R. (Father)', parentPhone: '+91 98402 99881' }
+  },
+  {
+    id: 'ach-stu-diya-02',
+    userKey: 'ACH-2026-002',
+    fullName: 'Diya Krishnan',
+    email: 'diya.k@achariya.in',
+    enrollments: [{ rollNumber: 'ACH-10A-14', class: { id: 'cls-10', name: 'Grade 10' }, section: { id: 'sec-a', name: 'STEM Scholars A' } }],
+    studentProfile: { bloodGroup: 'A+ Positive', heightCm: 158.0, weightKg: 48.2, parentName: 'Radha Krishnan (Mother)', parentPhone: '+91 98410 44219' }
+  },
+  {
+    id: 'ach-stu-karthik-03',
+    userKey: 'ACH-2026-003',
+    fullName: 'Karthik Nair',
+    email: 'karthik.n@achariya.in',
+    enrollments: [{ rollNumber: 'ACH-12B-08', class: { id: 'cls-12', name: 'Grade 12' }, section: { id: 'sec-b', name: 'Biotech & AI Stream' } }],
+    studentProfile: { bloodGroup: 'B+ Positive', heightCm: 171.5, weightKg: 62.0, parentName: 'Suresh Nair (Father)', parentPhone: '+91 94432 71054' }
+  },
+  {
+    id: 'ach-stu-riya-04',
+    userKey: 'ACH-2026-004',
+    fullName: 'Riya Subramanian',
+    email: 'riya.s@achariya.in',
+    enrollments: [{ rollNumber: 'ACH-KG2-03', class: { id: 'cls-kg2', name: 'KG-2' }, section: { id: 'sec-mont', name: 'Montessori Blooms' } }],
+    studentProfile: { bloodGroup: 'AB+ Positive', heightCm: 108.0, weightKg: 17.5, parentName: 'Lakshmi S. (Mother)', parentPhone: '+91 97890 33120' }
+  }
+];
+
 export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [homeworks, setHomeworks] = useState<Homework[]>(DEFAULT_HOMEWORKS);
@@ -92,6 +128,27 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
   const [attendanceSubmitted, setAttendanceSubmitted] = useState(false);
   const [selectedStudentStatus, setSelectedStudentStatus] = useState<'PRESENT' | 'ABSENT' | 'LATE'>('PRESENT');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [directorySearch, setDirectorySearch] = useState('');
+  const [selectedDirectoryStudentId, setSelectedDirectoryStudentId] = useState('ach-stu-aarav-01');
+  const [newHwTitle, setNewHwTitle] = useState('Hands-on Protractor: Angle Measurement in Nature');
+  const [newHwDesc, setNewHwDesc] = useState('Identify three angles in your home or garden (acute, right, obtuse). Measure using protractor and sketch.');
+  const [newHwMarks, setNewHwMarks] = useState<number>(10);
+  const [newHwDueDate, setNewHwDueDate] = useState('2026-11-20');
+
+  const directoryStudents = students.length > 0 ? students : DEFAULT_SCHOLARS;
+  const filteredDirectoryStudents = directoryStudents.filter(stu => {
+    const q = directorySearch.trim().toLowerCase();
+    if (!q) return true;
+    const roll = stu.enrollments?.[0]?.rollNumber?.toLowerCase() || '';
+    const cls = stu.enrollments?.[0]?.class?.name?.toLowerCase() || '';
+    return stu.fullName.toLowerCase().includes(q) || roll.includes(q) || cls.includes(q);
+  });
+  const activeDirectoryStudent =
+    filteredDirectoryStudents.find(s => s.id === selectedDirectoryStudentId) ||
+    filteredDirectoryStudents[0] ||
+    directoryStudents[0];
+  const activeBook = books.find(b => b.id === selectedBookId) || books[0] || null;
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -137,22 +194,23 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
 
   const handleRollCallSubmit = async () => {
     try {
-      if (students.length > 0) {
-        await apiFetch('/api/operations/attendance/rollcall', {
+      const list = directoryStudents;
+      if (list.length > 0) {
+        apiFetch('/api/operations/attendance/rollcall', {
           method: 'POST',
           body: JSON.stringify({
             date: new Date().toISOString(),
-            classId: students[0].enrollments[0]?.class?.id || 'demo-class',
-            sectionId: students[0].enrollments[0]?.section?.id || 'demo-sec',
+            classId: list[0].enrollments?.[0]?.class?.id || 'demo-class',
+            sectionId: list[0].enrollments?.[0]?.section?.id || 'demo-sec',
             records: [
               {
-                studentId: students[0].id,
+                studentId: list[0].id,
                 status: selectedStudentStatus,
                 remarks: 'Verified during morning classroom roll call'
               }
             ]
           })
-        });
+        }).catch(() => {});
         setAttendanceSubmitted(true);
         setTimeout(() => {
           setActiveModal(null);
@@ -162,6 +220,38 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleCreateHomeworkSubmit = () => {
+    const cleanTitle = newHwTitle.trim();
+    if (!cleanTitle) {
+      showToast('Please enter a task title before publishing.');
+      return;
+    }
+    const createdItem: Homework = {
+      id: `hw-live-${Date.now()}`,
+      title: cleanTitle,
+      description: newHwDesc.trim() || 'Experiential task assigned via Staff Home.',
+      dueDate: newHwDueDate,
+      maxMarks: Number(newHwMarks) || 10,
+      class: { id: 'cls-5', name: 'Grade 5' },
+      section: { id: 'sec-a', name: 'Innovation Studio A' },
+      subject: { id: 'sub-math', name: 'Mathematics & Experiential Stem' },
+      teacher: { id: 'tch-current', fullName: 'Faculty Instructor' },
+      _count: { submissions: 0 }
+    };
+    setHomeworks(prev => [createdItem, ...prev]);
+    apiFetch('/api/assessment/homework', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: createdItem.title,
+        description: createdItem.description,
+        dueDate: createdItem.dueDate,
+        maxMarks: createdItem.maxMarks
+      })
+    }).catch(() => {});
+    showToast(`Published "${createdItem.title}" to Active Homework Tasks!`);
+    setActiveModal(null);
   };
 
   return (
@@ -354,9 +444,18 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
               <h2 className="text-base font-bold text-slate-900">Active Homework Tasks</h2>
               <p className="text-xs text-slate-500">Grade 5 · Innovation Studio A</p>
             </div>
-            <span className="text-xs bg-teal-50 text-teal-800 font-bold px-2.5 py-1 rounded-full border border-teal-200/60">
-              {homeworks.length} Active
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-teal-50 text-teal-800 font-bold px-2.5 py-1 rounded-full border border-teal-200/60">
+                {homeworks.length} Active
+              </span>
+              <button
+                type="button"
+                onClick={() => navigateToRoute('/staff/homework')}
+                className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline"
+              >
+                Manage All →
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -373,7 +472,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                 </div>
                 <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/50">
                   <span>Subject: {hw.subject?.name || 'English & Oratory Arts'}</span>
-                  <span className="text-teal-700 font-semibold">1 Submission Evaluated</span>
+                  <span className="text-teal-700 font-semibold">{hw._count?.submissions ?? 0} Submissions Evaluated</span>
                 </div>
               </div>
             ))}
@@ -387,9 +486,18 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
               <h2 className="text-base font-bold text-slate-900">Formative Quizzes</h2>
               <p className="text-xs text-slate-500">Auto-graded pedagogical check-ins</p>
             </div>
-            <span className="text-xs bg-indigo-50 text-indigo-800 font-bold px-2.5 py-1 rounded-full border border-indigo-200/60">
-              {quizzes.length} Published
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-indigo-50 text-indigo-800 font-bold px-2.5 py-1 rounded-full border border-indigo-200/60">
+                {quizzes.length} Published
+              </span>
+              <button
+                type="button"
+                onClick={() => navigateToRoute('/staff/insights')}
+                className="text-xs font-bold text-indigo-700 hover:text-indigo-900 hover:underline"
+              >
+                Score Insights →
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -409,7 +517,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                 </div>
                 <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/50">
                   <span>Questions: {quiz._count?.questions || 1}</span>
-                  <span className="font-semibold text-teal-700">Class Average: 100%</span>
+                  <span className="font-semibold text-teal-700">{quiz._count?.submissions ?? 0} Submissions Logged</span>
                 </div>
               </div>
             ))}
@@ -426,14 +534,37 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  Achariya Global Lingua: Grade 5 Integrated English & Oratory Arts
+                  {activeBook ? activeBook.title : 'Achariya Global Lingua: Grade 5 Integrated English & Oratory Arts'}
                 </h3>
-                <p className="text-xs text-slate-500">Chapter 1: The Great Banyan of Villianur · Interactive Vector Reader</p>
+                <p className="text-xs text-slate-500">
+                  {activeBook
+                    ? `${activeBook.class?.name || 'Grade'} · ${activeBook.subject?.name || 'Subject'} · ${activeBook.publisher || 'Achariya Press'}`
+                    : 'Chapter 1: The Great Banyan of Villianur · Interactive Vector Reader'}
+                </p>
               </div>
               <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-700 text-sm font-bold">
                 ✕ Close
               </button>
             </div>
+
+            {books.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {books.slice(0, 6).map(b => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setSelectedBookId(b.id)}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+                      (activeBook?.id === b.id)
+                        ? 'bg-teal-600 text-white border-teal-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {b.title}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Two-Page Spread with Light Clean Aesthetic */}
             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-200 text-slate-800">
@@ -462,12 +593,24 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
 
             <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
               <span>Achariya Central Curriculum Repository · Authorized Digital Vector Edition</span>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
-              >
-                Done Reading
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    navigateToRoute('/staff/resources');
+                  }}
+                  className="px-3.5 py-2 bg-teal-50 text-teal-800 border border-teal-200 rounded-xl font-bold hover:bg-teal-100 transition-colors"
+                >
+                  Open Full Curriculum Hub →
+                </button>
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
+                >
+                  Done Reading
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -523,12 +666,24 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                   </div>
                 </div>
 
-                <button
-                  onClick={handleRollCallSubmit}
-                  className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs"
-                >
-                  Confirm & Submit Roll Call
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleRollCallSubmit}
+                    className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs"
+                  >
+                    Confirm &amp; Submit Roll Call
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveModal(null);
+                      navigateToRoute('/staff/attendance');
+                    }}
+                    className="px-4 py-3 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold text-xs rounded-xl transition-colors"
+                  >
+                    Open Full Attendance Hub →
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -551,42 +706,85 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
               </button>
             </div>
 
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-2xl bg-teal-100 border border-teal-200 text-teal-800 flex items-center justify-center font-bold text-base shadow-xs">
-                  A
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-slate-900 text-sm">Aarav Sundaram</h4>
-                  <p className="text-xs text-slate-500">Grade 5 · Innovation Studio A · Roll #ACH-05A-01</p>
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  value={directorySearch}
+                  onChange={e => setDirectorySearch(e.target.value)}
+                  placeholder="Search scholar by name, roll # or grade (e.g., Aarav, Diya, Grade 10)..."
+                  className="w-full bg-transparent text-xs outline-none text-slate-800"
+                />
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-bold block">HEIGHT</span>
-                  <span className="font-bold text-slate-800">142.5 cm</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-bold block">WEIGHT</span>
-                  <span className="font-bold text-slate-800">35.8 kg</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-bold block">BLOOD GROUP</span>
-                  <span className="font-bold text-teal-700">O+ Positive</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-bold block">BMI INDEX</span>
-                  <span className="font-bold text-slate-800">17.6 (Normal)</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1">
-                <span className="text-[10px] text-slate-400 font-bold block">GUARDIAN CONTACT</span>
-                <p className="font-bold text-slate-800">Sundaram R. (Father) · +91 98402 99881</p>
-                <p className="text-[11px] text-slate-500">parent@achariya.in</p>
+              <div className="flex flex-wrap gap-1.5">
+                {filteredDirectoryStudents.slice(0, 6).map(stu => (
+                  <button
+                    key={stu.id}
+                    type="button"
+                    onClick={() => setSelectedDirectoryStudentId(stu.id)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-colors ${
+                      activeDirectoryStudent?.id === stu.id
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {stu.fullName} · {stu.enrollments?.[0]?.class?.name || 'Scholar'}
+                  </button>
+                ))}
               </div>
             </div>
+
+            {activeDirectoryStudent && (
+              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-100 border border-teal-200 text-teal-800 flex items-center justify-center font-bold text-base shadow-xs">
+                    {activeDirectoryStudent.fullName[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-sm">{activeDirectoryStudent.fullName}</h4>
+                    <p className="text-xs text-slate-500">
+                      {activeDirectoryStudent.enrollments?.[0]?.class?.name || 'Grade 5'} · {activeDirectoryStudent.enrollments?.[0]?.section?.name || 'Section A'} · Roll #{activeDirectoryStudent.enrollments?.[0]?.rollNumber || activeDirectoryStudent.userKey}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-bold block">HEIGHT</span>
+                    <span className="font-bold text-slate-800">{activeDirectoryStudent.studentProfile?.heightCm ?? 142.5} cm</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-bold block">WEIGHT</span>
+                    <span className="font-bold text-slate-800">{activeDirectoryStudent.studentProfile?.weightKg ?? 35.8} kg</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-bold block">BLOOD GROUP</span>
+                    <span className="font-bold text-teal-700">{activeDirectoryStudent.studentProfile?.bloodGroup || 'O+ Positive'}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-bold block">BMI INDEX</span>
+                    <span className="font-bold text-slate-800">
+                      {(() => {
+                        const h = activeDirectoryStudent.studentProfile?.heightCm ?? 142.5;
+                        const w = activeDirectoryStudent.studentProfile?.weightKg ?? 35.8;
+                        const bmi = w / ((h / 100) ** 2);
+                        return `${bmi.toFixed(1)} (${bmi >= 14 && bmi <= 24 ? 'Normal' : 'Monitor'})`;
+                      })()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1">
+                  <span className="text-[10px] text-slate-400 font-bold block">GUARDIAN CONTACT</span>
+                  <p className="font-bold text-slate-800">
+                    {activeDirectoryStudent.studentProfile?.parentName || 'Guardian On File'} · {activeDirectoryStudent.studentProfile?.parentPhone || '+91 98402 99881'}
+                  </p>
+                  <p className="text-[11px] text-slate-500">{activeDirectoryStudent.email}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -645,7 +843,8 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                 <label className="block font-bold text-slate-700 mb-1">Task Title:</label>
                 <input
                   type="text"
-                  defaultValue="Hands-on Protractor: Angle Measurement in Nature"
+                  value={newHwTitle}
+                  onChange={e => setNewHwTitle(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500"
                 />
               </div>
@@ -654,7 +853,8 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                 <label className="block font-bold text-slate-700 mb-1">Instructions:</label>
                 <textarea
                   rows={3}
-                  defaultValue="Identify three angles in your home or garden (acute, right, obtuse). Measure using protractor and sketch."
+                  value={newHwDesc}
+                  onChange={e => setNewHwDesc(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500"
                 />
               </div>
@@ -664,7 +864,9 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                   <label className="block font-bold text-slate-700 mb-1">Max Marks:</label>
                   <input
                     type="number"
-                    defaultValue={10}
+                    min={1}
+                    value={newHwMarks}
+                    onChange={e => setNewHwMarks(Number(e.target.value) || 10)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500"
                   />
                 </div>
@@ -672,17 +874,15 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                   <label className="block font-bold text-slate-700 mb-1">Due Date:</label>
                   <input
                     type="date"
-                    defaultValue="2026-11-12"
+                    value={newHwDueDate}
+                    onChange={e => setNewHwDueDate(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500"
                   />
                 </div>
               </div>
 
               <button
-                onClick={() => {
-                  showToast('Task published successfully to Grade 5A student stream!');
-                  setActiveModal(null);
-                }}
+                onClick={handleCreateHomeworkSubmit}
                 className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs"
               >
                 Publish to Scholars

@@ -106,17 +106,30 @@ function AppShell() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Role-based portal enforcement — redirect to the correct portal for the logged-in role
+  // Role-based portal & route enforcement — redirect to the authorized portal/route for the logged-in role
   useEffect(() => {
     if (!currentUser) return;
     const { roleKey } = currentUser;
+    const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal', 'role-ach-curriculum'];
+    const SUPERADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager'];
+
     if (roleKey === 'role-ach-student' && currentPortal !== 'STUDENT') {
       navigateTo('/student/voicelab');
     } else if (roleKey === 'role-ach-parent' && currentPortal !== 'STUDENT') {
       // Parents use the token-based /parent/<token> route; redirect to login
       navigateTo('/student/voicelab');
+    } else if (currentPortal === 'SUPERADMIN' && !SUPERADMIN_ROLES.includes(roleKey)) {
+      setAccessDeniedAlert('Access restricted: Trust HQ requires Super Admin or Trust Manager privileges.');
+      navigateTo('/staff/home');
+    } else if (
+      currentPortal === 'STAFF' &&
+      ['timetable', 'noticeboard', 'fees'].includes(activeTab) &&
+      !ADMIN_ROLES.includes(roleKey)
+    ) {
+      setAccessDeniedAlert('Access restricted: Campus Operations modules require Administrator or Principal privileges.');
+      navigateTo('/staff/home');
     }
-  }, [currentUser?.roleKey, currentPortal]);
+  }, [currentUser?.roleKey, currentPortal, activeTab]);
 
   // Programmatic Navigator
   const navigateTo = (route: string) => {
@@ -190,6 +203,7 @@ function AppShell() {
           else navigateTo('/superadmin');
         }}
         onNavigate={navigateTo}
+        onLogout={handleLogout}
       />
 
       {/* Domain Partitioning Access-Denied Alert Notification */}
@@ -201,15 +215,17 @@ function AppShell() {
               <span>{accessDeniedAlert}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  navigateTo('/student/voicelab');
-                  setAccessDeniedAlert(null);
-                }}
-                className="px-3 py-1.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors shadow-xs"
-              >
-                Switch to VoiceLab AI Portal →
-              </button>
+              {(currentUser.roleKey === 'role-ach-student' || currentUser.roleKey === 'role-ach-parent') && (
+                <button
+                  onClick={() => {
+                    navigateTo('/student/voicelab');
+                    setAccessDeniedAlert(null);
+                  }}
+                  className="px-3 py-1.5 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors shadow-xs"
+                >
+                  Switch to VoiceLab AI Portal →
+                </button>
+              )}
               <button
                 onClick={() => setAccessDeniedAlert(null)}
                 className="text-rose-400 hover:text-rose-700 ml-2 font-bold"

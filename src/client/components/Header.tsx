@@ -18,7 +18,10 @@ import {
   Home,
   BarChart2,
   LayoutGrid,
-  Target
+  Target,
+  Menu,
+  X,
+  LogOut
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -52,6 +55,7 @@ interface HeaderProps {
   currentPortal: 'STAFF' | 'STUDENT' | 'SUPERADMIN';
   setCurrentPortal: (portal: 'STAFF' | 'STUDENT' | 'SUPERADMIN') => void;
   onNavigate: (route: string) => void;
+  onLogout?: () => void;
 }
 
 const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal', 'role-ach-curriculum'];
@@ -84,8 +88,6 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
     items: [
-      { label: 'Learning Gap Studio', tab: 'learning-gaps', route: '/staff/learning-gaps', icon: <Target className="w-4 h-4 text-violet-600" />, desc: 'AI learning gap diagnosis & mastery closure' },
-      { label: 'Student 360° & BMIT', tab: 'student-intelligence', route: '/staff/student-intelligence', icon: <Sparkles className="w-4 h-4 text-violet-600" />, desc: 'BMIT, VAK, E-Portfolio & Career AI' },
       { label: 'Exam Builder', tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />, desc: 'Curriculum outcomes & blueprint builder' },
       { label: 'Exams',        tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
       { label: 'Insights',     tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
@@ -181,8 +183,28 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   currentPortal,
   setCurrentPortal,
-  onNavigate
+  onNavigate,
+  onLogout
 }) => {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const handleMobileNavigate = (route: string) => {
+    onNavigate(route);
+    setMobileNavOpen(false);
+  };
+
+  const displayName =
+    currentUser?.fullName ||
+    (currentPortal === 'SUPERADMIN' ? 'Dr. V. Rajakumaran' : currentPortal === 'STUDENT' ? 'Aarav Sundaram' : '—');
+  const displayInitial = displayName !== '—' ? displayName[0].toUpperCase() : 'U';
+  const displaySubtitle =
+    currentUser?.roleName
+      ? `${currentUser.roleName} · ${currentUser?.campus?.name || 'Achariya'}`
+      : currentPortal === 'SUPERADMIN'
+      ? 'Super Admin · Central Campus'
+      : currentPortal === 'STUDENT'
+      ? 'Scholar · Grade 5A'
+      : `Staff · ${currentUser?.campus?.name || 'Achariya'}`;
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
@@ -347,37 +369,197 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           )}
 
-          {/* Right: consolidated campus status + user profile */}
+          {/* Right: consolidated campus status + user profile + sign out + mobile menu toggle */}
           <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-2 border-l border-slate-200">
             <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
-              {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : (currentUser?.fullName?.[0] ?? 'U')}
+              {displayInitial}
             </div>
             <div className="hidden md:block text-left min-w-0">
               <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[140px]">
-                {currentPortal === 'SUPERADMIN'
-                  ? 'Dr. V. Rajakumaran'
-                  : currentPortal === 'STUDENT'
-                  ? 'Aarav Sundaram'
-                  : currentUser?.fullName || '—'}
+                {displayName}
               </div>
               <div
                 className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[155px]"
                 title={currentUser?.campus?.name || 'Achariya World Class Academy'}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
-                <span className="truncate">
-                  {currentPortal === 'SUPERADMIN'
-                    ? 'Super Admin · Central Campus'
-                    : currentPortal === 'STUDENT'
-                    ? 'Scholar · Grade 5A'
-                    : `${currentUser?.roleName || 'Staff'} · ${currentUser?.campus?.name || 'Achariya'}`}
-                </span>
+                <span className="truncate">{displaySubtitle}</span>
               </div>
             </div>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Sign Out"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline">Sign Out</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(o => !o)}
+              aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className={`${currentPortal === 'STUDENT' ? 'sm:hidden' : 'lg:hidden'} p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors`}
+            >
+              {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
 
         </div>
       </div>
+
+      {/* Collapsible Mobile / Tablet Navigation Drawer */}
+      {mobileNavOpen && (
+        <div className={`${currentPortal === 'STUDENT' ? 'sm:hidden' : 'lg:hidden'} border-t border-slate-200/80 bg-white px-4 py-3 space-y-3 max-h-[75vh] overflow-y-auto shadow-lg`}>
+          {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
+            currentUser?.roleKey !== 'role-ach-student' &&
+            currentUser?.roleKey !== 'role-ach-parent' && (
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  <button
+                    onClick={() => handleMobileNavigate('/staff/home')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
+                      currentPortal === 'STAFF' && activeTab === 'home'
+                        ? 'bg-slate-100 text-slate-900 border-slate-300'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
+                    }`}
+                  >
+                    <Home className="w-3.5 h-3.5" />
+                    <span>Home</span>
+                  </button>
+                  <button
+                    onClick={() => handleMobileNavigate('/staff/learning-gaps')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
+                      currentPortal === 'STAFF' && activeTab === 'learning-gaps'
+                        ? 'bg-violet-50 text-violet-800 border-violet-300'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
+                    }`}
+                  >
+                    <Target className="w-3.5 h-3.5 text-violet-600" />
+                    <span>Gap Studio</span>
+                  </button>
+                  <button
+                    onClick={() => handleMobileNavigate('/staff/student-intelligence')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
+                      currentPortal === 'STAFF' && activeTab === 'student-intelligence'
+                        ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>360° BMIT</span>
+                  </button>
+                  <button
+                    onClick={() => handleMobileNavigate('/staff/aitools')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
+                      currentPortal === 'STAFF' && activeTab === 'aitools'
+                        ? 'bg-teal-50 text-teal-800 border-teal-300'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                    <span>AI Tools</span>
+                  </button>
+                </div>
+
+                {NAV_GROUPS.filter(group =>
+                  !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
+                ).map(group => (
+                  <div key={group.label} className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
+                      {group.label}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {group.items.map(item => (
+                        <button
+                          key={item.tab}
+                          onClick={() => handleMobileNavigate(item.route)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                            currentPortal === 'STAFF' && activeTab === item.tab
+                              ? 'bg-slate-100 text-slate-900 border-slate-300 font-bold'
+                              : 'bg-white text-slate-700 border-slate-200/80'
+                          }`}
+                        >
+                          {item.icon}
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1 border-t border-slate-100">
+                  {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
+                    <button
+                      onClick={() => handleMobileNavigate('/staff/leaves')}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                        currentPortal === 'STAFF' && activeTab === 'leaves'
+                          ? 'bg-rose-50 text-rose-800 border-rose-300 font-bold'
+                          : 'bg-white text-slate-700 border-slate-200/80'
+                      }`}
+                    >
+                      <UmbrellaOff className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Leave</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleMobileNavigate('/staff/myspace')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                      currentPortal === 'STAFF' && activeTab === 'myspace'
+                        ? 'bg-indigo-50 text-indigo-800 border-indigo-300 font-bold'
+                        : 'bg-white text-slate-700 border-slate-200/80'
+                    }`}
+                  >
+                    <Compass className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>My Space</span>
+                  </button>
+                  {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
+                    <button
+                      onClick={() => handleMobileNavigate('/superadmin')}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                        currentPortal === 'SUPERADMIN'
+                          ? 'bg-indigo-50 text-indigo-800 border-indigo-300 font-bold'
+                          : 'bg-white text-slate-700 border-slate-200/80'
+                      }`}
+                    >
+                      <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Trust HQ</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+          {currentPortal === 'STUDENT' && (
+            <div className="grid grid-cols-1 gap-1.5">
+              {[
+                { tab: 'gaps' as StudentTabType, route: '/student/gaps', label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
+                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'voice' as StudentTabType, route: '/student/voice', label: 'Read Aloud', icon: <Mic className="w-3.5 h-3.5 text-rose-500" />, cls: 'bg-rose-50 text-rose-800 border-rose-200' },
+                { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio', icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+              ].map(item => (
+                <button
+                  key={item.tab}
+                  onClick={() => handleMobileNavigate(item.route)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                    studentTab === item.tab
+                      ? `${item.cls} font-bold`
+                      : 'bg-white text-slate-700 border-slate-200/80'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 };
