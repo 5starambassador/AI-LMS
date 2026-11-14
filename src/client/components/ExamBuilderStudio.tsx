@@ -1327,7 +1327,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => {
                   window.open('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf', '_blank');
@@ -1342,9 +1342,23 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               <button
                 onClick={() => {
                   setGeneratedExamModal(null);
+                  window.history.pushState({}, '', '/staff/learning-gaps');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }}
+                className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-200" />
+                <span>AI Learning Gap Studio →</span>
+              </button>
+            </div>
+
+            <div className="pt-1 flex justify-center">
+              <button
+                onClick={() => {
+                  setGeneratedExamModal(null);
                   if (onBackToHub) onBackToHub();
                 }}
-                className="py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                className="py-2 px-6 text-slate-500 hover:text-slate-800 text-xs font-semibold transition-colors"
               >
                 Return to AI Tools Hub
               </button>

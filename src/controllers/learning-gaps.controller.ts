@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { AIAdaptiveIntelligenceService } from '../services/ai-adaptive-intelligence.service.js';
 
 export class LearningGapsController {
   /**
@@ -1250,5 +1251,111 @@ export class LearningGapsController {
         learningGaps: gaps
       }
     });
+  }
+
+  // =========================================================================
+  // AI-FIRST INTELLIGENCE ENGINES ENDPOINTS
+  // =========================================================================
+
+  /**
+   * POST /api/learning-gaps/ai/companion-chat
+   * Socratic interactive learning companion with 6 explanation modes
+   */
+  static async chatWithCompanion(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { conceptName, message, mode, grade } = request.body as {
+      conceptName: string;
+      message: string;
+      mode?: any;
+      grade?: string;
+    };
+
+    const replyText = await AIAdaptiveIntelligenceService.companionInteraction(
+      user.fullName || 'Student',
+      grade || 'Grade 6',
+      conceptName || 'Percentage of Quantities',
+      message || 'Can you help me understand how to solve this?',
+      mode || 'STEP_BY_STEP'
+    );
+
+    return reply.send({ success: true, mode: mode || 'STEP_BY_STEP', message: replyText });
+  }
+
+  /**
+   * POST /api/learning-gaps/ai/teacher-copilot
+   * Teacher conversational assistant & differentiated material generator
+   */
+  static async queryTeacherCopilot(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { query } = request.body as { query: string };
+
+    const answer = await AIAdaptiveIntelligenceService.teacherCopilotQuery(
+      user.fullName || 'Senior Faculty',
+      query
+    );
+
+    return reply.send({ success: true, answer });
+  }
+
+  /**
+   * POST /api/learning-gaps/ai/generate-questions
+   * On-demand adaptive question generation
+   */
+  static async generateAdaptiveQuestions(request: FastifyRequest, reply: FastifyReply) {
+    const { conceptId, gradeLevel, difficulty, cognitiveSkill, count } = request.body as {
+      conceptId: string;
+      gradeLevel: string;
+      difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+      cognitiveSkill: string;
+      count?: number;
+    };
+
+    const questions = await AIAdaptiveIntelligenceService.generateAdaptiveQuestions(
+      conceptId,
+      gradeLevel || 'Grade 6',
+      difficulty || 'MEDIUM',
+      cognitiveSkill || 'APPLY',
+      count || 3
+    );
+
+    return reply.send({ success: true, count: questions.length, data: questions });
+  }
+
+  /**
+   * POST /api/learning-gaps/ai/institutional-query
+   * Natural language query for Central Learning Academy & Management
+   */
+  static async queryInstitutionIntelligence(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    const { query } = request.body as { query: string };
+
+    const response = await AIAdaptiveIntelligenceService.institutionalIntelligenceQuery(
+      query,
+      user.roleName || 'Central Coordinator'
+    );
+
+    return reply.send({ success: true, query, response });
+  }
+
+  /**
+   * GET /api/learning-gaps/student-profile/:studentId
+   * Continuously updated AI Student Learning Profile (Section 13)
+   */
+  static async getStudentLearningProfile(request: FastifyRequest, reply: FastifyReply) {
+    const { studentId } = request.params as { studentId: string };
+
+    const profile = await AIAdaptiveIntelligenceService.compileStudentLearningProfile(studentId);
+    return reply.send({ success: true, data: profile });
+  }
+
+  /**
+   * GET /api/learning-gaps/predict-vulnerabilities/:studentId
+   * Forecasts upcoming conceptual risks (Engine D)
+   */
+  static async getPredictedVulnerabilities(request: FastifyRequest, reply: FastifyReply) {
+    const { studentId } = request.params as { studentId: string };
+
+    const vulnerabilities = await AIAdaptiveIntelligenceService.predictUpcomingVulnerabilities(studentId);
+    return reply.send({ success: true, count: vulnerabilities.length, data: vulnerabilities });
   }
 }

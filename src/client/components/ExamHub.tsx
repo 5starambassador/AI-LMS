@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   Users,
   QrCode,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 
 interface ScoreExam {
@@ -470,6 +471,17 @@ export const ExamHub: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/staff/learning-gaps');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="flex items-center space-x-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition-colors shadow-xs"
+              title="Inspect learning gaps and prerequisite diagnosis for this cohort"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+              <span>AI Learning Gaps</span>
+            </button>
             {resultsData && (
               <button onClick={() => setView('gradecard')}
                 className="flex items-center space-x-1.5 px-4 py-2 bg-slate-700 text-white rounded-xl text-xs font-bold shadow hover:bg-slate-800 transition-colors"

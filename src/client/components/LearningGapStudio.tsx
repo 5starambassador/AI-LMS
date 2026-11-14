@@ -34,7 +34,12 @@ import {
   TrendingUp,
   BrainCircuit,
   ShieldCheck,
-  BookMarked
+  BookMarked,
+  Bot,
+  MessageSquare,
+  Cpu,
+  HelpCircle as HelpIcon,
+  Copy
 } from 'lucide-react';
 import { apiGet, apiPost } from '../lib/api';
 
@@ -133,6 +138,49 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
   const [teacherActionNotes, setTeacherActionNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
+  // AI Student Learning Companion State (Engine H)
+  const [showCompanionModal, setShowCompanionModal] = useState(false);
+  const [companionMode, setCompanionMode] = useState<
+    | 'SIMPLE_EXPLANATION'
+    | 'VISUAL_EXPLANATION'
+    | 'REAL_LIFE_EXAMPLE'
+    | 'STEP_BY_STEP'
+    | 'PRACTICE_MODE'
+    | 'CHALLENGE_MODE'
+  >('STEP_BY_STEP');
+  const [companionMessages, setCompanionMessages] = useState<
+    Array<{ sender: 'student' | 'companion'; text: string; mode?: string }>
+  >([
+    {
+      sender: 'companion',
+      text: 'Hello! I am your Achariya AI Socratic Learning Companion. I am here to guide you to understand every concept with zero stress! What would you like to explore right now?',
+      mode: 'STEP_BY_STEP'
+    }
+  ]);
+  const [companionInput, setCompanionInput] = useState('');
+  const [companionLoading, setCompanionLoading] = useState(false);
+
+  // AI Teacher Academic Copilot State (Engine J)
+  const [copilotQuery, setCopilotQuery] = useState('');
+  const [copilotAnswer, setCopilotAnswer] = useState<string | null>(null);
+  const [copilotLoading, setCopilotLoading] = useState(false);
+
+  // AI Learning Academy Natural Language Query State (Engine K)
+  const [academyQuery, setAcademyQuery] = useState('');
+  const [academyAnswer, setAcademyAnswer] = useState<string | null>(null);
+  const [academyLoading, setAcademyLoading] = useState(false);
+
+  // AI Student Learning Profile Modal State (Section 13)
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState<any | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // AI Adaptive Question Generator Modal State (Engine G)
+  const [showQuestionGenModal, setShowQuestionGenModal] = useState(false);
+  const [genDifficulty, setGenDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
+  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
+  const [generatingQuestions, setGeneratingQuestions] = useState(false);
+
   // Notification Banner
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -156,7 +204,7 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       if (gapsRes.success) {
         setGaps(gapsRes.data);
         if (!selectedGapId && gapsRes.data.length > 0) {
-          // Default to the first gap (Aarav Sundaram Grade 6 Percentage)
+          // Default to the first gap (e.g. Aarav Sundaram Grade 6 Percentage)
           setSelectedGapId(gapsRes.data[0].id);
         }
       }
@@ -221,7 +269,6 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       });
       if (res.success) {
         showToast('✓ Step completed! Progress saved.');
-        // Refresh pathway
         const pRes = await apiGet<any>(`/api/learning-gaps/${selectedGapId}/pathway`);
         if (pRes.success) setActivePathwayData(pRes.data);
       }
@@ -298,6 +345,111 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
     }
   };
 
+  // Send message to Socratic Companion
+  const handleSendCompanionMessage = async (customText?: string) => {
+    const textToSend = customText || companionInput;
+    if (!textToSend.trim()) return;
+
+    const newMsgs = [...companionMessages, { sender: 'student' as const, text: textToSend }];
+    setCompanionMessages(newMsgs);
+    setCompanionInput('');
+    setCompanionLoading(true);
+
+    try {
+      const res = await apiPost<any>('/api/learning-gaps/ai/companion-chat', {
+        conceptName: currentGap?.conceptName || 'Percentage Calculations',
+        message: textToSend,
+        mode: companionMode,
+        grade: currentGap?.grade || 'Grade 6'
+      });
+
+      if (res.success) {
+        setCompanionMessages([...newMsgs, { sender: 'companion', text: res.message, mode: companionMode }]);
+      }
+    } catch (err: any) {
+      setCompanionMessages([
+        ...newMsgs,
+        { sender: 'companion', text: 'I am here to support you! Let us take it one step at a time.' }
+      ]);
+    } finally {
+      setCompanionLoading(false);
+    }
+  };
+
+  // Query Teacher Copilot
+  const handleAskTeacherCopilot = async (queryText: string) => {
+    if (!queryText.trim()) return;
+    setCopilotLoading(true);
+    setCopilotQuery(queryText);
+    try {
+      const res = await apiPost<any>('/api/learning-gaps/ai/teacher-copilot', {
+        query: queryText
+      });
+      if (res.success) {
+        setCopilotAnswer(res.answer);
+      }
+    } catch (err: any) {
+      showToast('Copilot error: ' + err.message);
+    } finally {
+      setCopilotLoading(false);
+    }
+  };
+
+  // Query Central Learning Academy
+  const handleAskAcademyIntelligence = async () => {
+    if (!academyQuery.trim()) return;
+    setAcademyLoading(true);
+    try {
+      const res = await apiPost<any>('/api/learning-gaps/ai/institutional-query', {
+        query: academyQuery
+      });
+      if (res.success) {
+        setAcademyAnswer(res.response);
+      }
+    } catch (err: any) {
+      showToast('Intelligence query error: ' + err.message);
+    } finally {
+      setAcademyLoading(false);
+    }
+  };
+
+  // Fetch Student Learning Profile
+  const handleOpenStudentProfile = async () => {
+    if (!currentGap?.studentId) return;
+    setProfileLoading(true);
+    setShowProfileModal(true);
+    try {
+      const res = await apiGet<any>(`/api/learning-gaps/student-profile/${currentGap.studentId}`);
+      if (res.success) setProfileData(res.data);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Generate Adaptive Questions
+  const handleGenerateQuestions = async () => {
+    if (!currentGap?.conceptId) return;
+    setGeneratingQuestions(true);
+    try {
+      const res = await apiPost<any>('/api/learning-gaps/ai/generate-questions', {
+        conceptId: currentGap.conceptId,
+        gradeLevel: currentGap.grade,
+        difficulty: genDifficulty,
+        cognitiveSkill: 'APPLY',
+        count: 3
+      });
+      if (res.success) {
+        setGeneratedQuestions(res.data);
+      }
+    } catch (err: any) {
+      showToast('Question generator error: ' + err.message);
+    } finally {
+      setGeneratingQuestions(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Toast Notification */}
@@ -314,16 +466,16 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
               <BrainCircuit className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
                 <h1 className="text-xl font-black text-slate-900 tracking-tight">
-                  Achariya Learning Gap & Mastery Studio
+                  Achariya AI-Powered Adaptive Learning & Gap Closure System
                 </h1>
                 <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-purple-200">
-                  AI Academic Intelligence
+                  AI-FIRST
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -456,10 +608,84 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       </div>
 
       {/* ======================================================================= */}
-      {/* VIEW A: TEACHER INTERVENTION WORKBENCH                                   */}
+      {/* VIEW A: TEACHER INTERVENTION WORKBENCH & AI COPILOT                     */}
       {/* ======================================================================= */}
       {activeTab === 'teacher-dashboard' && (
         <div className="space-y-6">
+          {/* AI Teacher Academic Copilot Card (Engine J) */}
+          <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 text-white shadow-md space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black">AI Teacher Academic Copilot</h3>
+                  <p className="text-[11px] text-purple-200">Ground-truth clinical insights & instant differentiated instructional tools</p>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-mono text-purple-300 bg-white/10 px-2.5 py-1 rounded-lg">
+                Engine Active
+              </span>
+            </div>
+
+            {/* Quick Copilot Inquiry Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => handleAskTeacherCopilot('Why are these students struggling with percentages?')}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-semibold transition-colors"
+              >
+                🔍 Why are students struggling with percentages?
+              </button>
+              <button
+                onClick={() => handleAskTeacherCopilot('Generate a 3-tier differentiated worksheet for Grade 5-6 equivalent fractions')}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-semibold transition-colors"
+              >
+                📝 Generate 3-tier worksheets
+              </button>
+              <button
+                onClick={() => handleAskTeacherCopilot('Suggest a 15-minute bridge lesson plan for base-100 fraction scaling')}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-semibold transition-colors"
+              >
+                ⏱️ Suggest 15-min bridge lesson plan
+              </button>
+              <button
+                onClick={() => handleAskTeacherCopilot('Which students are currently ready for mastery reassessment?')}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-semibold transition-colors"
+              >
+                🎯 Who is ready for reassessment?
+              </button>
+            </div>
+
+            {/* Copilot Answer Display */}
+            {copilotLoading ? (
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-purple-200 flex items-center space-x-2 animate-pulse">
+                <Sparkles className="w-4 h-4 animate-spin text-purple-300" />
+                <span>AI Copilot analyzing class performance and synthesizing recommendation...</span>
+              </div>
+            ) : copilotAnswer ? (
+              <div className="p-5 rounded-2xl bg-white/10 border border-white/20 text-xs space-y-2 backdrop-blur-sm animate-in fade-in">
+                <div className="flex items-center justify-between text-[11px] font-bold text-purple-300 border-b border-white/10 pb-2">
+                  <span>Query: "{copilotQuery}"</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(copilotAnswer);
+                      showToast('Copied Copilot recommendations to clipboard!');
+                    }}
+                    className="flex items-center space-x-1 hover:text-white"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Response</span>
+                  </button>
+                </div>
+                <div className="text-purple-100 whitespace-pre-wrap leading-relaxed font-sans">
+                  {copilotAnswer}
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           {/* Filters Bar */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center space-x-2 flex-1 min-w-[240px]">
@@ -614,6 +840,27 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
 
                     <div className="flex items-center space-x-2">
                       <button
+                        onClick={handleOpenStudentProfile}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center space-x-1"
+                        title="View Continuous Student Learning Profile"
+                      >
+                        <User className="w-3.5 h-3.5 text-slate-500" />
+                        <span>AI Profile</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowQuestionGenModal(true);
+                          handleGenerateQuestions();
+                        }}
+                        className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-xl transition-colors flex items-center space-x-1"
+                        title="Generate Fresh Adaptive Questions"
+                      >
+                        <Cpu className="w-3.5 h-3.5" />
+                        <span>Adaptive Qs</span>
+                      </button>
+
+                      <button
                         onClick={() => {
                           setTeacherActionType('APPROVE_INTERVENTION');
                           setShowTeacherActionModal(true);
@@ -626,7 +873,7 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                     </div>
                   </div>
 
-                  {/* Multi-Grade Root Cause Diagnostic Blueprint (The Core Highlight) */}
+                  {/* Multi-Grade Root Cause Diagnostic Blueprint */}
                   <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-50 to-purple-500/10 border border-amber-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 text-amber-900 font-black text-xs">
@@ -778,14 +1025,24 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
               </p>
             </div>
 
-            <div className="text-right bg-white/10 p-3.5 rounded-2xl backdrop-blur-sm border border-white/20 shrink-0">
-              <div className="text-xs font-bold text-purple-200 uppercase tracking-wider">Current Focus</div>
-              <div className="text-sm font-black text-white mt-0.5">
-                {currentGap?.status === 'CURRENT_GRADE_RELEARNING'
-                  ? 'Grade 6: Percentage Calculations'
-                  : currentGap?.status === 'MASTERED'
-                  ? 'Concept Mastered 🏆'
-                  : 'Grade 5: Equivalent Fractions'}
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowCompanionModal(true)}
+                className="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black rounded-2xl shadow-md text-xs flex items-center space-x-2 transition-all transform hover:scale-[1.02]"
+              >
+                <Bot className="w-4 h-4 text-slate-900" />
+                <span>🤖 Ask AI Companion</span>
+              </button>
+
+              <div className="text-right bg-white/10 p-3 rounded-2xl backdrop-blur-sm border border-white/20 shrink-0">
+                <div className="text-[10px] font-bold text-purple-200 uppercase tracking-wider">Current Focus</div>
+                <div className="text-xs font-black text-white mt-0.5">
+                  {currentGap?.status === 'CURRENT_GRADE_RELEARNING'
+                    ? 'Grade 6: Percentage Calculations'
+                    : currentGap?.status === 'MASTERED'
+                    ? 'Concept Mastered 🏆'
+                    : 'Grade 5: Equivalent Fractions'}
+                </div>
               </div>
             </div>
           </div>
@@ -1168,6 +1425,41 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       {/* ======================================================================= */}
       {activeTab === 'learning-academy' && (
         <div className="space-y-6">
+          {/* Executive Natural Language Explorer Bar */}
+          <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-md space-y-4">
+            <div className="flex items-center space-x-2.5 text-purple-400">
+              <Bot className="w-5 h-5" />
+              <h3 className="text-sm font-black text-white">Central Learning Academy Natural Language Query Engine</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Query institution-wide network metrics, systemic cross-campus bottlenecks, or request curriculum recommendations in plain English.
+            </p>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="e.g. Which Grade 5 concepts are creating Grade 6 learning gaps?"
+                value={academyQuery}
+                onChange={e => setAcademyQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAskAcademyIntelligence()}
+                className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <button
+                disabled={academyLoading}
+                onClick={handleAskAcademyIntelligence}
+                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+              >
+                {academyLoading ? 'Analyzing...' : 'Query AI'}
+              </button>
+            </div>
+
+            {academyAnswer && (
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/15 text-xs text-purple-100 whitespace-pre-wrap leading-relaxed animate-in fade-in">
+                {academyAnswer}
+              </div>
+            )}
+          </div>
+
           {/* Multi-Campus Performance Comparison */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
@@ -1412,7 +1704,7 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
       )}
 
       {/* ======================================================================= */}
-      {/* MODAL: TEACHER ACTION & CLINICAL OBSERVATIONS                           */}
+      {/* MODAL 1: TEACHER ACTION & CLINICAL OBSERVATIONS                         */}
       {/* ======================================================================= */}
       {showTeacherActionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -1474,6 +1766,288 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
               >
                 {actionLoading ? 'Saving...' : 'Confirm Action'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* MODAL 2: AI SOCRATIC LEARNING COMPANION (Engine H)                       */}
+      {/* ======================================================================= */}
+      {showCompanionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between border-b pb-3 shrink-0">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <Bot className="w-5 h-5 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm text-slate-900">Achariya AI Socratic Learning Companion</h3>
+                  <p className="text-[11px] text-slate-500">Helping {currentGap?.studentName || 'Student'} conquer {currentGap?.conceptName}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCompanionModal(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 6 Explanation Modes Chips */}
+            <div className="flex flex-wrap gap-1.5 shrink-0 pt-1">
+              {[
+                { id: 'STEP_BY_STEP', label: '🔢 Step-by-Step' },
+                { id: 'VISUAL_EXPLANATION', label: '🎨 Visual 100-Grid' },
+                { id: 'REAL_LIFE_EXAMPLE', label: '🛍️ Real-Life Example' },
+                { id: 'SIMPLE_EXPLANATION', label: '💡 Simple Concept' },
+                { id: 'PRACTICE_MODE', label: '✍️ Practice Mode' },
+                { id: 'CHALLENGE_MODE', label: '⚡ Challenge' }
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setCompanionMode(m.id as any);
+                    handleSendCompanionMessage(`Switching to ${m.label} mode. Explain this concept for me!`);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    companionMode === m.id
+                      ? 'bg-amber-500 text-slate-950 shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Chat Messages Body */}
+            <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80 min-h-[250px]">
+              {companionMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex flex-col ${
+                    msg.sender === 'student' ? 'items-end' : 'items-start'
+                  }`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+                      msg.sender === 'student'
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'bg-white text-slate-800 border border-slate-200 shadow-2xs whitespace-pre-wrap'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {companionLoading && (
+                <div className="flex items-center space-x-2 text-xs text-slate-500 italic p-2">
+                  <Sparkles className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                  <span>Companion is thinking and preparing your explanation...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Chat Input Bar */}
+            <div className="flex items-center space-x-2 shrink-0 pt-2">
+              <input
+                type="text"
+                placeholder="Ask your companion anything (e.g. 'How do I scale 7/20?')..."
+                value={companionInput}
+                onChange={e => setCompanionInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSendCompanionMessage()}
+                className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              />
+              <button
+                disabled={companionLoading || !companionInput.trim()}
+                onClick={() => handleSendCompanionMessage()}
+                className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* MODAL 3: AI STUDENT LEARNING PROFILE (Section 13)                       */}
+      {/* ======================================================================= */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center space-x-2 text-purple-700">
+                <User className="w-5 h-5" />
+                <h3 className="font-extrabold text-sm text-slate-900">
+                  Continuous AI Student Learning Profile
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {profileLoading ? (
+              <div className="py-12 text-center text-xs text-slate-500">Compiling real-time cognitive metrics...</div>
+            ) : profileData ? (
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-purple-50 border border-purple-100">
+                  <div>
+                    <span className="text-[10px] text-purple-600 font-bold uppercase">Student</span>
+                    <div className="font-extrabold text-slate-900 mt-0.5">{profileData.studentName}</div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-purple-600 font-bold uppercase">Learning Pace</span>
+                    <div className="font-extrabold text-purple-800 mt-0.5">{profileData.learningPace}</div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-purple-600 font-bold uppercase">Retention Index</span>
+                    <div className="font-extrabold text-emerald-700 mt-0.5">{profileData.retentionIndex}%</div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-purple-600 font-bold uppercase">Active Critical Gaps</span>
+                    <div className="font-extrabold text-rose-700 mt-0.5">{profileData.criticalGaps?.length || 0}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="font-bold text-slate-700">Mastered Concepts:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profileData.masteredConcepts?.map((c: string, idx: number) => (
+                      <span key={idx} className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-semibold text-[11px]">
+                        ✓ {c}
+                      </span>
+                    ))}
+                    {profileData.masteredConcepts?.length === 0 && <span className="text-slate-400 italic">None yet</span>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="font-bold text-slate-700">Identified Prerequisite Bottlenecks:</div>
+                  {profileData.prerequisiteDeficiencies?.map((p: any, idx: number) => (
+                    <div key={idx} className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900">
+                      <strong>{p.grade}:</strong> {p.prereqName} (impeding <em>{p.affectedTargetConcept}</em>)
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* MODAL 4: AI ADAPTIVE QUESTION GENERATOR (Engine G)                      */}
+      {/* ======================================================================= */}
+      {showQuestionGenModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b pb-3 shrink-0">
+              <div className="flex items-center space-x-2 text-indigo-700">
+                <Cpu className="w-5 h-5" />
+                <h3 className="font-extrabold text-sm text-slate-900">
+                  AI Adaptive Question Generator
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowQuestionGenModal(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between shrink-0 bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
+              <div className="font-bold text-slate-700">
+                Concept: <span className="text-purple-700">{currentGap?.conceptName}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] text-slate-500 font-bold">Difficulty:</span>
+                {(['EASY', 'MEDIUM', 'HARD'] as const).map(diff => (
+                  <button
+                    key={diff}
+                    onClick={() => {
+                      setGenDifficulty(diff);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
+                      genDifficulty === diff ? 'bg-indigo-600 text-white' : 'bg-white border text-slate-700'
+                    }`}
+                  >
+                    {diff}
+                  </button>
+                ))}
+                <button
+                  disabled={generatingQuestions}
+                  onClick={handleGenerateQuestions}
+                  className="px-3 py-1 bg-purple-600 text-white rounded-lg font-bold text-xs hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {generatingQuestions ? 'Generating...' : 'Regenerate'}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+              {generatingQuestions ? (
+                <div className="py-12 text-center text-slate-500">Generating validated CBSE questions...</div>
+              ) : generatedQuestions.length > 0 ? (
+                generatedQuestions.map((q, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between font-bold">
+                      <span>Q{idx + 1}: {q.questionText}</span>
+                      <span className="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                        {q.cognitiveSkill}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      {q.options?.map((opt: string, oIdx: number) => (
+                        <div
+                          key={oIdx}
+                          className={`p-2 rounded-lg border ${
+                            opt === q.correctAnswer
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                              : 'bg-slate-50 border-slate-200'
+                          }`}
+                        >
+                          {opt} {opt === q.correctAnswer && '✓'}
+                        </div>
+                      ))}
+                    </div>
+
+                    {q.explanation && (
+                      <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-100 italic">
+                        <strong>Explanation:</strong> {q.explanation}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-slate-400">Click Regenerate to generate questions.</div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-slate-100 shrink-0">
+              <button
+                onClick={() => setShowQuestionGenModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+              >
+                Done
               </button>
             </div>
           </div>

@@ -31,4 +31,13 @@ export async function learningGapsRoutes(fastify: FastifyInstance) {
 
   // 6. Reports
   fastify.get('/api/learning-gaps/reports/student/:studentId', LearningGapsController.getStudentReport);
+
+  // 7. AI-First Intelligence Engines (Companion, Copilot, Adaptive Gen, Academy Intelligence)
+  fastify.post('/api/learning-gaps/ai/companion-chat', LearningGapsController.chatWithCompanion);
+  fastify.post('/api/learning-gaps/ai/teacher-copilot', LearningGapsController.queryTeacherCopilot);
+  fastify.post('/api/learning-gaps/ai/generate-questions', LearningGapsController.generateAdaptiveQuestions);
+  fastify.post('/api/learning-gaps/ai/institutional-query', LearningGapsController.queryInstitutionIntelligence);
+  fastify.get('/api/learning-gaps/student-profile/:studentId', LearningGapsController.getStudentLearningProfile);
+  fastify.get('/api/learning-gaps/predict-vulnerabilities/:studentId', LearningGapsController.getPredictedVulnerabilities);
 }
+
