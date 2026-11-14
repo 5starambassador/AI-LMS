@@ -483,15 +483,28 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                 <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-purple-200">
                   AI-FIRST
                 </span>
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-300 flex items-center space-x-1 shadow-2xs">
+                  <span>★</span>
+                  <span>100% LEARNING REQUIRED</span>
+                </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Precision Root-Cause Diagnosis · Multi-Grade Prerequisite Redirection · Reassessment & Mastery Verification
+                Precision Root-Cause Diagnosis · Multi-Grade Prerequisite Redirection · Reassessment & 100% Mastery Guarantee
               </p>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="flex items-center space-x-3 shrink-0">
+            <div className="bg-gradient-to-tr from-amber-50 to-amber-100/70 border border-amber-300 rounded-2xl px-4 py-2 text-center shadow-2xs">
+              <div className="text-lg font-black text-amber-800">
+                100%
+              </div>
+              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider">
+                Mastery Target
+              </div>
+            </div>
+
             <div className="bg-purple-50 border border-purple-200/80 rounded-2xl px-4 py-2 text-center">
               <div className="text-lg font-black text-purple-700">
                 {summaryMetrics?.closureRate ?? 20}%
@@ -1309,13 +1322,44 @@ export const LearningGapStudio: React.FC<{ initialStudentMode?: boolean }> = ({
                         {testResult.score}%
                       </div>
                       <h4 className="text-base font-black text-slate-900">
-                        {testResult.isPassed || testResult.isMastered
-                          ? '🎉 Mastery Goal Achieved!'
+                        {testResult.score === 100
+                          ? '🌟 100% Flawless Mastery Achieved!'
+                          : testResult.isPassed || testResult.isMastered
+                          ? '🎉 Baseline Verified! 100% Perfection Next!'
                           : 'Keep Going! Additional Practice Recommended'}
                       </h4>
                       <p className="text-xs text-slate-600 max-w-md mx-auto">
                         {testResult.message}
                       </p>
+
+                      {/* ACHARIYA 100% LEARNING REQUIRED CALLOUT */}
+                      {testResult.score < 100 && (
+                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-left space-y-2 max-w-lg mx-auto shadow-2xs">
+                          <div className="flex items-center space-x-2 text-amber-900 font-black text-xs uppercase tracking-wide">
+                            <span>★</span>
+                            <span>Achariya 100% Learning Required Protocol</span>
+                          </div>
+                          <p className="text-[11px] text-amber-800 leading-relaxed">
+                            In the Achariya standard, every scholar achieves <strong>100% complete understanding</strong>. You scored {testResult.score}%, which means only {100 - testResult.score}% remains. Let us close that final misconception right now!
+                          </p>
+                          <button
+                            onClick={() => {
+                              setShowCompanionModal(true);
+                              handleAskCompanion('STEP_BY_STEP', `I want to achieve 100% mastery! Please guide me step-by-step through the question I missed in ${testMode === 'FOUNDATION' ? 'Equivalent Fractions' : 'Percentage Calculations'}.`);
+                            }}
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-black transition-all flex items-center space-x-1.5 shadow-xs"
+                          >
+                            <span>🚀 Launch 100% Perfection Sprint (AI Micro-Check) →</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {testResult.score === 100 && (
+                        <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold max-w-md mx-auto flex items-center justify-center space-x-2 shadow-2xs">
+                          <span>🏆</span>
+                          <span>Certified 100% Zero-Gap Concept Mastery — Achariya Gold Standard</span>
+                        </div>
+                      )}
 
                       <div className="text-left space-y-2 mt-4 pt-4 border-t border-slate-200">
                         <div className="text-xs font-bold text-slate-700">Question Feedback:</div>
