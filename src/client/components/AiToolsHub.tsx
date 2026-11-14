@@ -39,6 +39,211 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
+interface AutogradeScriptProfile {
+  roll: string;
+  snippet: string;
+  confidence: number;
+  rubric: { content: number; terminology: number; clarity: number };
+}
+
+const AUTOGRADE_SCHOLAR_SCRIPTS: Record<'Aarav Sundaram' | 'Diya Ramanathan' | 'Kavya Krishnan', AutogradeScriptProfile> = {
+  'Aarav Sundaram': {
+    roll: 'ACH-05A-01',
+    snippet: 'Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and CO2 into glucose.',
+    confidence: 96.4,
+    rubric: { content: 2.0, terminology: 1.5, clarity: 1.5 }
+  },
+  'Diya Ramanathan': {
+    roll: 'ACH-05A-02',
+    snippet: 'Green plants synthesize glucose in chloroplasts using sunlight, water absorbed by roots, and carbon dioxide entering through stomata, releasing oxygen.',
+    confidence: 98.1,
+    rubric: { content: 2.0, terminology: 1.5, clarity: 1.4 }
+  },
+  'Kavya Krishnan': {
+    roll: 'ACH-05A-03',
+    snippet: 'Plants make food using sunlight and water in their green leaves during daytime and release air.',
+    confidence: 93.8,
+    rubric: { content: 1.4, terminology: 1.0, clarity: 1.2 }
+  }
+};
+
+interface ExamGraderScriptProfile {
+  roll: string;
+  omrMarks: number;
+  omrMax: number;
+  baseSubjective: number;
+  subjectiveMax: number;
+  q12AiSuggested: number;
+  q12Prompt: string;
+  snippet: string;
+  confidence: number;
+  feedback: string;
+}
+
+const EXAM_GRADER_SCRIPTS: Record<'Aarav Sundaram' | 'Diya Ramanathan' | 'Ananya Radhakrishnan', ExamGraderScriptProfile> = {
+  'Aarav Sundaram': {
+    roll: 'ACH-05A-01',
+    omrMarks: 14,
+    omrMax: 15,
+    baseSubjective: 27.5,
+    subjectiveMax: 35,
+    q12AiSuggested: 4.5,
+    q12Prompt: 'Q12 (5.0M · Step-Evaluated): Calculate average speed (40 km in 45 min) & explain energy conversion.',
+    snippet: '45 min = 3/4 hr = 0.75 hr. Speed = 40 / 0.75 = 53.33 km/h. Leaves absorb solar photons via chlorophyll to form glucose.',
+    confidence: 96.4,
+    feedback: 'Alternative fraction step (3/4 hr) recognised for full method credit; accurate terminology.'
+  },
+  'Diya Ramanathan': {
+    roll: 'ACH-05A-02',
+    omrMarks: 15,
+    omrMax: 15,
+    baseSubjective: 29.0,
+    subjectiveMax: 35,
+    q12AiSuggested: 5.0,
+    q12Prompt: 'Q12 (5.0M · Step-Evaluated): Calculate average speed (40 km in 45 min) & explain energy conversion.',
+    snippet: 'v = d / t = 40 km / (45/60 h) = 40 * 4 / 3 = 53.33 km/h. Chlorophyll traps solar energy to convert H2O + CO2 into C6H12O6 + O2.',
+    confidence: 98.1,
+    feedback: 'Complete algebraic steps and balanced chemical formula.'
+  },
+  'Ananya Radhakrishnan': {
+    roll: 'ACH-05A-06',
+    omrMarks: 9,
+    omrMax: 15,
+    baseSubjective: 12.5,
+    subjectiveMax: 35,
+    q12AiSuggested: 2.5,
+    q12Prompt: 'Q12 (5.0M · Step-Evaluated): Calculate average speed (40 km in 45 min) & explain energy conversion.',
+    snippet: 'Speed = 40 / 45 = 0.88 km/min. Plants use sunlight to grow.',
+    confidence: 91.2,
+    feedback: 'Partial credit awarded for valid km/min rate; unit conversion to km/h missed (Grade 4 fraction scaling gap).'
+  }
+};
+
+type GranularityLevel = 'Student' | 'Question' | 'Concept' | 'LO' | 'Chapter' | 'Subject' | 'Class' | 'Campus';
+
+const INSIGHT_GRANULARITY_DATA: Record<
+  GranularityLevel,
+  {
+    benchmarkVal: string;
+    benchmarkSub: string;
+    proficientVal: string;
+    proficientSub: string;
+    beginnerVal: string;
+    beginnerSub: string;
+    rows: { name: string; score: string; outcome: string; tier: 'Proficient' | 'Progressing' | 'Beginner'; badge: string }[];
+  }
+> = {
+  Student: {
+    benchmarkVal: '46 / 50',
+    benchmarkSub: 'Pilot Correction Time: 14m vs 120m manual',
+    proficientVal: '22 / 28',
+    proficientSub: 'Evidence-Based Concept Classification',
+    beginnerVal: '6 Scholars',
+    beginnerSub: 'Flagged Same-Day for Remedial',
+    rows: [
+      { name: 'Diya Ramanathan', score: '49/50 (98%)', outcome: 'LO-SCI-05.4 Mastery', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Aarav Sundaram', score: '46/50 (92%)', outcome: 'LO-MTH-05.2 Base-100 Scaling', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Kavya Krishnan', score: '34/50 (68%)', outcome: 'Step-Wise Unit Conversion', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
+      { name: 'Ananya Radhakrishnan', score: '24/50 (48%)', outcome: 'Missing Grade 4 Fraction Link', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
+    ]
+  },
+  Question: {
+    benchmarkVal: '84.6%',
+    benchmarkSub: '22 Items Analysed Across Set A/B/C',
+    proficientVal: '17 / 22 Items',
+    proficientSub: 'Discrimination Index ≥ 0.35',
+    beginnerVal: '2 Flagged Items',
+    beginnerSub: 'Q12 & Q18 High Error Concentration',
+    rows: [
+      { name: 'Q1–Q5 Objective MCQ (1M)', score: '94% Correct', outcome: 'LO-MTH-05.1 · Knowledge', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Q8 Application Short (2M)', score: '71% Avg', outcome: 'LO-MTH-05.2 · Rounding', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
+      { name: 'Q12 HOTS Speed Problem (5M)', score: '44% Avg', outcome: 'LO-MTH-05.8 · Min-to-Hr Conversion', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
+    ]
+  },
+  Concept: {
+    benchmarkVal: '4 / 5 Mastered',
+    benchmarkSub: 'Prerequisite Knowledge Graph Verified',
+    proficientVal: '79% Cohort',
+    proficientSub: 'Strong Symbolic + Pictorial Links',
+    beginnerVal: '1 Core Gap',
+    beginnerSub: 'Time-Unit Fractional Scaling',
+    rows: [
+      { name: 'Solar Photon & Chlorophyll Capture', score: '92% Mastery', outcome: 'Prerequisite: Light Energy -> Leaf Pigments', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Place Value & Estimation Logic', score: '88% Mastery', outcome: 'CPA Concrete-to-Abstract Aligned', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Base-100 Fraction Scaling', score: '63% Mastery', outcome: 'Cross-grade bridge needed for 6 scholars', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
+      { name: 'Unitary Speed (Min to Hour)', score: '46% Mastery', outcome: 'Triggered Same-Day PAL Loop', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
+    ]
+  },
+  LO: {
+    benchmarkVal: '81% Attainment',
+    benchmarkSub: '37 Curriculum LOs Mapped',
+    proficientVal: '28 LOs Met',
+    proficientSub: 'CBSE Competency Standard Reached',
+    beginnerVal: '3 LOs Behind',
+    beginnerSub: 'Targeted Remedial Plans Active',
+    rows: [
+      { name: '#35326 · 7-Digit Place Value Comparison', score: '95% Attainment', outcome: 'Bloom L1–L2 · Knowledge', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: '#40101 · Photosynthesis Equation', score: '86% Attainment', outcome: 'Bloom L2–L3 · Application', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: '#35341 · Equivalent Fractions & %', score: '64% Attainment', outcome: 'Bloom L3 · Denominator Scaling', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
+      { name: '#35364 · Multi-Step Travel Speed', score: '45% Attainment', outcome: 'Bloom L4 · Analysis / HOTS', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
+    ]
+  },
+  Chapter: {
+    benchmarkVal: '6 Chapters',
+    benchmarkSub: 'Term 1 Syllabus Coverage 100%',
+    proficientVal: '4 Chapters ≥80%',
+    proficientSub: 'Ready for Summative Benchmark',
+    beginnerVal: '1 Chapter At-Risk',
+    beginnerSub: 'Fractions & Proportional Reasoning',
+    rows: [
+      { name: 'Ch 1 · We the Travellers - I', score: '91% Avg', outcome: '3 LOs Mastered · High Fluency', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Ch 2 · Energy & Chlorophyll', score: '87% Avg', outcome: 'Lab & OCR Script Aligned', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Ch 4 · Angles as Turns', score: '69% Avg', outcome: 'Clock-rotation items progressing', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
+      { name: 'Ch 5 · Fractions & Percentages', score: '49% Avg', outcome: 'Grade 4 Prerequisite Reinforcement', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
+    ]
+  },
+  Subject: {
+    benchmarkVal: '83.4% Combined',
+    benchmarkSub: 'Standardised Across Grade 5 CBSE',
+    proficientVal: '3 Core Subjects',
+    proficientSub: 'Science · Maths · English VoiceLab',
+    beginnerVal: '0 Subjects <65%',
+    beginnerSub: 'Positive Growth vs Baseline',
+    rows: [
+      { name: 'Experiential Sciences (ID: 1596)', score: '88.2% Avg', outcome: '24 LOs · Strong Practical Transfer', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'English Language Lab (L/S/R)', score: '85.7% Avg', outcome: 'Avg +36 WCPM Growth Since June', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Mathematics (ID: 1595)', score: '76.4% Avg', outcome: 'Word-problem framing improving', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' }
+    ]
+  },
+  Class: {
+    benchmarkVal: '5A · 84% Avg',
+    benchmarkSub: '28 Scholars Graded Across 3 Sets',
+    proficientVal: '22 Scholars',
+    proficientSub: '5A Leads Problem-Solving Speed',
+    beginnerVal: '6 in Guided Lab',
+    beginnerSub: 'Same-Day Remedial Scheduled',
+    rows: [
+      { name: 'Grade 5 - Section A', score: '84.5% Avg', outcome: '28/28 Scripts Graded · Set A/B/C Balanced', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Grade 5 - Section B', score: '79.1% Avg', outcome: '27/27 Scripts Graded · 4 Need Fraction Support', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Grade 5 - Section C', score: '68.4% Avg', outcome: '26/26 Scripts Graded · Concept Re-teach Active', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' }
+    ]
+  },
+  Campus: {
+    benchmarkVal: '81.8% Trust Avg',
+    benchmarkSub: 'Central Standardised Blueprint Equity',
+    proficientVal: '4 / 5 Campuses',
+    proficientSub: 'Variance Under 6.5% Across Set A/B/C',
+    beginnerVal: '1 Campus Coaching',
+    beginnerSub: 'Common Marking Scheme Calibrated',
+    rows: [
+      { name: 'Puducherry Central Campus', score: '85.2% Avg', outcome: 'Reference Standard · 14m/script', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Lawspet Innovation Campus', score: '82.6% Avg', outcome: 'Set B/C Parity Verified', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Villianur Learning Campus', score: '78.9% Avg', outcome: 'Math Word-Problem Clinic Active', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+      { name: 'Karaikal Coastal Campus', score: '72.4% Avg', outcome: 'Bridge Remedial Module Assigned', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' }
+    ]
+  }
+};
+
 interface AiToolsHubProps {
   onNavigateToExamBuilder?: () => void;
 }
@@ -68,9 +273,12 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
   };
 
   // 1. Autograde State
-  const [selectedAutogradeStudent, setSelectedAutogradeStudent] = useState('Aarav Sundaram');
+  const [selectedAutogradeStudent, setSelectedAutogradeStudent] = useState<'Aarav Sundaram' | 'Diya Ramanathan' | 'Kavya Krishnan'>('Aarav Sundaram');
   const [rubricScores, setRubricScores] = useState({ content: 2.0, terminology: 1.5, clarity: 1.5 });
   const [autogradeSaved, setAutogradeSaved] = useState(false);
+
+  // 1B. Grader Test Bench Scholar Script State
+  const [selectedGraderStudent, setSelectedGraderStudent] = useState<'Aarav Sundaram' | 'Diya Ramanathan' | 'Ananya Radhakrishnan'>('Aarav Sundaram');
 
   // 2. HPC (Holistic Progress Card) State
   const [hpcDomains, setHpcDomains] = useState({
@@ -139,6 +347,15 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
     experientialLab: 95
   });
 
+  const activeAutogradeScript =
+    AUTOGRADE_SCHOLAR_SCRIPTS[selectedAutogradeStudent] || AUTOGRADE_SCHOLAR_SCRIPTS['Aarav Sundaram'];
+  const activeGraderScript =
+    EXAM_GRADER_SCRIPTS[selectedGraderStudent] || EXAM_GRADER_SCRIPTS['Aarav Sundaram'];
+  const subjectiveAwarded = Number((activeGraderScript.baseSubjective + graderTeacherOverride).toFixed(1));
+  const totalAwarded = Number((activeGraderScript.omrMarks + subjectiveAwarded).toFixed(1));
+  const activeGranularityData = INSIGHT_GRANULARITY_DATA[insightGranularity];
+  const totalBlueprintMarks = examSections.reduce((s, sec) => s + sec.marks, 0);
+
   // Trigger OCR analysis test bench
   const runOcrTestBench = async () => {
     setIsOcrProcessing(true);
@@ -160,32 +377,32 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
       if (res.ok) {
         const data = await res.json();
         setOcrTranscribeResult({
-          text: data.transcription || 'Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and CO2 into glucose.',
-          confidence: data.confidence || 96.4,
-          score: data.evaluation?.score || 4.8,
+          text: data.transcription || activeGraderScript.snippet,
+          confidence: data.confidence || activeGraderScript.confidence,
+          score: data.evaluation?.score || graderTeacherOverride,
           maxScore: 5.0,
-          feedback: data.evaluation?.feedback || 'Accurate scientific terminology (chlorophyll, photons, glucose) with precise conceptual flow.'
+          feedback: data.evaluation?.feedback || activeGraderScript.feedback
         });
       } else {
-        // Fallback simulation
+        // Fallback simulation anchored to active scholar script
         setOcrTranscribeResult({
-          text: 'Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and CO2 into glucose.',
-          confidence: 96.4,
-          score: 4.8,
+          text: activeGraderScript.snippet,
+          confidence: activeGraderScript.confidence,
+          score: graderTeacherOverride,
           maxScore: 5.0,
-          feedback: 'Accurate scientific terminology (chlorophyll, photons, glucose) with precise conceptual flow.'
+          feedback: activeGraderScript.feedback
         });
       }
-      showToast('Optical alignment verified and handwriting OCR completed.');
-    } catch (e) {
+      showToast(`Optical alignment verified for ${selectedGraderStudent} and handwriting OCR completed.`);
+    } catch {
       setOcrTranscribeResult({
-        text: 'Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and CO2 into glucose.',
-        confidence: 96.4,
-        score: 4.8,
+        text: activeGraderScript.snippet,
+        confidence: activeGraderScript.confidence,
+        score: graderTeacherOverride,
         maxScore: 5.0,
-        feedback: 'Accurate scientific terminology (chlorophyll, photons, glucose) with precise conceptual flow.'
+        feedback: activeGraderScript.feedback
       });
-      showToast('OCR test completed with fallback neural parser.');
+      showToast(`OCR test completed for ${selectedGraderStudent} with fallback neural parser.`);
     } finally {
       setIsOcrProcessing(false);
     }
@@ -578,7 +795,10 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   <select
                     value={selectedAutogradeStudent}
                     onChange={e => {
-                      setSelectedAutogradeStudent(e.target.value);
+                      const nextKey = e.target.value as keyof typeof AUTOGRADE_SCHOLAR_SCRIPTS;
+                      setSelectedAutogradeStudent(nextKey);
+                      const nextScript = AUTOGRADE_SCHOLAR_SCRIPTS[nextKey];
+                      if (nextScript) setRubricScores({ ...nextScript.rubric });
                       setAutogradeSaved(false);
                     }}
                     className="ml-2 px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
@@ -589,7 +809,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   </select>
                 </div>
                 <span className="px-3 py-1 bg-purple-100 text-purple-800 font-bold rounded-lg border border-purple-200">
-                  Batch OCR Active
+                  Batch OCR Active · {activeAutogradeScript.roll}
                 </span>
               </div>
 
@@ -598,7 +818,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Handwriting Transcribed Snippet:</span>
                   <button
-                    onClick={() => playSpeechClip("Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and carbon dioxide into glucose.")}
+                    onClick={() => playSpeechClip(activeAutogradeScript.snippet)}
                     className="text-purple-700 hover:text-purple-900 font-bold flex items-center space-x-1"
                   >
                     <Volume2 className="w-3.5 h-3.5" />
@@ -607,13 +827,13 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 </div>
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-800 leading-relaxed">
-                  "Leaves absorb solar energy during photosynthesis. The chlorophyll captures photons to turn water and CO2 into glucose."
+                  &ldquo;{activeAutogradeScript.snippet}&rdquo;
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] pt-1">
                   <span className="text-emerald-700 font-semibold flex items-center space-x-1">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>OCR Confidence: 96.4%</span>
+                    <span>OCR Confidence: {activeAutogradeScript.confidence}%</span>
                   </span>
                   <span className="font-bold text-purple-700">
                     Total: {(rubricScores.content + rubricScores.terminology + rubricScores.clarity).toFixed(1)} / 5.0 Marks
@@ -930,9 +1150,9 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
                 <h4 className="font-extrabold text-emerald-950 text-base">Exam Blueprint Successfully Compiled</h4>
                 <p className="text-xs text-emerald-800 max-w-md mx-auto">
-                  Exam blueprint saved to SCORE repository with total 50 Marks. Ready for batch personalization and PDF printing with scannable 2D QR corner anchors.
+                  Exam blueprint saved with total <strong>{totalBlueprintMarks} Marks</strong> ({examSections.reduce((s, sec) => s + sec.count, 0)} items). Ready for batch personalization and PDF printing with scannable 2D QR corner anchors.
                 </p>
-                <div className="pt-2 flex justify-center space-x-3">
+                <div className="pt-2 flex flex-wrap justify-center gap-3">
                   <button
                     onClick={() => {
                       setActiveModal('assignExam');
@@ -941,7 +1161,23 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                     className="px-5 py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold hover:bg-emerald-800 shadow-xs flex items-center space-x-1.5"
                   >
                     <Printer className="w-4 h-4" />
-                    <span>Proceed to Assign Exam & Generate Batch PDF</span>
+                    <span>Proceed to Assign Exam &amp; Generate Batch PDF</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveModal(null);
+                      setExamCreatedSuccess(false);
+                      if (onNavigateToExamBuilder) {
+                        onNavigateToExamBuilder();
+                      } else {
+                        window.history.pushState({}, '', '/staff/exam-builder');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="px-5 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 shadow-xs flex items-center space-x-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Open Full AI Exam Builder Studio →</span>
                   </button>
                 </div>
               </div>
@@ -957,7 +1193,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Grade & Subject:</label>
+                    <label className="block font-bold text-slate-700 mb-1">Grade &amp; Subject:</label>
                     <input
                       type="text"
                       disabled
@@ -969,7 +1205,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block font-bold text-slate-700">Configured Blueprint Sections:</label>
+                    <label className="block font-bold text-slate-700">Configured Blueprint Sections ({totalBlueprintMarks} Marks Total):</label>
                     <button
                       onClick={() => {
                         setIsGeneratingAiBlueprint(true);
@@ -996,12 +1232,28 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   ))}
                 </div>
 
-                <button
-                  onClick={() => setExamCreatedSuccess(true)}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
-                >
-                  Compile & Save Exam Blueprint
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setExamCreatedSuccess(true)}
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+                  >
+                    Compile &amp; Preview Blueprint ({totalBlueprintMarks}M)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveModal(null);
+                      if (onNavigateToExamBuilder) {
+                        onNavigateToExamBuilder();
+                      } else {
+                        window.history.pushState({}, '', '/staff/exam-builder');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="px-4 py-3 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-bold text-xs rounded-xl transition-colors"
+                  >
+                    Open Full AI Exam Builder Studio →
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1064,19 +1316,28 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <button
                     onClick={async () => {
                       const token = localStorage.getItem('achariya_token');
-                      const res = await fetch('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf', {
-                        headers: token ? { Authorization: `Bearer ${token}` } : {}
-                      });
-                      if (!res.ok) { alert('Download failed: ' + (await res.json().then((d: any) => d.error).catch(() => res.statusText))); return; }
-                      const blob = await res.blob();
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = 'ACH-EXAM-2026-T1-batch.pdf'; a.click();
-                      setTimeout(() => URL.revokeObjectURL(url), 10000);
+                      try {
+                        const res = await fetch('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf', {
+                          headers: token ? { Authorization: `Bearer ${token}` } : {}
+                        });
+                        if (!res.ok) {
+                          const errMsg = await res.json().then((d: any) => d.error).catch(() => res.statusText);
+                          showToast(`Batch PDF unavailable (${errMsg || res.status}). Compile an exam in Exam Builder first.`);
+                          return;
+                        }
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url; a.download = 'ACH-EXAM-2026-T1-batch.pdf'; a.click();
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                        showToast('Batch PDF downloaded successfully.');
+                      } catch {
+                        showToast('Unable to reach Batch PDF service — check connection or open Exam Hub.');
+                      }
                     }}
                     className="py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2"
                   >
@@ -1092,6 +1353,17 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   >
                     <Printer className="w-4 h-4" />
                     <span>Print via Browser</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveModal(null);
+                      window.history.pushState({}, '', '/staff/exams');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }}
+                    className="py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-xs rounded-xl transition-colors flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Open Exam Hub →</span>
                   </button>
                 </div>
               </div>
@@ -1177,10 +1449,28 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
             </div>
 
             <div className="space-y-4 text-xs">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900">Active Test Paper: Aarav Sundaram</span>
-                  <p className="text-slate-500">Term 1 Science & Energy Summative Exam (Roll: ACH-05A-01)</p>
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-slate-900">Active Script:</span>
+                    <select
+                      value={selectedGraderStudent}
+                      onChange={e => {
+                        const nextKey = e.target.value as keyof typeof EXAM_GRADER_SCRIPTS;
+                        const nextProfile = EXAM_GRADER_SCRIPTS[nextKey];
+                        setSelectedGraderStudent(nextKey);
+                        setGraderTeacherOverride(nextProfile.q12AiSuggested);
+                        setOcrTranscribeResult(null);
+                        setGraderAuditSaved(false);
+                      }}
+                      className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
+                    >
+                      <option value="Aarav Sundaram">Aarav Sundaram (ACH-05A-01)</option>
+                      <option value="Diya Ramanathan">Diya Ramanathan (ACH-05A-02)</option>
+                      <option value="Ananya Radhakrishnan">Ananya Radhakrishnan (ACH-05A-06)</option>
+                    </select>
+                  </div>
+                  <p className="text-slate-500">Term 1 Science &amp; Energy Summative Exam (Roll: {activeGraderScript.roll})</p>
                 </div>
                 <button
                   onClick={runOcrTestBench}
@@ -1211,14 +1501,18 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                   <div className="p-3 bg-white border border-slate-200 rounded-xl">
                     <span className="text-slate-400 text-[10px] uppercase font-bold block">Objective Bubble OMR</span>
-                    <span className="text-base font-black text-slate-900">14 / 15 Marks</span>
+                    <span className="text-base font-black text-slate-900">{activeGraderScript.omrMarks} / {activeGraderScript.omrMax} Marks</span>
                   </div>
                   <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Subjective AI Evaluated</span>
-                    <span className="text-base font-black text-rose-700">32 / 35 Marks</span>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Subjective (Live Adjusted)</span>
+                    <span className="text-base font-black text-rose-700">{subjectiveAwarded} / {activeGraderScript.subjectiveMax} Marks</span>
+                  </div>
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <span className="text-emerald-700 text-[10px] uppercase font-bold block">Total Awarded</span>
+                    <span className="text-base font-black text-emerald-900">{totalAwarded} / 50 Marks</span>
                   </div>
                 </div>
               )}
@@ -1234,7 +1528,9 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 <div className="p-2.5 bg-white rounded-xl border border-sky-100 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="font-bold text-slate-800 block">Teacher Verification &amp; Override (Q12 · 5.0M):</span>
-                    <span className="text-[11px] text-slate-500">AI Suggested: 4.5 / 5.0 · Audit Trail Active</span>
+                    <span className="text-[11px] text-slate-500">
+                      AI Suggested: {activeGraderScript.q12AiSuggested.toFixed(1)} / 5.0 · Audit Trail Active
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
@@ -1253,7 +1549,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   </div>
                 </div>
                 <div className="text-[10px] text-slate-600 font-mono bg-white/80 p-2 rounded-lg border border-slate-200">
-                  Audit Log: AI Initial (4.5/5.0) → Faculty Override ({graderTeacherOverride.toFixed(1)}/5.0) → Final Awarded ({graderAuditSaved ? 'LOCKED' : 'PENDING REVIEW'})
+                  Audit Log ({selectedGraderStudent}): AI Initial ({activeGraderScript.q12AiSuggested.toFixed(1)}/5.0) → Faculty Override ({graderTeacherOverride.toFixed(1)}/5.0) → Paper Total: {totalAwarded}/50 ({graderAuditSaved ? 'LOCKED' : 'PENDING REVIEW'})
                 </div>
               </div>
 
@@ -1261,7 +1557,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 <button
                   onClick={() => {
                     setGraderAuditSaved(true);
-                    showToast(`Teacher override (${graderTeacherOverride.toFixed(1)}/5.0) & immutable audit trail saved.`);
+                    showToast(`${selectedGraderStudent} override (${graderTeacherOverride.toFixed(1)}/5.0 → ${totalAwarded}/50) & audit trail locked.`);
                   }}
                   className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-colors"
                 >
@@ -1431,18 +1727,18 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
                 <div className="text-[10px] text-slate-500 font-bold uppercase">{insightGranularity} VIEW · BENCHMARK</div>
-                <div className="text-xl font-black text-slate-800 mt-1">46 / 50</div>
-                <div className="text-[10px] text-teal-700 font-semibold">Pilot Correction Time: 14m vs 120m manual</div>
+                <div className="text-xl font-black text-slate-800 mt-1">{activeGranularityData.benchmarkVal}</div>
+                <div className="text-[10px] text-teal-700 font-semibold">{activeGranularityData.benchmarkSub}</div>
               </div>
               <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200">
                 <div className="text-[10px] text-emerald-700 font-bold uppercase">PROFICIENT / PROGRESSING</div>
-                <div className="text-xl font-black text-emerald-900 mt-1">22 / 28</div>
-                <div className="text-[10px] text-emerald-700 font-semibold">Evidence-Based Concept Classification</div>
+                <div className="text-xl font-black text-emerald-900 mt-1">{activeGranularityData.proficientVal}</div>
+                <div className="text-[10px] text-emerald-700 font-semibold">{activeGranularityData.proficientSub}</div>
               </div>
               <div className="p-3.5 bg-rose-50 rounded-2xl border border-rose-200">
                 <div className="text-[10px] text-rose-700 font-bold uppercase">BEGINNER (REMEDIAL)</div>
-                <div className="text-xl font-black text-rose-800 mt-1">6 Scholars</div>
-                <div className="text-[10px] text-rose-700 font-semibold">Flagged Same-Day</div>
+                <div className="text-xl font-black text-rose-800 mt-1">{activeGranularityData.beginnerVal}</div>
+                <div className="text-[10px] text-rose-700 font-semibold">{activeGranularityData.beginnerSub}</div>
               </div>
             </div>
 
@@ -1462,13 +1758,9 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
               </div>
             </div>
 
-            {/* Student Mastery Classification Table */}
+            {/* Dynamic Granularity Breakdown Table */}
             <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 text-xs">
-              {[
-                { name: 'Diya Ramanathan', score: '49/50 (98%)', outcome: 'LO-SCI-05.4 Mastery', tier: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-                { name: 'Aarav Sundaram', score: '46/50 (92%)', outcome: 'LO-SCI-05.2 Base-100 Scaling', tier: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' },
-                { name: 'Ananya Radhakrishnan', score: '24/50 (48%)', outcome: 'Missing Grade 4 Fraction Link', tier: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' }
-              ].map((st, idx) => (
+              {activeGranularityData.rows.map((st, idx) => (
                 <div key={idx} className="p-3 bg-white flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="font-bold text-slate-900">{st.name}</span>

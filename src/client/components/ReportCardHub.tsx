@@ -22,25 +22,138 @@ function gradeColor(g: string) {
   return 'text-rose-700 bg-rose-50';
 }
 
+function classifyMasteryTier(pct: number | null): {
+  label: 'Proficient' | 'Progressing' | 'Beginner' | 'Pending';
+  badge: string;
+} {
+  if (pct === null || Number.isNaN(pct)) {
+    return { label: 'Pending', badge: 'bg-slate-100 text-slate-500 border-slate-200' };
+  }
+  if (pct >= 75) {
+    return { label: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+  }
+  if (pct >= 50) {
+    return { label: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' };
+  }
+  return { label: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' };
+}
+
+const FALLBACK_STUDENTS: StudentItem[] = [
+  { id: 'stu-fallback-1', name: 'Aarav Sundaram', roll: 'ACH-05A-01', class: 'Grade 5', section: 'A' },
+  { id: 'stu-fallback-2', name: 'Diya Ramanathan', roll: 'ACH-05A-02', class: 'Grade 5', section: 'A' },
+  { id: 'stu-fallback-3', name: 'Ananya Radhakrishnan', roll: 'ACH-05A-06', class: 'Grade 5', section: 'A' }
+];
+
+const FALLBACK_REPORTS: Record<string, Report> = {
+  'stu-fallback-1': {
+    student: { name: 'Aarav Sundaram', class: 'Grade 5', section: 'A', batch: '2026–2027 CBSE Competency Cohort', roll: 'ACH-05A-01' },
+    attendance: { present: 112, absent: 4, leave: 2, total: 118, percentage: 95 },
+    homework: [
+      { subject: 'Mathematics', avgPercent: 90, submissions: 12 },
+      { subject: 'Experiential Sciences', avgPercent: 92, submissions: 10 },
+      { subject: 'English Language Lab', avgPercent: 89, submissions: 11 }
+    ],
+    examBySubject: [
+      { subject: 'Mathematics', count: 2, avgPercent: 92, grade: 'A+' },
+      { subject: 'Experiential Sciences', count: 2, avgPercent: 94, grade: 'A+' },
+      { subject: 'English Language Lab', count: 1, avgPercent: 86, grade: 'A' }
+    ],
+    exams: [
+      { title: 'Golden Concord Summative Exam (Set A)', subject: 'Mathematics', marksObtained: 46, totalMarks: 50, percentage: 92, grade: 'A+', scheduledDate: '2026-11-06' },
+      { title: 'Term 1 Science & Energy Summative', subject: 'Experiential Sciences', marksObtained: 47, totalMarks: 50, percentage: 94, grade: 'A+', scheduledDate: '2026-10-28' },
+      { title: 'Mid-Term English Fluency & Reading', subject: 'English Language Lab', marksObtained: 43, totalMarks: 50, percentage: 86, grade: 'A', scheduledDate: '2026-10-15' }
+    ],
+    generatedAt: '2026-11-14T00:00:00.000Z'
+  },
+  'stu-fallback-2': {
+    student: { name: 'Diya Ramanathan', class: 'Grade 5', section: 'A', batch: '2026–2027 CBSE Competency Cohort', roll: 'ACH-05A-02' },
+    attendance: { present: 115, absent: 2, leave: 1, total: 118, percentage: 97 },
+    homework: [
+      { subject: 'Mathematics', avgPercent: 97, submissions: 12 },
+      { subject: 'Experiential Sciences', avgPercent: 98, submissions: 10 },
+      { subject: 'English Language Lab', avgPercent: 94, submissions: 11 }
+    ],
+    examBySubject: [
+      { subject: 'Mathematics', count: 2, avgPercent: 98, grade: 'A+' },
+      { subject: 'Experiential Sciences', count: 2, avgPercent: 96, grade: 'A+' },
+      { subject: 'English Language Lab', count: 1, avgPercent: 92, grade: 'A+' }
+    ],
+    exams: [
+      { title: 'Golden Concord Summative Exam (Set B)', subject: 'Mathematics', marksObtained: 49, totalMarks: 50, percentage: 98, grade: 'A+', scheduledDate: '2026-11-06' },
+      { title: 'Term 1 Science & Energy Summative', subject: 'Experiential Sciences', marksObtained: 48, totalMarks: 50, percentage: 96, grade: 'A+', scheduledDate: '2026-10-28' }
+    ],
+    generatedAt: '2026-11-14T00:00:00.000Z'
+  },
+  'stu-fallback-3': {
+    student: { name: 'Ananya Radhakrishnan', class: 'Grade 5', section: 'A', batch: '2026–2027 CBSE Competency Cohort', roll: 'ACH-05A-06' },
+    attendance: { present: 98, absent: 14, leave: 6, total: 118, percentage: 83 },
+    homework: [
+      { subject: 'Mathematics', avgPercent: 48, submissions: 9 },
+      { subject: 'Experiential Sciences', avgPercent: 62, submissions: 9 },
+      { subject: 'English Language Lab', avgPercent: 68, submissions: 10 }
+    ],
+    examBySubject: [
+      { subject: 'Mathematics', count: 2, avgPercent: 48, grade: 'D' },
+      { subject: 'Experiential Sciences', count: 2, avgPercent: 64, grade: 'B' },
+      { subject: 'English Language Lab', count: 1, avgPercent: 66, grade: 'B' }
+    ],
+    exams: [
+      { title: 'Golden Concord Summative Exam (Set C)', subject: 'Mathematics', marksObtained: 24, totalMarks: 50, percentage: 48, grade: 'D', scheduledDate: '2026-11-06' },
+      { title: 'Term 1 Science & Energy Summative', subject: 'Experiential Sciences', marksObtained: 32, totalMarks: 50, percentage: 64, grade: 'B', scheduledDate: '2026-10-28' }
+    ],
+    generatedAt: '2026-11-14T00:00:00.000Z'
+  }
+};
+
 export function ReportCardHub() {
   const [students, setStudents] = useState<StudentItem[]>([]);
   const [studentId, setStudentId] = useState('');
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    apiGet<any>('/api/reportcard/students').then(d => {
-      if (d.success) setStudents(d.students ?? []);
-    }).catch(() => {});
+    apiGet<any>('/api/reportcard/students')
+      .then(d => {
+        const list = d?.success ? (d.students ?? []) : [];
+        if (list.length > 0) {
+          setStudents(list);
+          setStudentId(list[0].id);
+          setIsFallbackMode(false);
+        } else {
+          setStudents(FALLBACK_STUDENTS);
+          setStudentId(FALLBACK_STUDENTS[0].id);
+          setIsFallbackMode(true);
+        }
+      })
+      .catch(() => {
+        setStudents(FALLBACK_STUDENTS);
+        setStudentId(FALLBACK_STUDENTS[0].id);
+        setIsFallbackMode(true);
+      });
   }, []);
 
   useEffect(() => {
     if (!studentId) { setReport(null); return; }
+    if (FALLBACK_REPORTS[studentId]) {
+      setReport(FALLBACK_REPORTS[studentId]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    apiGet<any>(`/api/reportcard/${studentId}`).then(d => {
-      if (d.success) setReport(d as Report);
-    }).catch(() => {}).finally(() => setLoading(false));
+    apiGet<any>(`/api/reportcard/${studentId}`)
+      .then(d => {
+        if (d?.success) {
+          setReport(d as Report);
+        } else if (FALLBACK_REPORTS[studentId]) {
+          setReport(FALLBACK_REPORTS[studentId]);
+        }
+      })
+      .catch(() => {
+        if (FALLBACK_REPORTS[studentId]) setReport(FALLBACK_REPORTS[studentId]);
+      })
+      .finally(() => setLoading(false));
   }, [studentId]);
 
   const handlePrint = () => window.print();
@@ -53,16 +166,43 @@ export function ReportCardHub() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-xl">📋</div>
           <div>
-            <h1 className="text-xl font-black text-slate-900">Student Report Card</h1>
-            <p className="text-xs text-slate-500">Full-term academic performance report with PDF export</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black text-slate-900">Student Report Card</h1>
+              {isFallbackMode && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                  Preview Mode (Seeded Cohort)
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500">Full-term academic performance report with mastery tiers &amp; PDF export</p>
           </div>
         </div>
-        {report && (
-          <button onClick={handlePrint}
-            className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
-            Print / Export PDF
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              window.history.pushState(null, '', '/staff/student-intelligence');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-xl text-xs font-bold transition-colors"
+          >
+            Open 360° Holistic Progress Card →
           </button>
-        )}
+          <button
+            onClick={() => {
+              window.history.pushState(null, '', '/staff/learning-gaps');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-xl text-xs font-bold transition-colors"
+          >
+            AI Learning Gaps →
+          </button>
+          {report && (
+            <button onClick={handlePrint}
+              className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+              Print / Export PDF
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
@@ -172,19 +312,26 @@ export function ReportCardHub() {
                       <th className="text-center pb-2 font-bold text-slate-500">Exams</th>
                       <th className="text-center pb-2 font-bold text-slate-500">Avg %</th>
                       <th className="text-center pb-2 font-bold text-slate-500">Grade</th>
+                      <th className="text-center pb-2 font-bold text-slate-500">Mastery Tier</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {report.examBySubject.map(row => (
-                      <tr key={row.subject} className="border-b border-slate-100 last:border-0">
-                        <td className="py-2 font-semibold text-slate-800">{row.subject}</td>
-                        <td className="py-2 text-center text-slate-500">{row.count}</td>
-                        <td className="py-2 text-center font-bold text-slate-700">{row.avgPercent}%</td>
-                        <td className="py-2 text-center">
-                          <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${gradeColor(row.grade ?? 'D')}`}>{row.grade}</span>
-                        </td>
-                      </tr>
-                    ))}
+                    {report.examBySubject.map(row => {
+                      const tier = classifyMasteryTier(row.avgPercent);
+                      return (
+                        <tr key={row.subject} className="border-b border-slate-100 last:border-0">
+                          <td className="py-2 font-semibold text-slate-800">{row.subject}</td>
+                          <td className="py-2 text-center text-slate-500">{row.count}</td>
+                          <td className="py-2 text-center font-bold text-slate-700">{row.avgPercent}%</td>
+                          <td className="py-2 text-center">
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${gradeColor(row.grade ?? 'D')}`}>{row.grade}</span>
+                          </td>
+                          <td className="py-2 text-center">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${tier.badge}`}>{tier.label}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -204,20 +351,27 @@ export function ReportCardHub() {
                       <th className="text-center pb-2 font-bold text-slate-500">Marks</th>
                       <th className="text-center pb-2 font-bold text-slate-500">%</th>
                       <th className="text-center pb-2 font-bold text-slate-500">Grade</th>
+                      <th className="text-center pb-2 font-bold text-slate-500">Mastery Tier</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {report.exams.map((e, i) => (
-                      <tr key={i} className="border-b border-slate-100 last:border-0">
-                        <td className="py-2 font-semibold text-slate-800">{e.title}</td>
-                        <td className="py-2 text-slate-500">{e.subject}</td>
-                        <td className="py-2 text-center font-bold text-slate-700">{e.marksObtained}/{e.totalMarks}</td>
-                        <td className="py-2 text-center text-slate-600">{e.percentage}%</td>
-                        <td className="py-2 text-center">
-                          <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${gradeColor(e.grade)}`}>{e.grade}</span>
-                        </td>
-                      </tr>
-                    ))}
+                    {report.exams.map((e, i) => {
+                      const tier = classifyMasteryTier(e.percentage);
+                      return (
+                        <tr key={i} className="border-b border-slate-100 last:border-0">
+                          <td className="py-2 font-semibold text-slate-800">{e.title}</td>
+                          <td className="py-2 text-slate-500">{e.subject}</td>
+                          <td className="py-2 text-center font-bold text-slate-700">{e.marksObtained}/{e.totalMarks}</td>
+                          <td className="py-2 text-center text-slate-600">{e.percentage}%</td>
+                          <td className="py-2 text-center">
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${gradeColor(e.grade)}`}>{e.grade}</span>
+                          </td>
+                          <td className="py-2 text-center">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${tier.badge}`}>{tier.label}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

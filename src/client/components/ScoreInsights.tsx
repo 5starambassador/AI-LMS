@@ -82,6 +82,22 @@ function ScoreBar({ value, color = 'teal', label }: { value: number; color?: str
   );
 }
 
+function classifyMastery(pct: number | null): {
+  label: 'Proficient' | 'Progressing' | 'Beginner' | 'Pending';
+  badge: string;
+} {
+  if (pct === null || Number.isNaN(pct)) {
+    return { label: 'Pending', badge: 'bg-slate-100 text-slate-500 border-slate-200' };
+  }
+  if (pct >= 75) {
+    return { label: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+  }
+  if (pct >= 50) {
+    return { label: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' };
+  }
+  return { label: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' };
+}
+
 function StatCard({ icon, label, value, sub, accent }: {
   icon: React.ReactNode; label: string; value: string | number; sub?: string; accent?: string
 }) {
@@ -155,12 +171,23 @@ export const ScoreInsights: React.FC = () => {
 
   const { summary, subjects, topPerformers, needsAttention, trend } = data;
   const maxTrend = Math.max(...trend.map(t => t.hw + t.quiz), 1);
+  const allPerformers = [
+    ...topPerformers,
+    ...needsAttention.filter(p => !topPerformers.some(t => t.studentId === p.studentId))
+  ];
+  const proficientCount = allPerformers.filter(p => p.avgPercent >= 75).length;
+  const progressingCount = allPerformers.filter(p => p.avgPercent >= 50 && p.avgPercent < 75).length;
+  const beginnerCount = allPerformers.filter(p => p.avgPercent < 50).length;
+  const assignedCount = Math.max(
+    summary.totalHomeworks * Math.max(summary.studentsAssessed, 1),
+    summary.totalSubmissions
+  );
 
   return (
     <div className="space-y-6 pb-16">
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/60 mb-1.5">
               <BarChart3 className="w-3.5 h-3.5" />
@@ -170,8 +197,26 @@ export const ScoreInsights: React.FC = () => {
             <p className="text-xs text-slate-500">Aggregated from homework evaluations and quiz submissions — updated live</p>
           </div>
 
-          {/* View switcher & Learning Gap Studio Link */}
-          <div className="flex items-center gap-2">
+          {/* View switcher & Cross-Module Links */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                window.history.pushState(null, '', '/staff/exams');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition-all"
+            >
+              Exam Hub →
+            </button>
+            <button
+              onClick={() => {
+                window.history.pushState(null, '', '/staff/reportcard');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-bold transition-all"
+            >
+              Report Cards →
+            </button>
             <button
               onClick={() => {
                 window.history.pushState(null, '', '/staff/learning-gaps');
@@ -323,19 +368,31 @@ export const ScoreInsights: React.FC = () => {
               <p className="text-xs text-slate-400 py-6 text-center">No graded submissions yet.</p>
             ) : (
               <div className="space-y-5">
-                {subjects.map(s => (
-                  <div key={s.name} className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">{s.name}</span>
-                      <span className="text-[10px] text-slate-400">{s.hwGraded} graded · {s.quizAttempts} quiz attempts</span>
+                {subjects.map(s => {
+                  const vals = [s.hwAvg, s.quizAvg].filter((v): v is number => v !== null);
+                  const combinedAvg = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+                  const subjMastery = classifyMastery(combinedAvg);
+                  return (
+                    <div key={s.name} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-800">{s.name}</span>
+                          {combinedAvg !== null && (
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${subjMastery.badge}`}>
+                              {subjMastery.label}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400">{s.hwGraded} graded · {s.quizAttempts} quiz attempts</span>
+                      </div>
+                      {s.hwAvg !== null && <ScoreBar value={s.hwAvg} color="teal" label="Homework" />}
+                      {s.quizAvg !== null && <ScoreBar value={s.quizAvg} color="indigo" label="Quiz" />}
+                      {s.hwAvg === null && s.quizAvg === null && (
+                        <p className="text-[11px] text-slate-400 pl-20">Not yet graded</p>
+                      )}
                     </div>
-                    {s.hwAvg !== null && <ScoreBar value={s.hwAvg} color="teal" label="Homework" />}
-                    {s.quizAvg !== null && <ScoreBar value={s.quizAvg} color="indigo" label="Quiz" />}
-                    {s.hwAvg === null && s.quizAvg === null && (
-                      <p className="text-[11px] text-slate-400 pl-20">Not yet graded</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -385,14 +442,27 @@ export const ScoreInsights: React.FC = () => {
             <p className="text-[10px] text-slate-400 text-right">Hover bars to see details · Dates are DD of month</p>
           </div>
 
-          {/* Homework completion funnel */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-3 lg:col-span-2">
-            <h2 className="font-extrabold text-slate-900 text-sm">Homework Funnel — Submission → Evaluation</h2>
+          {/* Homework completion funnel & Cohort Mastery Distribution */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-4 lg:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-extrabold text-slate-900 text-sm">Homework Funnel — Submission → Evaluation</h2>
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Proficient (≥75%): {proficientCount}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+                  Progressing (50–74%): {progressingCount}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
+                  Beginner (&lt;50%): {beginnerCount}
+                </span>
+              </div>
+            </div>
             <div className="grid grid-cols-3 gap-4 text-center">
               {[
-                { label: 'Assigned', value: summary.totalSubmissions + (summary.totalHomeworks * 28 - summary.totalSubmissions - summary.totalSubmissions), rawValue: summary.totalHomeworks * 28, color: 'slate' },
-                { label: 'Submitted', value: summary.totalSubmissions, rawValue: summary.totalSubmissions, color: 'teal' },
-                { label: 'Graded', value: summary.evaluatedCount, rawValue: summary.evaluatedCount, color: 'emerald' }
+                { label: 'Assigned (Est. Cohort)', rawValue: assignedCount, color: 'slate' },
+                { label: 'Submitted', rawValue: summary.totalSubmissions, color: 'teal' },
+                { label: 'Graded', rawValue: summary.evaluatedCount, color: 'emerald' }
               ].map((s, i) => (
                 <div key={i} className={`rounded-2xl border p-4 ${
                   s.color === 'emerald' ? 'bg-emerald-50 border-emerald-200' :
@@ -481,7 +551,12 @@ export const ScoreInsights: React.FC = () => {
 
           {/* All students sorted table */}
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-3 lg:col-span-2">
-            <h2 className="font-extrabold text-slate-900 text-sm">All Performers — Class Rank</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-extrabold text-slate-900 text-sm">All Performers — Class Rank</h2>
+              <span className="text-[11px] font-bold text-slate-500">
+                {proficientCount} Proficient · {progressingCount} Progressing · {beginnerCount} Beginner
+              </span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -489,25 +564,34 @@ export const ScoreInsights: React.FC = () => {
                     <th className="text-left py-2 text-[10px] font-bold text-slate-400 uppercase pr-4">Rank</th>
                     <th className="text-left py-2 text-[10px] font-bold text-slate-400 uppercase pr-4">Student</th>
                     <th className="text-left py-2 text-[10px] font-bold text-slate-400 uppercase pr-4">Avg Score</th>
+                    <th className="text-left py-2 text-[10px] font-bold text-slate-400 uppercase pr-4">Mastery Tier</th>
                     <th className="text-left py-2 text-[10px] font-bold text-slate-400 uppercase">Assessments</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {[...topPerformers, ...needsAttention.filter(p => !topPerformers.some(t => t.studentId === p.studentId))].map((p, i) => (
-                    <tr key={p.studentId} className="hover:bg-slate-50">
-                      <td className="py-2.5 pr-4 font-mono text-slate-500">#{i + 1}</td>
-                      <td className="py-2.5 pr-4 font-semibold text-slate-800">{p.name}</td>
-                      <td className="py-2.5 pr-4">
-                        <span className={`font-mono font-bold px-2 py-0.5 rounded-lg text-[11px] ${
-                          p.avgPercent >= 80 ? 'bg-emerald-50 text-emerald-700' :
-                          p.avgPercent >= 60 ? 'bg-teal-50 text-teal-700' :
-                          p.avgPercent >= 40 ? 'bg-amber-50 text-amber-700' :
-                          'bg-rose-50 text-rose-700'
-                        }`}>{p.avgPercent}%</span>
-                      </td>
-                      <td className="py-2.5 text-slate-400">{p.assessmentCount}</td>
-                    </tr>
-                  ))}
+                  {allPerformers.map((p, i) => {
+                    const mastery = classifyMastery(p.avgPercent);
+                    return (
+                      <tr key={p.studentId} className="hover:bg-slate-50">
+                        <td className="py-2.5 pr-4 font-mono text-slate-500">#{i + 1}</td>
+                        <td className="py-2.5 pr-4 font-semibold text-slate-800">{p.name}</td>
+                        <td className="py-2.5 pr-4">
+                          <span className={`font-mono font-bold px-2 py-0.5 rounded-lg text-[11px] ${
+                            p.avgPercent >= 80 ? 'bg-emerald-50 text-emerald-700' :
+                            p.avgPercent >= 60 ? 'bg-teal-50 text-teal-700' :
+                            p.avgPercent >= 40 ? 'bg-amber-50 text-amber-700' :
+                            'bg-rose-50 text-rose-700'
+                          }`}>{p.avgPercent}%</span>
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${mastery.badge}`}>
+                            {mastery.label}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-slate-400">{p.assessmentCount}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
