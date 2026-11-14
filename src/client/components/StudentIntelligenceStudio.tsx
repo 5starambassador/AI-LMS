@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BrainCircuit,
   Sparkles,
@@ -25,9 +25,17 @@ import {
   Sliders,
   TrendingUp,
   FileText,
-  X
+  X,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import { apiGet, apiPost } from '../lib/api';
+
+type GradeBandType = 'PRE_PRIMARY' | 'PRIMARY_1_5' | 'MIDDLE_6_8' | 'SECONDARY_9_10' | 'SENIOR_SECONDARY_11_12';
+type TriageStatusType = 'ACTIVE_GAP' | 'BMIT_PENDING' | 'CAREER_DUE' | 'GOLD_MASTERY';
 
 interface ScholarOption {
   id: string;
@@ -36,12 +44,166 @@ interface ScholarOption {
   bandLabel: string;
 }
 
-const SCHOLAR_SWITCHER: ScholarOption[] = [
-  { id: 'ach-stu-aarav-01', label: 'Aarav Sundaram', grade: 'Grade 6', bandLabel: 'Middle School' },
-  { id: 'ach-stu-diya-02', label: 'Diya Krishnan', grade: 'Grade 10', bandLabel: 'Secondary Stream' },
-  { id: 'ach-stu-karthik-12', label: 'Karthik Nair', grade: 'Grade 12', bandLabel: 'Senior Secondary' },
-  { id: 'ach-stu-riya-pp', label: 'Riya Subramanian', grade: 'KG-2', bandLabel: 'Pre-Primary App' }
+interface ClientScholarSummary {
+  index: number;
+  id: string;
+  name: string;
+  rollNumber: string;
+  campus: string;
+  grade: string;
+  gradeNumber: number;
+  gradeBand: GradeBandType;
+  bandLabel: string;
+  section: string;
+  dominantBmit: string;
+  primaryVak: 'Visual-Multimodal' | 'Kinaesthetic-Multimodal' | 'Auditory-Multimodal';
+  status: TriageStatusType;
+  bmitScore: number;
+}
+
+const TOTAL_INSTITUTE_SCHOLARS = 10480;
+
+const CLIENT_CAMPUSES = [
+  'Achariya World Class Academy (Main)',
+  'Achariya Siksha Mandir (Villianur)',
+  'Achariya Bala Siksha Mandir (Lawspet)',
+  'Achariya Arts & Science Campus',
+  'Achariya Global Campus (Trichy)',
+  'Achariya Karaikal Campus'
 ];
+
+const CLIENT_GRADES: Array<{ grade: string; gradeNumber: number; gradeBand: GradeBandType; bandLabel: string }> = [
+  { grade: 'KG-1', gradeNumber: -1, gradeBand: 'PRE_PRIMARY', bandLabel: 'Pre-Primary App' },
+  { grade: 'KG-2', gradeNumber: 0, gradeBand: 'PRE_PRIMARY', bandLabel: 'Pre-Primary App' },
+  { grade: 'Grade 1', gradeNumber: 1, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 2', gradeNumber: 2, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 3', gradeNumber: 3, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 4', gradeNumber: 4, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 5', gradeNumber: 5, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 6', gradeNumber: 6, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 7', gradeNumber: 7, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 8', gradeNumber: 8, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 9', gradeNumber: 9, gradeBand: 'SECONDARY_9_10', bandLabel: 'Secondary Stream' },
+  { grade: 'Grade 10', gradeNumber: 10, gradeBand: 'SECONDARY_9_10', bandLabel: 'Secondary Stream' },
+  { grade: 'Grade 11', gradeNumber: 11, gradeBand: 'SENIOR_SECONDARY_11_12', bandLabel: 'Senior Secondary' },
+  { grade: 'Grade 12', gradeNumber: 12, gradeBand: 'SENIOR_SECONDARY_11_12', bandLabel: 'Senior Secondary' }
+];
+
+const CLIENT_FIRST_NAMES = [
+  'Aarav', 'Diya', 'Karthik', 'Riya', 'Vivaan', 'Ananya', 'Aditya', 'Meera', 'Rohan', 'Saanvi',
+  'Siddharth', 'Kavya', 'Arjun', 'Nethra', 'Pranav', 'Aishwarya', 'Nikhil', 'Shruti', 'Harish', 'Tanvi',
+  'Varun', 'Pooja', 'Gautam', 'Devika', 'Kavin', 'Sahana', 'Raghav', 'Akshaya', 'Tarun', 'Deepika',
+  'Mithun', 'Lakshmi', 'Vignesh', 'Harini', 'Yashwanth', 'Keerthana', 'Ashwin', 'Priyadharshini', 'Nandhakumar', 'Janani',
+  'Suraj', 'Pavithra', 'Dinesh', 'Swathi', 'Vikram', 'Nivetha', 'Manoj'
+];
+
+const CLIENT_LAST_NAMES = [
+  'Sundaram', 'Krishnan', 'Nair', 'Subramanian', 'Venkatesh', 'Natarajan', 'Balasubramanian', 'Raghavan', 'Sivakumar', 'Rajagopal',
+  'Manickam', 'Srinivasan', 'Moorthy', 'Ramachandran', 'Selvam', 'Arumugam', 'Chandrasekar', 'Murugan', 'Iyer', 'Pillai',
+  'Govindan', 'Anand', 'Parthasarathy', 'Saravanan', 'Mahalingam', 'Ganesan', 'Radhakrishnan', 'Shanmugam', 'Velayudham', 'Senthil',
+  'Bharathi'
+];
+
+const CLIENT_BMIT_DOMAINS = [
+  'Logical-Mathematical', 'Visual-Spatial', 'Verbal-Linguistic', 'Bodily-Kinaesthetic',
+  'Interpersonal-Leadership', 'Intrapersonal-Reflective', 'Musical-Rhythmic', 'Naturalistic-Scientific'
+];
+
+const CLIENT_VAK_BLENDS: ClientScholarSummary['primaryVak'][] = [
+  'Visual-Multimodal', 'Kinaesthetic-Multimodal', 'Auditory-Multimodal'
+];
+
+const CLIENT_CONCEPT_GAPS: Record<GradeBandType, string[]> = {
+  PRE_PRIMARY: ['Visual Pattern Matching & Number Sense (1–20)', 'Phonics Blend Recognition & Story Sequencing'],
+  PRIMARY_1_5: ['Equivalent Fractions & Base-100 Models', 'Multi-Digit Division & Equal Sharing'],
+  MIDDLE_6_8: ['Percentage Calculations & Base-100 Fraction Scaling', 'Linear Equations & Ratio Proportion'],
+  SECONDARY_9_10: ['Quadratic Equations & Discriminant Analysis', 'Trigonometric Ratios & Right-Triangle Modelling'],
+  SENIOR_SECONDARY_11_12: ['Integration by Substitution & Area Under Curves', 'Electrochemistry Nernst Equation Applications']
+};
+
+const BENCHMARK_STAGE_PINS: ScholarOption[] = [
+  { id: 'ach-stu-riya-pp', label: 'Riya S.', grade: 'KG-2', bandLabel: 'Pre-Primary App' },
+  { id: 'ach-stu-aarav-01', label: 'Aarav S.', grade: 'Grade 6', bandLabel: 'Middle School' },
+  { id: 'ach-stu-diya-02', label: 'Diya K.', grade: 'Grade 10', bandLabel: 'Secondary Stream' },
+  { id: 'ach-stu-karthik-12', label: 'Karthik N.', grade: 'Grade 12', bandLabel: 'Senior Secondary' }
+];
+
+function buildClientScholarSummary(index: number): ClientScholarSummary {
+  if (index === 1) {
+    return {
+      index: 1, id: 'ach-stu-aarav-01', name: 'Aarav Sundaram', rollNumber: 'ACH-2026-00001',
+      campus: 'Achariya World Class Academy (Main)', grade: 'Grade 6', gradeNumber: 6,
+      gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School', section: 'A',
+      dominantBmit: 'Visual-Spatial', primaryVak: 'Visual-Multimodal', status: 'ACTIVE_GAP', bmitScore: 88
+    };
+  }
+  if (index === 2) {
+    return {
+      index: 2, id: 'ach-stu-diya-02', name: 'Diya Krishnan', rollNumber: 'ACH-2026-00002',
+      campus: 'Achariya Bala Siksha Mandir (Lawspet)', grade: 'Grade 10', gradeNumber: 10,
+      gradeBand: 'SECONDARY_9_10', bandLabel: 'Secondary Stream', section: 'A',
+      dominantBmit: 'Verbal-Linguistic', primaryVak: 'Auditory-Multimodal', status: 'CAREER_DUE', bmitScore: 91
+    };
+  }
+  if (index === 3) {
+    return {
+      index: 3, id: 'ach-stu-karthik-12', name: 'Karthik Nair', rollNumber: 'ACH-2026-00003',
+      campus: 'Achariya Siksha Mandir (Villianur)', grade: 'Grade 12', gradeNumber: 12,
+      gradeBand: 'SENIOR_SECONDARY_11_12', bandLabel: 'Senior Secondary', section: 'B',
+      dominantBmit: 'Logical-Mathematical', primaryVak: 'Kinaesthetic-Multimodal', status: 'GOLD_MASTERY', bmitScore: 94
+    };
+  }
+  if (index === 4) {
+    return {
+      index: 4, id: 'ach-stu-riya-pp', name: 'Riya Subramanian', rollNumber: 'ACH-2026-00004',
+      campus: 'Achariya Global Campus (Trichy)', grade: 'KG-2', gradeNumber: 0,
+      gradeBand: 'PRE_PRIMARY', bandLabel: 'Pre-Primary App', section: 'A',
+      dominantBmit: 'Musical-Rhythmic', primaryVak: 'Kinaesthetic-Multimodal', status: 'BMIT_PENDING', bmitScore: 87
+    };
+  }
+
+  const gInfo = CLIENT_GRADES[(index * 3) % CLIENT_GRADES.length];
+  const first = CLIENT_FIRST_NAMES[(index * 7) % CLIENT_FIRST_NAMES.length];
+  const last = CLIENT_LAST_NAMES[(index * 11) % CLIENT_LAST_NAMES.length];
+  const sections = ['A', 'B', 'C', 'D'];
+  const status: TriageStatusType =
+    gInfo.gradeNumber >= 9 && index % 5 === 0
+      ? 'CAREER_DUE'
+      : index % 7 === 0
+      ? 'BMIT_PENDING'
+      : index % 4 === 0
+      ? 'ACTIVE_GAP'
+      : 'GOLD_MASTERY';
+
+  return {
+    index,
+    id: `ach-stu-${String(index).padStart(5, '0')}`,
+    name: `${first} ${last}`,
+    rollNumber: `ACH-2026-${String(index).padStart(5, '0')}`,
+    campus: CLIENT_CAMPUSES[index % CLIENT_CAMPUSES.length],
+    grade: gInfo.grade,
+    gradeNumber: gInfo.gradeNumber,
+    gradeBand: gInfo.gradeBand,
+    bandLabel: gInfo.bandLabel,
+    section: sections[(index * 5) % sections.length],
+    dominantBmit: CLIENT_BMIT_DOMAINS[(index * 13) % CLIENT_BMIT_DOMAINS.length],
+    primaryVak: CLIENT_VAK_BLENDS[index % CLIENT_VAK_BLENDS.length],
+    status,
+    bmitScore: 82 + (index % 14)
+  };
+}
+
+const CLIENT_SCHOLAR_CATALOG: ClientScholarSummary[] = Array.from(
+  { length: TOTAL_INSTITUTE_SCHOLARS },
+  (_, i) => buildClientScholarSummary(i + 1)
+);
+
+const STATUS_BADGE_META: Record<TriageStatusType, { label: string; badgeCls: string }> = {
+  ACTIVE_GAP: { label: 'Active Learning Gap', badgeCls: 'bg-amber-50 text-amber-800 border-amber-200' },
+  BMIT_PENDING: { label: 'BMIT Review Pending', badgeCls: 'bg-purple-50 text-purple-800 border-purple-200' },
+  CAREER_DUE: { label: 'Career Stream Due', badgeCls: 'bg-sky-50 text-sky-800 border-sky-200' },
+  GOLD_MASTERY: { label: '100% Gold Mastery', badgeCls: 'bg-emerald-50 text-emerald-800 border-emerald-200' }
+};
 
 const FALLBACK_PROFILES: Record<string, any> = {
   'ach-stu-aarav-01': {
@@ -224,9 +386,135 @@ const FALLBACK_CLUSTERS = [
   { cluster: 'Emerging and Interdisciplinary Careers', alignmentScore: 81, recommendationTier: 'OPEN_DISCOVERY_PATHWAY', occupations: ['Space Habitat Architect', 'Climate-FinTech Strategist'], competencies: ['Design Thinking', 'Cross-Domain Synthesis'], subjects: ['Interdisciplinary Electives', 'Design Lab'], higherEd: ['Liberal Arts + STEM Honours'], supportingEvidence: 'Space Science + Design overlap.' }
 ];
 
+function findCatalogSummary(studentId: string): ClientScholarSummary {
+  const exact = CLIENT_SCHOLAR_CATALOG.find(s => s.id === studentId);
+  if (exact) return exact;
+  return CLIENT_SCHOLAR_CATALOG[0];
+}
+
+function synthesizeClientProfile(studentId: string): any {
+  if (FALLBACK_PROFILES[studentId]) return FALLBACK_PROFILES[studentId];
+  const s = findCatalogSummary(studentId);
+  const domains = CLIENT_BMIT_DOMAINS.map((domain, i) => {
+    const score = domain === s.dominantBmit ? s.bmitScore : 70 + ((s.index * 5 + i * 7) % 18);
+    const prev = Math.max(60, score - (2 + ((s.index + i) % 5)));
+    return {
+      domain,
+      score,
+      previousScore: prev,
+      growthDelta: score - prev,
+      status: score >= 85 ? 'DOMINANT_STRENGTH' : score >= 76 ? 'ESTABLISHED' : 'NURTURING_AREA',
+      interpretation: `Demonstrates ${score >= 85 ? 'distinct natural fluency' : score >= 76 ? 'steady functional capability' : 'emerging growth potential'} in ${domain}. Used to enrich pedagogy — never to restrict subjects or careers.`,
+      evidence: `Observed in ${s.grade} Sec ${s.section} projects & faculty logs.`,
+      recommendedActivities: [`${domain.split('-')[0]} Enrichment Lab`, 'Interdisciplinary Peer Studio']
+    };
+  });
+
+  const vak =
+    s.primaryVak === 'Visual-Multimodal'
+      ? { visual: 45, auditory: 24, kinaesthetic: 31 }
+      : s.primaryVak === 'Kinaesthetic-Multimodal'
+      ? { visual: 30, auditory: 24, kinaesthetic: 46 }
+      : { visual: 29, auditory: 44, kinaesthetic: 27 };
+
+  const activeConceptGap = CLIENT_CONCEPT_GAPS[s.gradeBand][s.index % CLIENT_CONCEPT_GAPS[s.gradeBand].length];
+  const baseTemplate = FALLBACK_PROFILES['ach-stu-aarav-01'];
+
+  return {
+    student: {
+      id: s.id,
+      name: s.name,
+      grade: s.grade,
+      gradeNumber: s.gradeNumber,
+      gradeBand: s.gradeBand,
+      section: s.section,
+      campus: s.campus,
+      rollNumber: s.rollNumber,
+      admissionYear: '2022-2023',
+      longitudinalYears: Math.max(1, Math.min(12, s.gradeNumber + 2)),
+      activeConceptGap
+    },
+    bmitProfile: {
+      assessmentVersion: s.gradeBand === 'PRE_PRIMARY' ? 'BMIT-PP-APP-v3.1' : `BMIT-STD-${s.grade.replace(/\s+/g, '')}-v4.2`,
+      assessmentDate: '2026-09-12',
+      counsellorApproved: s.status !== 'BMIT_PENDING',
+      counsellorName: 'Dr. Meenakshi Sundaram (Senior Educational Counsellor)',
+      counsellorNotes: `Primary resonance in ${s.dominantBmit} (${s.bmitScore}%) paired with ${s.primaryVak} delivery. Guide enrichment without restricting subject exploration.`,
+      policyNote: baseTemplate.bmitProfile.policyNote,
+      domains
+    },
+    vakProfile: {
+      visualScore: vak.visual,
+      auditoryScore: vak.auditory,
+      kinaestheticScore: vak.kinaesthetic,
+      primaryBlend: `${s.primaryVak} Blend`,
+      note: baseTemplate.vakProfile.note,
+      conceptModalityRecommendations: {
+        conceptName: activeConceptGap,
+        visual: [
+          `Interactive visual concept map & diagram breakdown for "${activeConceptGap}"`,
+          'Color-coded step flowcharts linking lower-grade prerequisite anchors',
+          'Short visual explainer card tailored to grade band'
+        ],
+        auditory: [
+          `Socratic Think-Aloud walkthrough for "${activeConceptGap}"`,
+          'Teach-Back in 60 Seconds peer conversation activity',
+          'Verbal mnemonic hooks for key concepts'
+        ],
+        kinaesthetic: [
+          `Hands-on lab kit / paper manipulative model for "${activeConceptGap}"`,
+          'Real-world campus application task',
+          '1-Page Printable Hybrid Bridge Worksheet with QR scan'
+        ]
+      }
+    },
+    developmentDimensions: baseTemplate.developmentDimensions,
+    futureSkills: baseTemplate.futureSkills,
+    iedpPlan: {
+      shortTermGoals: [
+        `Close active concept gap in "${activeConceptGap}" via 100% Mastery Sprint.`,
+        `Deliver lessons in Visual (${vak.visual}%) · Auditory (${vak.auditory}%) · Kinaesthetic (${vak.kinaesthetic}%) blend.`
+      ],
+      termGoals: [
+        `Nurture ${s.dominantBmit} strength across interdisciplinary clubs at ${s.campus}.`,
+        'Complete Term 2 Portfolio Evidence showcase.'
+      ],
+      annualGoals: baseTemplate.iedpPlan.annualGoals,
+      longTermGoals: [
+        s.gradeBand === 'PRE_PRIMARY'
+          ? 'Cultivate joyful curiosity, foundational numeracy & storytelling (zero career labels).'
+          : `Advance portfolio readiness and exploratory pathway mapping across ${s.grade}.`
+      ]
+    },
+    portfolio: {
+      totalSections: 23,
+      sectionsCatalog: baseTemplate.portfolio.sectionsCatalog,
+      items: [
+        {
+          id: `pf-${s.id}-1`,
+          section: '9. Projects and Innovations',
+          category: 'PROJECT',
+          title: `${s.grade} Experiential Showcase (${s.dominantBmit})`,
+          description: `Applied ${s.primaryVak} exploration on "${activeConceptGap}" at ${s.campus}.`,
+          date: '2026-10-18',
+          evidenceType: 'Verified Digital Artefact',
+          author: s.name
+        }
+      ]
+    },
+    interests: [s.dominantBmit.split('-')[0], 'Applied Innovation', `${s.grade} Capstone Lab`],
+    aspirations: s.gradeBand === 'PRE_PRIMARY' ? 'Playful exploration across songs, nature & shapes' : 'Open exploratory pathway across STEM, Design & Research',
+    centralAiRecommendations: {
+      ...baseTemplate.centralAiRecommendations,
+      whatToLearn: `Focus immediately on bridging "${activeConceptGap}" via its verified lower-grade prerequisite node before advancing.`,
+      howToLearn: `Combine Visual (${vak.visual}%), Kinaesthetic (${vak.kinaesthetic}%), and Auditory (${vak.auditory}%) pathways anchored in ${s.dominantBmit}.`
+    }
+  };
+}
+
 const FALLBACK_INSTITUTIONAL = {
   summary: {
-    totalStudentProfiles: 1840,
+    totalStudentProfiles: TOTAL_INSTITUTE_SCHOLARS,
     bmitCompletionRate: 94.2,
     vakCalibratedPercent: 91.8,
     learningGapClosureRate: 81,
@@ -236,9 +524,9 @@ const FALLBACK_INSTITUTIONAL = {
   },
   vakDistribution: { visualDominant: 42, kinaestheticDominant: 33, auditoryDominant: 25 },
   campusBenchmarks: [
-    { campusId: 'c1', campusName: 'Achariya World Class Academy (Main Campus)', campusCode: 'AWCA-MAIN', bmitCompletionPct: 96, gapClosurePct: 86, portfolioCompletionPct: 91, futureSkillsAvg: 84 },
+    { campusId: 'c1', campusName: 'Achariya World Class Academy (Main)', campusCode: 'AWCA-MAIN', bmitCompletionPct: 96, gapClosurePct: 86, portfolioCompletionPct: 91, futureSkillsAvg: 84 },
     { campusId: 'c2', campusName: 'Achariya Bala Siksha Mandir (Lawspet)', campusCode: 'ABSM-LAW', bmitCompletionPct: 94, gapClosurePct: 82, portfolioCompletionPct: 88, futureSkillsAvg: 82 },
-    { campusId: 'c3', campusName: 'Achariya World Class Academy (Villianur)', campusCode: 'AWCA-VIL', bmitCompletionPct: 93, gapClosurePct: 79, portfolioCompletionPct: 86, futureSkillsAvg: 80 }
+    { campusId: 'c3', campusName: 'Achariya Siksha Mandir (Villianur)', campusCode: 'ASM-VIL', bmitCompletionPct: 93, gapClosurePct: 79, portfolioCompletionPct: 86, futureSkillsAvg: 80 }
   ],
   reportCatalog14: [
     '1. Individual Student Learning Gap Report',
@@ -267,7 +555,111 @@ export const StudentIntelligenceStudio: React.FC<{
     'master-bmit-vak' | 'holistic-iedp' | 'career-16' | 'portfolio-reports' | 'parent-portal' | 'counsellor-institutional'
   >('master-bmit-vak');
 
-  const [profile, setProfile] = useState<any>(FALLBACK_PROFILES['ach-stu-aarav-01']);
+  // Enterprise 10,480+ Scholar Directory Filter & Pagination State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCampus, setFilterCampus] = useState('ALL');
+  const [filterGrade, setFilterGrade] = useState('ALL');
+  const [filterSection, setFilterSection] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | TriageStatusType>('ALL');
+  const [directoryOpen, setDirectoryOpen] = useState(false);
+  const [dirPage, setDirPage] = useState(1);
+  const dirPageSize = 20;
+  const [liveDirectoryOverride, setLiveDirectoryOverride] = useState<{
+    filteredCount: number;
+    page: number;
+    totalPages: number;
+    items: ClientScholarSummary[];
+    facetCounts: Record<TriageStatusType, number>;
+  } | null>(null);
+
+  const clientFiltered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const scoped = CLIENT_SCHOLAR_CATALOG.filter(item => {
+      if (filterCampus !== 'ALL' && item.campus !== filterCampus) return false;
+      if (filterGrade !== 'ALL') {
+        if (filterGrade !== item.gradeBand && filterGrade !== item.grade) return false;
+      }
+      if (filterSection !== 'ALL' && item.section !== filterSection) return false;
+      if (
+        q &&
+        !item.name.toLowerCase().includes(q) &&
+        !item.rollNumber.toLowerCase().includes(q) &&
+        !item.id.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    const facetCounts: Record<TriageStatusType, number> = {
+      ACTIVE_GAP: 0,
+      BMIT_PENDING: 0,
+      CAREER_DUE: 0,
+      GOLD_MASTERY: 0
+    };
+    for (const item of scoped) facetCounts[item.status] += 1;
+
+    const list = filterStatus === 'ALL' ? scoped : scoped.filter(s => s.status === filterStatus);
+    const totalPages = Math.max(1, Math.ceil(list.length / dirPageSize));
+    const safePage = Math.min(dirPage, totalPages);
+    const start = (safePage - 1) * dirPageSize;
+    return {
+      list,
+      filteredCount: list.length,
+      page: safePage,
+      totalPages,
+      items: list.slice(start, start + dirPageSize),
+      facetCounts
+    };
+  }, [searchQuery, filterCampus, filterGrade, filterSection, filterStatus, dirPage]);
+
+  const activeDirectoryView = liveDirectoryOverride || clientFiltered;
+  const activeCatalogSummary = useMemo(() => findCatalogSummary(selectedStudentId), [selectedStudentId]);
+
+  const currentCohortPosition = useMemo(() => {
+    const idx = clientFiltered.list.findIndex(s => s.id === selectedStudentId);
+    return idx >= 0 ? idx + 1 : 0;
+  }, [clientFiltered.list, selectedStudentId]);
+
+  const stepCohortScholar = (direction: -1 | 1) => {
+    if (clientFiltered.list.length === 0) return;
+    const idx = clientFiltered.list.findIndex(s => s.id === selectedStudentId);
+    const nextIdx =
+      idx < 0
+        ? 0
+        : (idx + direction + clientFiltered.list.length) % clientFiltered.list.length;
+    setSelectedStudentId(clientFiltered.list[nextIdx].id);
+  };
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({
+      q: searchQuery,
+      campus: filterCampus,
+      grade: filterGrade,
+      section: filterSection,
+      statusFilter: filterStatus,
+      page: String(dirPage),
+      pageSize: String(dirPageSize)
+    });
+    apiGet<any>(`/api/student-intelligence/directory?${params.toString()}`)
+      .then(res => {
+        if (!active || !res?.success || !res.data) return;
+        setLiveDirectoryOverride({
+          filteredCount: res.data.filteredCount,
+          page: res.data.page,
+          totalPages: res.data.totalPages,
+          items: res.data.items,
+          facetCounts: res.data.facetCounts
+        });
+      })
+      .catch(() => {
+        if (active) setLiveDirectoryOverride(null);
+      });
+    return () => { active = false; };
+  }, [searchQuery, filterCampus, filterGrade, filterSection, filterStatus, dirPage]);
+
+  const [profile, setProfile] = useState<any>(() => synthesizeClientProfile('ach-stu-aarav-01'));
   const [careerData, setCareerData] = useState<{
     currentStageKey: string;
     ageWiseStages: any[];
@@ -318,6 +710,16 @@ export const StudentIntelligenceStudio: React.FC<{
 
   useEffect(() => {
     let active = true;
+    const localSeed = synthesizeClientProfile(selectedStudentId);
+    setProfile(localSeed);
+    setVakDraft({
+      visual: localSeed.vakProfile.visualScore,
+      auditory: localSeed.vakProfile.auditoryScore,
+      kinaesthetic: localSeed.vakProfile.kinaestheticScore
+    });
+    setCounsellorNotesDraft(localSeed.bmitProfile.counsellorNotes || '');
+    setSelectedAgeStage(localSeed.student.gradeBand || 'MIDDLE_6_8');
+
     const load = async () => {
       const results = await Promise.allSettled([
         apiGet<any>(`/api/student-intelligence/profile/${selectedStudentId}`),
@@ -562,27 +964,334 @@ export const StudentIntelligenceStudio: React.FC<{
           </div>
         </div>
 
-        {/* Scholar Stage Switcher (Tests Pre-Primary to Grade 12 journey in 1 click) */}
-        <div className="bg-slate-50/90 p-3 rounded-2xl border border-slate-200/70 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider px-1">Scholar Journey:</span>
-            {SCHOLAR_SWITCHER.map(s => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedStudentId(s.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                  selectedStudentId === s.id
-                    ? 'bg-white text-indigo-700 border-indigo-300 shadow-2xs ring-1 ring-indigo-500/20'
-                    : 'bg-transparent text-slate-600 border-transparent hover:bg-white/70'
-                }`}
-              >
-                {s.label} · <span className="text-slate-400 font-semibold">{s.grade}</span>
-              </button>
-            ))}
+        {/* Enterprise 10,480+ Scholar Command Bar, Hierarchical Filters & Paginated Directory */}
+        <div className="bg-slate-50/90 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 space-y-3">
+          {/* Row 1: Active Scholar Identity & Cohort Stepper */}
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black text-sm flex items-center justify-center shadow-xs shrink-0">
+                {profile.student.name?.[0] || 'S'}
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-black text-slate-900">{profile.student.name}</span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700">
+                    Roll: {profile.student.rollNumber}
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                    {profile.student.grade} · Sec {profile.student.section || 'A'}
+                  </span>
+                  {!initialStudentMode && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_BADGE_META[activeCatalogSummary.status].badgeCls}`}>
+                      {STATUS_BADGE_META[activeCatalogSummary.status].label}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                  <span className="font-semibold text-slate-700">{profile.student.campus}</span>
+                  <span>·</span>
+                  <span>BMIT Strength: <strong className="text-indigo-700">{activeCatalogSummary.dominantBmit} ({activeCatalogSummary.bmitScore}%)</strong></span>
+                  <span>·</span>
+                  <span>VAK: <strong className="text-teal-700">{profile.vakProfile.primaryBlend}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {!initialStudentMode && (
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs text-xs">
+                  <button
+                    type="button"
+                    onClick={() => stepCohortScholar(-1)}
+                    disabled={activeDirectoryView.filteredCount === 0}
+                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40"
+                    title="Previous scholar in current filtered cohort"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Prev</span>
+                  </button>
+                  <span className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 whitespace-nowrap border-x border-slate-100">
+                    {currentCohortPosition > 0 ? `Scholar ${currentCohortPosition.toLocaleString()} of ` : ''}
+                    <strong className="text-slate-900">{activeDirectoryView.filteredCount.toLocaleString()}</strong> filtered ·{' '}
+                    <span className="text-indigo-700 font-bold">{TOTAL_INSTITUTE_SCHOLARS.toLocaleString()} Total</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => stepCohortScholar(1)}
+                    disabled={activeDirectoryView.filteredCount === 0}
+                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40"
+                    title="Next scholar in current filtered cohort"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setDirectoryOpen(o => !o)}
+                  className={`px-3 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                    directoryOpen
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                      : 'bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50'
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{directoryOpen ? 'Hide 10,480+ Directory' : 'Browse & Search 10,480+ Scholars'}</span>
+                </button>
+              </div>
+            )}
           </div>
-          <div className="text-[11px] font-semibold text-slate-500 px-2">
-            {profile.student.campus} · Roll: <strong className="text-slate-800">{profile.student.rollNumber}</strong>
-          </div>
+
+          {/* Row 2: Hierarchical Filters, Omnibox Search & Quick Stage Pins */}
+          {!initialStudentMode && (
+            <div className="pt-2 border-t border-slate-200/70 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
+                <div className="relative lg:col-span-2">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setSearchQuery(val);
+                      setDirPage(1);
+                      if (val.trim()) setDirectoryOpen(true);
+                    }}
+                    placeholder="Search 10,480+ scholars by Name or Roll (e.g. ACH-2026-04821)..."
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                <select
+                  value={filterCampus}
+                  onChange={e => { setFilterCampus(e.target.value); setDirPage(1); }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="ALL">All 6 Campuses ({TOTAL_INSTITUTE_SCHOLARS.toLocaleString()})</option>
+                  {CLIENT_CAMPUSES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterGrade}
+                  onChange={e => { setFilterGrade(e.target.value); setDirPage(1); }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="ALL">All Grades (KG-1 to G12)</option>
+                  <optgroup label="Developmental Stage Bands">
+                    <option value="PRE_PRIMARY">Pre-Primary (KG-1 – KG-2)</option>
+                    <option value="PRIMARY_1_5">Primary (Grades 1–5)</option>
+                    <option value="MIDDLE_6_8">Middle School (Grades 6–8)</option>
+                    <option value="SECONDARY_9_10">Secondary (Grades 9–10)</option>
+                    <option value="SENIOR_SECONDARY_11_12">Senior Secondary (11–12)</option>
+                  </optgroup>
+                  <optgroup label="Individual Grades">
+                    {CLIENT_GRADES.map(g => (
+                      <option key={g.grade} value={g.grade}>{g.grade}</option>
+                    ))}
+                  </optgroup>
+                </select>
+
+                <select
+                  value={filterSection}
+                  onChange={e => { setFilterSection(e.target.value); setDirPage(1); }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="ALL">All Sections (A–D)</option>
+                  {['A', 'B', 'C', 'D'].map(sec => (
+                    <option key={sec} value={sec}>Section {sec}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterStatus}
+                  onChange={e => { setFilterStatus(e.target.value as any); setDirPage(1); }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="ALL">All Triage Cohorts</option>
+                  <option value="ACTIVE_GAP">⚠️ Active Learning Gap ({activeDirectoryView.facetCounts.ACTIVE_GAP.toLocaleString()})</option>
+                  <option value="BMIT_PENDING">⏳ BMIT Review Pending ({activeDirectoryView.facetCounts.BMIT_PENDING.toLocaleString()})</option>
+                  <option value="CAREER_DUE">🎯 Career Stream Due ({activeDirectoryView.facetCounts.CAREER_DUE.toLocaleString()})</option>
+                  <option value="GOLD_MASTERY">★ 100% Gold Mastery ({activeDirectoryView.facetCounts.GOLD_MASTERY.toLocaleString()})</option>
+                </select>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Stage Benchmarks:</span>
+                  {BENCHMARK_STAGE_PINS.map(pin => (
+                    <button
+                      key={pin.id}
+                      type="button"
+                      onClick={() => setSelectedStudentId(pin.id)}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition-all border ${
+                        selectedStudentId === pin.id
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                      }`}
+                    >
+                      {pin.grade} · {pin.label}
+                    </button>
+                  ))}
+                </div>
+
+                {(searchQuery || filterCampus !== 'ALL' || filterGrade !== 'ALL' || filterSection !== 'ALL' || filterStatus !== 'ALL') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilterCampus('ALL');
+                      setFilterGrade('ALL');
+                      setFilterSection('ALL');
+                      setFilterStatus('ALL');
+                      setDirPage(1);
+                    }}
+                    className="text-[11px] font-bold text-rose-600 hover:underline"
+                  >
+                    Reset Filters
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Row 3: Expandable Paginated Scholar Directory Drawer (20 rows / page, scales cleanly to 10,480+) */}
+          {!initialStudentMode && directoryOpen && (
+            <div className="bg-white rounded-2xl border border-indigo-200/80 shadow-xs overflow-hidden animate-in fade-in">
+              <div className="px-4 py-2.5 bg-indigo-50/60 border-b border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-slate-700">
+                  Showing{' '}
+                  <strong className="text-indigo-700">
+                    {activeDirectoryView.filteredCount === 0
+                      ? '0'
+                      : `${((activeDirectoryView.page - 1) * dirPageSize + 1).toLocaleString()}–${Math.min(
+                          activeDirectoryView.page * dirPageSize,
+                          activeDirectoryView.filteredCount
+                        ).toLocaleString()}`}
+                  </strong>{' '}
+                  of <strong>{activeDirectoryView.filteredCount.toLocaleString()}</strong> matching scholars (out of{' '}
+                  {TOTAL_INSTITUTE_SCHOLARS.toLocaleString()} total)
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setDirPage(1)}
+                    disabled={activeDirectoryView.page <= 1}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                    title="First Page"
+                  >
+                    <ChevronsLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDirPage(p => Math.max(1, p - 1))}
+                    disabled={activeDirectoryView.page <= 1}
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-bold text-[11px] hover:bg-slate-50 disabled:opacity-40"
+                  >
+                    ← Prev Page
+                  </button>
+                  <span className="px-2 text-[11px] font-bold text-slate-700">
+                    Page {activeDirectoryView.page.toLocaleString()} of {activeDirectoryView.totalPages.toLocaleString()}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDirPage(p => Math.min(activeDirectoryView.totalPages, p + 1))}
+                    disabled={activeDirectoryView.page >= activeDirectoryView.totalPages}
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-bold text-[11px] hover:bg-slate-50 disabled:opacity-40"
+                  >
+                    Next Page →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDirPage(activeDirectoryView.totalPages)}
+                    disabled={activeDirectoryView.page >= activeDirectoryView.totalPages}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                    title="Last Page"
+                  >
+                    <ChevronsRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto max-h-80">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-wider border-b border-slate-200 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2.5">Roll No &amp; Scholar</th>
+                      <th className="px-3 py-2.5">Campus</th>
+                      <th className="px-3 py-2.5">Grade &amp; Sec</th>
+                      <th className="px-3 py-2.5">Dominant BMIT</th>
+                      <th className="px-3 py-2.5">VAK Blend</th>
+                      <th className="px-3 py-2.5">Triage Status</th>
+                      <th className="px-4 py-2.5 text-right">360° Profile</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {activeDirectoryView.items.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                          No scholars match the active search or filter criteria. Try resetting filters or searching by Roll No (e.g. <code>ACH-2026-04821</code>).
+                        </td>
+                      </tr>
+                    ) : (
+                      activeDirectoryView.items.map(item => {
+                        const isActive = selectedStudentId === item.id;
+                        return (
+                          <tr
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedStudentId(item.id);
+                              setDirectoryOpen(false);
+                            }}
+                            className={`cursor-pointer transition-colors ${
+                              isActive ? 'bg-indigo-50/70' : 'hover:bg-slate-50'
+                            }`}
+                          >
+                            <td className="px-4 py-2.5">
+                              <div className="font-bold text-slate-900">{item.name}</div>
+                              <div className="text-[10px] font-mono text-slate-500">{item.rollNumber}</div>
+                            </td>
+                            <td className="px-3 py-2.5 text-[11px] text-slate-600">{item.campus}</td>
+                            <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">
+                              {item.grade} · {item.section}
+                            </td>
+                            <td className="px-3 py-2.5 text-[11px] font-semibold text-indigo-700 whitespace-nowrap">
+                              {item.dominantBmit} ({item.bmitScore}%)
+                            </td>
+                            <td className="px-3 py-2.5 text-[11px] text-slate-600 whitespace-nowrap">{item.primaryVak}</td>
+                            <td className="px-3 py-2.5 whitespace-nowrap">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_BADGE_META[item.status].badgeCls}`}>
+                                {STATUS_BADGE_META[item.status].label}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setSelectedStudentId(item.id);
+                                  setDirectoryOpen(false);
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${
+                                  isActive
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                                }`}
+                              >
+                                {isActive ? 'Loaded ✓' : 'Open 360° →'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 6 Sub-Navigation Tabs */}
@@ -1321,3 +2030,4 @@ export const StudentIntelligenceStudio: React.FC<{
     </div>
   );
 };
+

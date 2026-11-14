@@ -505,8 +505,311 @@ const runtimeBmitOverrides = new Map<string, { approved: boolean; notes: string;
 const runtimeVakOverrides = new Map<string, { visual: number; auditory: number; kinaesthetic: number; updatedAt: string }>();
 const runtimePortfolioAdditions = new Map<string, PortfolioEntryItem[]>();
 
+export const TOTAL_INSTITUTE_SCHOLARS = 10480;
+
+export type ScholarTriageStatus = 'ACTIVE_GAP' | 'BMIT_PENDING' | 'CAREER_DUE' | 'GOLD_MASTERY';
+
+export interface ScholarDirectorySummary {
+  index: number;
+  id: string;
+  name: string;
+  rollNumber: string;
+  campus: string;
+  grade: string;
+  gradeNumber: number;
+  gradeBand: SeedStudentProfile['student']['gradeBand'];
+  bandLabel: string;
+  section: string;
+  dominantBmit: string;
+  primaryVak: 'Visual-Multimodal' | 'Kinaesthetic-Multimodal' | 'Auditory-Multimodal';
+  status: ScholarTriageStatus;
+  bmitScore: number;
+}
+
+const DIRECTORY_CAMPUSES = [
+  'Achariya World Class Academy (Main)',
+  'Achariya Siksha Mandir (Villianur)',
+  'Achariya Bala Siksha Mandir (Lawspet)',
+  'Achariya Arts & Science Campus',
+  'Achariya Global Campus (Trichy)',
+  'Achariya Karaikal Campus'
+];
+
+const DIRECTORY_GRADES: Array<{
+  grade: string;
+  gradeNumber: number;
+  gradeBand: SeedStudentProfile['student']['gradeBand'];
+  bandLabel: string;
+}> = [
+  { grade: 'KG-1', gradeNumber: -1, gradeBand: 'PRE_PRIMARY', bandLabel: 'Pre-Primary App' },
+  { grade: 'KG-2', gradeNumber: 0, gradeBand: 'PRE_PRIMARY', bandLabel: 'Pre-Primary App' },
+  { grade: 'Grade 1', gradeNumber: 1, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 2', gradeNumber: 2, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 3', gradeNumber: 3, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 4', gradeNumber: 4, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 5', gradeNumber: 5, gradeBand: 'PRIMARY_1_5', bandLabel: 'Primary' },
+  { grade: 'Grade 6', gradeNumber: 6, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 7', gradeNumber: 7, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 8', gradeNumber: 8, gradeBand: 'MIDDLE_6_8', bandLabel: 'Middle School' },
+  { grade: 'Grade 9', gradeNumber: 9, gradeBand: 'SECONDARY_9_10', bandLabel: 'Secondary Stream' },
+  { grade: 'Grade 10', gradeNumber: 10, gradeBand: 'SECONDARY_9_10', bandLabel: 'Secondary Stream' },
+  { grade: 'Grade 11', gradeNumber: 11, gradeBand: 'SENIOR_SECONDARY_11_12', bandLabel: 'Senior Secondary' },
+  { grade: 'Grade 12', gradeNumber: 12, gradeBand: 'SENIOR_SECONDARY_11_12', bandLabel: 'Senior Secondary' }
+];
+
+const FIRST_NAMES_47 = [
+  'Aarav', 'Diya', 'Karthik', 'Riya', 'Vivaan', 'Ananya', 'Aditya', 'Meera', 'Rohan', 'Saanvi',
+  'Siddharth', 'Kavya', 'Arjun', 'Nethra', 'Pranav', 'Aishwarya', 'Nikhil', 'Shruti', 'Harish', 'Tanvi',
+  'Varun', 'Pooja', 'Gautam', 'Devika', 'Kavin', 'Sahana', 'Raghav', 'Akshaya', 'Tarun', 'Deepika',
+  'Mithun', 'Lakshmi', 'Vignesh', 'Harini', 'Yashwanth', 'Keerthana', 'Ashwin', 'Priyadharshini', 'Nandhakumar', 'Janani',
+  'Suraj', 'Pavithra', 'Dinesh', 'Swathi', 'Vikram', 'Nivetha', 'Manoj'
+];
+
+const LAST_NAMES_31 = [
+  'Sundaram', 'Krishnan', 'Nair', 'Subramanian', 'Venkatesh', 'Natarajan', 'Balasubramanian', 'Raghavan', 'Sivakumar', 'Rajagopal',
+  'Manickam', 'Srinivasan', 'Moorthy', 'Ramachandran', 'Selvam', 'Arumugam', 'Chandrasekar', 'Murugan', 'Iyer', 'Pillai',
+  'Govindan', 'Anand', 'Parthasarathy', 'Saravanan', 'Mahalingam', 'Ganesan', 'Radhakrishnan', 'Shanmugam', 'Velayudham', 'Senthil',
+  'Bharathi'
+];
+
+const BMIT_DOMAIN_NAMES = [
+  'Logical-Mathematical',
+  'Visual-Spatial',
+  'Verbal-Linguistic',
+  'Bodily-Kinaesthetic',
+  'Interpersonal-Leadership',
+  'Intrapersonal-Reflective',
+  'Musical-Rhythmic',
+  'Naturalistic-Scientific'
+];
+
+const VAK_BLENDS: ScholarDirectorySummary['primaryVak'][] = [
+  'Visual-Multimodal',
+  'Kinaesthetic-Multimodal',
+  'Auditory-Multimodal'
+];
+
+const CONCEPT_GAPS_BY_BAND: Record<SeedStudentProfile['student']['gradeBand'], string[]> = {
+  PRE_PRIMARY: ['Visual Pattern Matching & Number Sense (1–20)', 'Phonics Blend Recognition & Story Sequencing'],
+  PRIMARY_1_5: ['Equivalent Fractions & Base-100 Models', 'Multi-Digit Division & Equal Sharing'],
+  MIDDLE_6_8: ['Percentage Calculations & Base-100 Fraction Scaling', 'Linear Equations & Ratio Proportion'],
+  SECONDARY_9_10: ['Quadratic Equations & Discriminant Analysis', 'Trigonometric Ratios & Right-Triangle Modelling'],
+  SENIOR_SECONDARY_11_12: ['Integration by Substitution & Area Under Curves', 'Electrochemistry Nernst Equation Applications']
+};
+
+const SECTIONS = ['A', 'B', 'C', 'D'];
+
+export function getDeterministicScholarSummary(index: number): ScholarDirectorySummary {
+  if (index === 1) {
+    return {
+      index: 1,
+      id: 'ach-stu-aarav-01',
+      name: 'Aarav Sundaram',
+      rollNumber: 'ACH-2026-00001',
+      campus: 'Achariya World Class Academy (Main)',
+      grade: 'Grade 6',
+      gradeNumber: 6,
+      gradeBand: 'MIDDLE_6_8',
+      bandLabel: 'Middle School',
+      section: 'A',
+      dominantBmit: 'Visual-Spatial',
+      primaryVak: 'Visual-Multimodal',
+      status: 'ACTIVE_GAP',
+      bmitScore: 88
+    };
+  }
+  if (index === 2) {
+    return {
+      index: 2,
+      id: 'ach-stu-diya-02',
+      name: 'Diya Krishnan',
+      rollNumber: 'ACH-2026-00002',
+      campus: 'Achariya Bala Siksha Mandir (Lawspet)',
+      grade: 'Grade 10',
+      gradeNumber: 10,
+      gradeBand: 'SECONDARY_9_10',
+      bandLabel: 'Secondary Stream',
+      section: 'A',
+      dominantBmit: 'Verbal-Linguistic',
+      primaryVak: 'Auditory-Multimodal',
+      status: 'CAREER_DUE',
+      bmitScore: 91
+    };
+  }
+  if (index === 3) {
+    return {
+      index: 3,
+      id: 'ach-stu-karthik-12',
+      name: 'Karthik Nair',
+      rollNumber: 'ACH-2026-00003',
+      campus: 'Achariya Siksha Mandir (Villianur)',
+      grade: 'Grade 12',
+      gradeNumber: 12,
+      gradeBand: 'SENIOR_SECONDARY_11_12',
+      bandLabel: 'Senior Secondary',
+      section: 'B',
+      dominantBmit: 'Logical-Mathematical',
+      primaryVak: 'Kinaesthetic-Multimodal',
+      status: 'GOLD_MASTERY',
+      bmitScore: 94
+    };
+  }
+  if (index === 4) {
+    return {
+      index: 4,
+      id: 'ach-stu-riya-pp',
+      name: 'Riya Subramanian',
+      rollNumber: 'ACH-2026-00004',
+      campus: 'Achariya Global Campus (Trichy)',
+      grade: 'KG-2',
+      gradeNumber: 0,
+      gradeBand: 'PRE_PRIMARY',
+      bandLabel: 'Pre-Primary App',
+      section: 'A',
+      dominantBmit: 'Musical-Rhythmic',
+      primaryVak: 'Kinaesthetic-Multimodal',
+      status: 'BMIT_PENDING',
+      bmitScore: 87
+    };
+  }
+
+  const gInfo = DIRECTORY_GRADES[(index * 3) % DIRECTORY_GRADES.length];
+  const firstName = FIRST_NAMES_47[(index * 7) % FIRST_NAMES_47.length];
+  const lastName = LAST_NAMES_31[(index * 11) % LAST_NAMES_31.length];
+  const campus = DIRECTORY_CAMPUSES[index % DIRECTORY_CAMPUSES.length];
+  const section = SECTIONS[(index * 5) % SECTIONS.length];
+  const dominantBmit = BMIT_DOMAIN_NAMES[(index * 13) % BMIT_DOMAIN_NAMES.length];
+  const primaryVak = VAK_BLENDS[index % VAK_BLENDS.length];
+  const status: ScholarTriageStatus =
+    gInfo.gradeNumber >= 9 && index % 5 === 0
+      ? 'CAREER_DUE'
+      : index % 7 === 0
+      ? 'BMIT_PENDING'
+      : index % 4 === 0
+      ? 'ACTIVE_GAP'
+      : 'GOLD_MASTERY';
+
+  return {
+    index,
+    id: `ach-stu-${String(index).padStart(5, '0')}`,
+    name: `${firstName} ${lastName}`,
+    rollNumber: `ACH-2026-${String(index).padStart(5, '0')}`,
+    campus,
+    grade: gInfo.grade,
+    gradeNumber: gInfo.gradeNumber,
+    gradeBand: gInfo.gradeBand,
+    bandLabel: gInfo.bandLabel,
+    section,
+    dominantBmit,
+    primaryVak,
+    status,
+    bmitScore: 82 + (index % 14)
+  };
+}
+
+const SCHOLAR_DIRECTORY_CACHE: ScholarDirectorySummary[] = Array.from(
+  { length: TOTAL_INSTITUTE_SCHOLARS },
+  (_, i) => getDeterministicScholarSummary(i + 1)
+);
+
+function synthesizeProfileFromSummary(summary: ScholarDirectorySummary): SeedStudentProfile {
+  const bmitScores: SeedStudentProfile['bmitScores'] = {};
+  BMIT_DOMAIN_NAMES.forEach((domain, i) => {
+    const isDom = domain === summary.dominantBmit;
+    const score = isDom ? summary.bmitScore : 70 + ((summary.index * 5 + i * 7) % 18);
+    const prev = Math.max(60, score - (2 + ((summary.index + i) % 5)));
+    bmitScores[domain] = {
+      score,
+      prev,
+      evidence: `Observed in ${summary.grade} Sec ${summary.section} authentic projects & classroom logs.`,
+      activities: [`${domain.split('-')[0]} Enrichment Lab`, 'Interdisciplinary Peer Studio']
+    };
+  });
+
+  const vak =
+    summary.primaryVak === 'Visual-Multimodal'
+      ? { visual: 45, auditory: 24, kinaesthetic: 31 }
+      : summary.primaryVak === 'Kinaesthetic-Multimodal'
+      ? { visual: 30, auditory: 24, kinaesthetic: 46 }
+      : { visual: 29, auditory: 44, kinaesthetic: 27 };
+
+  const bandGaps = CONCEPT_GAPS_BY_BAND[summary.gradeBand];
+  const activeConceptGap = bandGaps[summary.index % bandGaps.length];
+  const clusterOffset = summary.index % CAREER_CLUSTERS_16.length;
+  const topClusterIndices = [
+    clusterOffset,
+    (clusterOffset + 3) % CAREER_CLUSTERS_16.length,
+    (clusterOffset + 7) % CAREER_CLUSTERS_16.length
+  ];
+
+  return {
+    student: {
+      id: summary.id,
+      name: summary.name,
+      grade: summary.grade,
+      gradeNumber: summary.gradeNumber,
+      gradeBand: summary.gradeBand,
+      section: summary.section,
+      campus: summary.campus,
+      rollNumber: summary.rollNumber,
+      admissionYear: `${2026 - Math.max(1, Math.min(8, Math.max(1, summary.gradeNumber)))}-${2027 - Math.max(1, Math.min(8, Math.max(1, summary.gradeNumber)))}`,
+      longitudinalYears: Math.max(1, Math.min(12, summary.gradeNumber + 2)),
+      activeConceptGap
+    },
+    bmitVersion: summary.gradeBand === 'PRE_PRIMARY' ? 'BMIT-PP-APP-v3.1' : `BMIT-STD-${summary.grade.replace(/\s+/g, '')}-v4.2`,
+    bmitDate: '2026-09-12',
+    counsellorApproved: summary.status !== 'BMIT_PENDING',
+    counsellorName: 'Dr. Meenakshi Sundaram (Senior Educational Counsellor)',
+    counsellorNotes: `Primary resonance in ${summary.dominantBmit} (${summary.bmitScore}%) paired with ${summary.primaryVak} delivery. Guide enrichment without restricting subject exploration.`,
+    bmitScores,
+    vak,
+    interests: [
+      CAREER_CLUSTERS_16[topClusterIndices[0]].cluster.split(' ')[0],
+      'Applied Innovation',
+      summary.dominantBmit.split('-')[0] + ' Challenges'
+    ],
+    aspirations:
+      summary.gradeBand === 'PRE_PRIMARY'
+        ? 'Joyful play-based curiosity across music, nature & building blocks'
+        : `Explore ${CAREER_CLUSTERS_16[topClusterIndices[0]].occupations[0]} & ${CAREER_CLUSTERS_16[topClusterIndices[1]].occupations[0]} pathways`,
+    topClusterIndices,
+    portfolioItems: [
+      {
+        id: `pf-${summary.id}-1`,
+        section: '9. Projects and Innovations',
+        category: 'PROJECT',
+        title: `${summary.grade} Experiential Showcase: ${CAREER_CLUSTERS_16[topClusterIndices[0]].projects[0]}`,
+        description: `Completed ${summary.primaryVak} inquiry unit integrating ${summary.dominantBmit} strengths with "${activeConceptGap}".`,
+        date: '2026-10-18',
+        evidenceType: 'Verified Digital Artefact',
+        author: summary.name
+      },
+      {
+        id: `pf-${summary.id}-2`,
+        section: '18. Teacher Observations',
+        category: 'TEACHER_OBSERVATION',
+        title: 'Faculty Formative Mastery Checkpoint',
+        description: `Consistent engagement across classroom collaborative circles at ${summary.campus}.`,
+        date: '2026-10-29',
+        evidenceType: 'Faculty Observation Log',
+        author: 'Class Faculty Lead'
+      }
+    ]
+  };
+}
+
 function resolveSeedProfile(studentId: string): SeedStudentProfile {
-  return SEED_STUDENT_PROFILES[studentId] || SEED_STUDENT_PROFILES['ach-stu-aarav-01'];
+  if (SEED_STUDENT_PROFILES[studentId]) {
+    return SEED_STUDENT_PROFILES[studentId];
+  }
+  const match = /^ach-stu-(\d+)$/.exec(studentId);
+  if (match) {
+    const idx = parseInt(match[1], 10);
+    if (idx >= 1 && idx <= TOTAL_INSTITUTE_SCHOLARS) {
+      return synthesizeProfileFromSummary(SCHOLAR_DIRECTORY_CACHE[idx - 1]);
+    }
+  }
+  return SEED_STUDENT_PROFILES['ach-stu-aarav-01'];
 }
 
 function buildMultimodalPrescriptions(conceptName: string) {
@@ -531,6 +834,81 @@ function buildMultimodalPrescriptions(conceptName: string) {
 }
 
 export class StudentIntelligenceController {
+  /**
+   * GET /api/student-intelligence/directory
+   * Scalable paginated 10,480+ scholar search & multi-facet filter directory
+   */
+  static async getScholarDirectory(request: FastifyRequest, reply: FastifyReply) {
+    const query = (request.query || {}) as {
+      q?: string;
+      campus?: string;
+      grade?: string;
+      section?: string;
+      statusFilter?: string;
+      page?: string;
+      pageSize?: string;
+    };
+
+    const q = (query.q || '').trim().toLowerCase();
+    const campusFilter = (query.campus || 'ALL').trim();
+    const gradeFilter = (query.grade || 'ALL').trim();
+    const sectionFilter = (query.section || 'ALL').trim();
+    const statusFilter = (query.statusFilter || 'ALL').trim();
+    const pageSize = Math.max(1, Math.min(50, parseInt(query.pageSize || '20', 10) || 20));
+    const requestedPage = Math.max(1, parseInt(query.page || '1', 10) || 1);
+
+    const scoped = SCHOLAR_DIRECTORY_CACHE.filter(item => {
+      if (campusFilter !== 'ALL' && item.campus !== campusFilter) return false;
+      if (gradeFilter !== 'ALL') {
+        if (gradeFilter === item.gradeBand) {
+          // matches band filter
+        } else if (gradeFilter !== item.grade) {
+          return false;
+        }
+      }
+      if (sectionFilter !== 'ALL' && item.section !== sectionFilter) return false;
+      if (
+        q &&
+        !item.name.toLowerCase().includes(q) &&
+        !item.rollNumber.toLowerCase().includes(q) &&
+        !item.id.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    const facetCounts: Record<ScholarTriageStatus, number> = {
+      ACTIVE_GAP: 0,
+      BMIT_PENDING: 0,
+      CAREER_DUE: 0,
+      GOLD_MASTERY: 0
+    };
+    for (const s of scoped) {
+      facetCounts[s.status] += 1;
+    }
+
+    const filtered = statusFilter === 'ALL' ? scoped : scoped.filter(s => s.status === statusFilter);
+    const filteredCount = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(filteredCount / pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const start = (page - 1) * pageSize;
+    const items = filtered.slice(start, start + pageSize);
+
+    return reply.send({
+      success: true,
+      data: {
+        totalInstituteScholars: TOTAL_INSTITUTE_SCHOLARS,
+        filteredCount,
+        page,
+        pageSize,
+        totalPages,
+        items,
+        facetCounts
+      }
+    });
+  }
+
   /**
    * GET /api/student-intelligence/profile/:studentId
    * Full 24-section Student Master Intelligence Profile (BMIT + VAK + 20 Dev + 16 Skills + IEDP + 23 Portfolio + Central AI 10-Point)
@@ -936,7 +1314,7 @@ Guidelines:
       success: true,
       data: {
         summary: {
-          totalStudentProfiles: Math.max(totalUsers, 1840),
+          totalStudentProfiles: Math.max(totalUsers, TOTAL_INSTITUTE_SCHOLARS),
           bmitCompletionRate: 94.2,
           vakCalibratedPercent: 91.8,
           learningGapClosureRate: totalGaps > 0 ? Math.round((masteredGaps / totalGaps) * 100) : 78,
@@ -978,3 +1356,4 @@ Guidelines:
     });
   }
 }
+
