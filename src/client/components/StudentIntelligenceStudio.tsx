@@ -557,6 +557,8 @@ export const StudentIntelligenceStudio: React.FC<{
   const [journeyRunning, setJourneyRunning] = useState(false);
   const [journeyResult, setJourneyResult] = useState<any | null>(null);
   const [selectedHpcReport, setSelectedHpcReport] = useState<string>('1. Term-Wise Progress Card');
+  const [portfolioFilter, setPortfolioFilter] = useState<'ALL' | 'PROJECT' | 'ACHIEVEMENT' | 'REFLECTION'>('ALL');
+  const [activeStudentHubBanner, setActiveStudentHubBanner] = useState<string | null>(null);
 
   // Enterprise 10,480+ Scholar Directory Filter & Pagination State
   const [searchQuery, setSearchQuery] = useState('');
@@ -918,24 +920,161 @@ export const StudentIntelligenceStudio: React.FC<{
   };
 
   const handleDownloadCsvReport = (reportTitle: string) => {
-    const csvRows = [
+    const csvRows: Array<Array<string | number>> = [
       ['Achariya AI ONE Official Report', reportTitle],
       ['Student Name', profile.student.name],
       ['Grade & Campus', `${profile.student.grade} - ${profile.student.campus}`],
       ['BMIT Version', profile.bmitProfile.assessmentVersion],
       ['VAK Blend', `${profile.vakProfile.visualScore}% Visual / ${profile.vakProfile.auditoryScore}% Auditory / ${profile.vakProfile.kinaestheticScore}% Kinaesthetic`],
       ['Active Concept Focus', profile.student.activeConceptGap],
-      ['Generated At', new Date().toISOString()]
+      ['Generated At', new Date().toISOString()],
+      []
     ];
-    const blob = new Blob([csvRows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' });
+
+    const lower = reportTitle.toLowerCase();
+
+    const appendBmitSection = () => {
+      csvRows.push(['=== BMIT 8-DOMAIN INTELLIGENCE PROFILE ===']);
+      csvRows.push(['Domain', 'Score %', 'Status', 'YoY Growth %', 'Evidence', 'Recommended Activities']);
+      for (const d of (profile.bmitProfile?.domains || [])) {
+        csvRows.push([
+          d.domain,
+          d.score,
+          d.status,
+          `+${d.growthDelta}%`,
+          d.evidence,
+          (d.recommendedActivities || []).join(' | ')
+        ]);
+      }
+      csvRows.push([]);
+    };
+
+    const appendDimensionsSection = () => {
+      csvRows.push(['=== 20 WHOLE-CHILD DEVELOPMENT DIMENSIONS ===']);
+      csvRows.push(['Dimension', 'Score %', 'Status', 'Teacher Observation', 'Next Goal']);
+      for (const dim of (profile.developmentDimensions || [])) {
+        csvRows.push([dim.dimension, dim.score, dim.status, dim.teacherObservation, dim.goal]);
+      }
+      csvRows.push([]);
+    };
+
+    const appendFutureSkillsSection = () => {
+      csvRows.push(['=== 16 FUTURE-READY COMPETENCIES ===']);
+      csvRows.push(['Skill', 'Current %', 'Target %', 'Status', 'Gap Analysis', 'Recommended Project']);
+      for (const sk of (profile.futureSkills || [])) {
+        csvRows.push([sk.skill, sk.currentScore, sk.targetScore, sk.status, sk.gapAnalysis, sk.recommendedProject]);
+      }
+      csvRows.push([]);
+    };
+
+    if (/bmit|vak/i.test(lower)) {
+      appendBmitSection();
+      csvRows.push(['=== VAK MULTIMODAL BREAKDOWN ===', `Visual: ${profile.vakProfile.visualScore}%`, `Auditory: ${profile.vakProfile.auditoryScore}%`, `Kinaesthetic: ${profile.vakProfile.kinaestheticScore}%`]);
+    } else if (/career|stream/i.test(lower)) {
+      csvRows.push(['=== 16 EXPLORATORY CAREER CLUSTERS ===']);
+      csvRows.push(['Cluster', 'Affinity %', 'Readiness Tier', 'Example Roles', 'Core Subjects', 'Higher Education', 'Supporting Evidence']);
+      for (const cl of (careerData.clusters || [])) {
+        csvRows.push([
+          cl.cluster,
+          cl.alignmentScore,
+          cl.recommendationTier,
+          (cl.occupations || []).join(' | '),
+          (cl.subjects || []).join(' | '),
+          (cl.higherEd || []).join(' | '),
+          cl.supportingEvidence
+        ]);
+      }
+    } else if (/skill|holistic|iedp|progress|development|competency|recommendation/i.test(lower)) {
+      appendDimensionsSection();
+      appendFutureSkillsSection();
+    } else if (/portfolio|achievement/i.test(lower)) {
+      csvRows.push(['=== 23-SECTION LONGITUDINAL E-PORTFOLIO ===']);
+      csvRows.push(['ID', 'Section', 'Category', 'Title', 'Date', 'Evidence Type', 'Author', 'Description']);
+      for (const item of (profile.portfolio?.items || [])) {
+        csvRows.push([item.id, item.section, item.category || '', item.title, item.date, item.evidenceType, item.author, item.description]);
+      }
+    } else if (/campus|institutional|management|cohort|academy/i.test(lower)) {
+      csvRows.push(['=== INSTITUTIONAL CAMPUS BENCHMARKS ===']);
+      csvRows.push(['Campus ID', 'Campus Name', 'Campus Code', 'BMIT Completion %', 'Gap Closure %', 'Portfolio Completion %', 'Future Skills Avg %']);
+      for (const cb of (institutionalData.campusBenchmarks || [])) {
+        csvRows.push([cb.campusId, cb.campusName, cb.campusCode, cb.bmitCompletionPct, cb.gapClosurePct, cb.portfolioCompletionPct, cb.futureSkillsAvg]);
+      }
+    } else {
+      appendBmitSection();
+      appendDimensionsSection();
+      appendFutureSkillsSection();
+    }
+
+    const blob = new Blob([csvRows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${reportTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    notify(`Downloaded "${reportTitle}" (CSV/Excel compatible)!`);
+    notify(`Downloaded "${reportTitle}" (${csvRows.length} rows, CSV/Excel compatible)!`);
   };
+
+  const getHpcReportMeta = (reportName: string) => {
+    const topBmit = (profile.bmitProfile?.domains || [])
+      .slice()
+      .sort((a: any, b: any) => b.score - a.score)
+      .slice(0, 2)
+      .map((d: any) => `${d.domain} (${d.score}%)`)
+      .join(' & ');
+
+    const catalog: Record<string, { subtitle: string; highlightIds: number[]; keyTakeaway: string }> = {
+      '1. Term-Wise Progress Card': {
+        subtitle: 'Balances term academic scores, active learning gap closure, teacher classroom logs & student reflections.',
+        highlightIds: [1, 2, 5, 22, 23],
+        keyTakeaway: `${profile.student.name} (${profile.student.grade}) term progress synthesizes summative mastery alongside active focus on "${profile.student.activeConceptGap}".`
+      },
+      '2. Annual Holistic Progress Card': {
+        subtitle: 'Complete 360° NEP 2020 & PARAKH synthesis spanning all 23 longitudinal inputs without academic/BMIT rank-mixing.',
+        highlightIds: Array.from({ length: 23 }, (_, i) => i + 1),
+        keyTakeaway: `Full-year profile across ${profile.student.longitudinalYears} longitudinal years integrating academics, Five Arts, Experiential Labs, and BMIT enrichment.`
+      },
+      '3. Competency-Wise Report': {
+        subtitle: 'Tracks mastery of foundational competencies, critical/computational/creative thinking, and digital readiness.',
+        highlightIds: [2, 5, 9, 10, 11, 14, 19, 20],
+        keyTakeaway: `Dual-Threshold mastery loops verify conceptual depth across Thinking Skills and Future-Ready competencies.`
+      },
+      '4. Subject-Wise Report': {
+        subtitle: 'Maps subject-level attainment, lab work, and project innovation to prerequisite mastery pathways.',
+        highlightIds: [1, 2, 5, 7, 18],
+        keyTakeaway: `Subject attainment paired with Achariya Experiential Labs and "${profile.student.activeConceptGap}" bridge status.`
+      },
+      '5. Skill Development Report': {
+        subtitle: 'Audits Five Arts, 21st-century thinking skills, leadership, sports, and life-skill trajectories.',
+        highlightIds: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20],
+        keyTakeaway: `Highlights 16 future-ready skills & Five Arts growth without reductive exam-score averaging.`
+      },
+      '6. BMIT Intelligence Report': {
+        subtitle: 'Non-ranking Brain Mapping Intelligence & VAK preference prescription for pedagogy and co-curricular enrichment.',
+        highlightIds: [3, 4, 7, 8],
+        keyTakeaway: `Primary BMIT resonance: ${topBmit || 'Visual-Spatial'} paired with ${profile.vakProfile.primaryBlend} (${profile.vakProfile.visualScore}% V / ${profile.vakProfile.auditoryScore}% A / ${profile.vakProfile.kinaestheticScore}% K).`
+      },
+      '7. English Language Report': {
+        subtitle: 'Synthesizes Accent-Neutral L/S/R fluency, WCPM progress, and bilingual classroom communication.',
+        highlightIds: [6, 12],
+        keyTakeaway: `VoiceLab AI before-and-after speech tracking linked directly to classroom communication competence.`
+      },
+      '8. Student Development Report': {
+        subtitle: 'Whole-child growth snapshot across Experiential Labs, Arts, Leadership, Sports, Achievements & Reflections.',
+        highlightIds: [7, 8, 15, 16, 17, 21, 22, 23],
+        keyTakeaway: `Focuses on balanced affective, physical, ethical, and co-curricular maturity recorded by faculty and student.`
+      },
+      '9. Personalised Recommendations': {
+        subtitle: 'Actionable next-step guidance combining BMIT strengths, VAK preferences, VoiceLab growth, and PAL loops.',
+        highlightIds: [3, 4, 5, 6, 20, 22, 23],
+        keyTakeaway: `AI PAL recommendation: ${profile.centralAiRecommendations?.whatToLearn || 'Complete Foundation Bridge with VAK-aligned activities.'}`
+      }
+    };
+
+    return catalog[reportName] || catalog['1. Term-Wise Progress Card'];
+  };
+
+  const activeHpcMeta = getHpcReportMeta(selectedHpcReport);
 
   const activeStageDetails = careerData.ageWiseStages.find(s => s.stageKey === selectedAgeStage) || careerData.ageWiseStages[2];
 
@@ -971,13 +1110,15 @@ export const StudentIntelligenceStudio: React.FC<{
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowVakModal(true)}
-              className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Quick VAK Calibration</span>
-            </button>
+            {!initialStudentMode && (
+              <button
+                onClick={() => setShowVakModal(true)}
+                className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Quick VAK Calibration</span>
+              </button>
+            )}
             <button
               onClick={() => window.print()}
               className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors"
@@ -1334,7 +1475,7 @@ export const StudentIntelligenceStudio: React.FC<{
             { key: 'holistic-iedp', label: '20 Dev Dimensions, 16 Skills & IEDP', icon: <Layers className="w-3.5 h-3.5" /> },
             { key: 'career-16', label: 'Age-Wise Career & 16 Clusters', icon: <Briefcase className="w-3.5 h-3.5" /> },
             { key: 'portfolio-reports', label: '23-Section E-Portfolio & 14 Reports', icon: <FolderKanban className="w-3.5 h-3.5" /> },
-            { key: 'parent-portal', label: 'Parent Portal & AI Companion', icon: <HeartHandshake className="w-3.5 h-3.5" /> },
+            ...(!initialStudentMode ? [{ key: 'parent-portal', label: 'Parent Portal & AI Companion', icon: <HeartHandshake className="w-3.5 h-3.5" /> }] : []),
             { key: 'connected-ecosystem', label: '23-Input HPC · PAL · 12 Student Hubs', icon: <Rocket className="w-3.5 h-3.5" /> },
             ...(!initialStudentMode ? [{ key: 'counsellor-institutional', label: 'Counsellor & Management HQ', icon: <Building2 className="w-3.5 h-3.5" /> }] : [])
           ].map((tab: any) => (
@@ -1353,6 +1494,23 @@ export const StudentIntelligenceStudio: React.FC<{
           ))}
         </div>
       </div>
+
+      {activeStudentHubBanner && (
+        <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-2 text-sky-900 font-bold">
+            <Rocket className="w-4 h-4 text-sky-600 shrink-0" />
+            <span>Active Student App Hub: {activeStudentHubBanner}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveStudentHubBanner(null)}
+            className="text-sky-700 hover:text-sky-950 font-bold flex items-center space-x-1"
+            title="Dismiss hub banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ===================================================================== */}
       {/* TAB 1: 360° MASTER PROFILE, BMIT & VAK INTELLIGENCE                   */}
@@ -1427,12 +1585,18 @@ export const StudentIntelligenceStudio: React.FC<{
                     <h2 className="text-sm font-black text-slate-900">VAK Multimodal Learning Preferences</h2>
                     <p className="text-[11px] text-slate-500">{profile.vakProfile.primaryBlend} (Flexible Multimodal Guide)</p>
                   </div>
-                  <button
-                    onClick={() => setShowVakModal(true)}
-                    className="text-[11px] font-bold text-indigo-600 hover:underline"
-                  >
-                    Recalibrate →
-                  </button>
+                  {!initialStudentMode ? (
+                    <button
+                      onClick={() => setShowVakModal(true)}
+                      className="text-[11px] font-bold text-indigo-600 hover:underline"
+                    >
+                      Recalibrate →
+                    </button>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                      Teacher / Counsellor Calibrated
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5">
@@ -1738,21 +1902,94 @@ export const StudentIntelligenceStudio: React.FC<{
               </button>
             </div>
 
-            <div className="space-y-3">
-              {profile.portfolio.items.map((item: any) => (
-                <div key={item.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
-                    <span className="font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
-                      {item.section}
-                    </span>
-                    <span className="font-mono text-slate-400">{item.date} · {item.evidenceType}</span>
-                  </div>
-                  <h3 className="text-xs font-black text-slate-900">{item.title}</h3>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">{item.description}</p>
-                  <div className="text-[10px] font-semibold text-slate-500">Recorded by: {item.author}</div>
-                </div>
+            {/* Category Filter Pills for Portfolio / Projects / Achievements / Reflections */}
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                { key: 'ALL', label: 'All 23 Sections' },
+                { key: 'PROJECT', label: 'Projects & Prototypes' },
+                { key: 'ACHIEVEMENT', label: 'Achievements & Certificates' },
+                { key: 'REFLECTION', label: 'Reflections & Observations' }
+              ] as const).map(f => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setPortfolioFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+                    portfolioFilter === f.key
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {f.label}
+                </button>
               ))}
             </div>
+
+            {(() => {
+              const filteredItems = (profile.portfolio.items || []).filter((item: any) => {
+                if (portfolioFilter === 'ALL') return true;
+                const cat = String(item.category || '').toUpperCase();
+                const sec = String(item.section || '').toLowerCase();
+                const ev = String(item.evidenceType || '').toLowerCase();
+                const title = String(item.title || '').toLowerCase();
+                if (portfolioFilter === 'PROJECT') {
+                  return cat === 'PROJECT' || sec.includes('project') || ev.includes('prototype');
+                }
+                if (portfolioFilter === 'ACHIEVEMENT') {
+                  return cat === 'CERTIFICATE' || sec.includes('achievement') || sec.includes('certificate') || title.includes('award');
+                }
+                return (
+                  cat === 'STUDENT_REFLECTION' ||
+                  cat === 'TEACHER_OBSERVATION' ||
+                  cat === 'PARENT_FEEDBACK' ||
+                  cat === 'COUNSELLOR_NOTE' ||
+                  sec.includes('reflection') ||
+                  sec.includes('observation')
+                );
+              });
+
+              if (filteredItems.length === 0) {
+                return (
+                  <div className="p-6 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-center space-y-2">
+                    <p className="text-xs font-bold text-slate-700">No entries recorded under this filter yet for {profile.student.name}.</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPortfolioFilter('ALL')}
+                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:bg-slate-100"
+                      >
+                        Show All Sections
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPortfolioModal(true)}
+                        className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[11px] font-bold"
+                      >
+                        + Add Evidence
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-3">
+                  {filteredItems.map((item: any) => (
+                    <div key={item.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                        <span className="font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                          {item.section}
+                        </span>
+                        <span className="font-mono text-slate-400">{item.date} · {item.evidenceType}</span>
+                      </div>
+                      <h3 className="text-xs font-black text-slate-900">{item.title}</h3>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">{item.description}</p>
+                      <div className="text-[10px] font-semibold text-slate-500">Recorded by: {item.author}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             <div className="pt-3 border-t border-slate-100">
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
@@ -1806,7 +2043,7 @@ export const StudentIntelligenceStudio: React.FC<{
       {/* ===================================================================== */}
       {/* TAB 5: COMPLETE PARENT INTELLIGENCE PORTAL & AI PARENT COMPANION      */}
       {/* ===================================================================== */}
-      {activeSubTab === 'parent-portal' && (
+      {!initialStudentMode && activeSubTab === 'parent-portal' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-sm font-black text-slate-900 flex items-center space-x-2">
@@ -2072,6 +2309,38 @@ export const StudentIntelligenceStudio: React.FC<{
               </select>
             </div>
 
+            {/* Active Report Summary Banner & Export Controls */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50/60 to-indigo-50/60 border border-pink-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-black text-pink-950">{selectedHpcReport}</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-pink-700 border border-pink-200">
+                    {activeHpcMeta.highlightIds.length} of 23 Inputs Emphasised
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold text-slate-700">{activeHpcMeta.subtitle}</p>
+                <p className="text-[11px] text-slate-600">{activeHpcMeta.keyTakeaway}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadCsvReport(selectedHpcReport)}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1 shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export Selected Report CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-bold flex items-center space-x-1"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Report PDF</span>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
               {(profile.connectedModules?.holisticProgressCard?.integratedInputs23 || [
                 { id: 1, name: 'Academic Performance', summary: '92% conceptual summative average' },
@@ -2097,12 +2366,29 @@ export const StudentIntelligenceStudio: React.FC<{
                 { id: 21, name: 'Student Achievements', summary: 'Conclave commendations' },
                 { id: 22, name: 'Teacher Observations', summary: 'Classroom faculty synthesis' },
                 { id: 23, name: 'Student Reflections', summary: 'Weekly confidence journal' }
-              ]).map((inp: any) => (
-                <div key={inp.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                  <span className="text-[10px] font-black text-pink-700 block">#{inp.id} · {inp.name}</span>
-                  <span className="text-[11px] text-slate-600">{inp.summary}</span>
-                </div>
-              ))}
+              ]).map((inp: any) => {
+                const isHighlighted = activeHpcMeta.highlightIds.includes(inp.id);
+                return (
+                  <div
+                    key={inp.id}
+                    className={`p-2.5 rounded-xl border transition-all ${
+                      isHighlighted
+                        ? 'bg-pink-50/80 border-pink-300 ring-1 ring-pink-200'
+                        : 'bg-slate-50 border-slate-200/80 opacity-85'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-black text-pink-700">#{inp.id} · {inp.name}</span>
+                      {isHighlighted && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-pink-600 text-white shrink-0">
+                          Primary in Report
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-slate-600 block mt-0.5">{inp.summary}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -2155,10 +2441,10 @@ export const StudentIntelligenceStudio: React.FC<{
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {[
-                  { label: 'My Learning', tab: () => onNavigateToGaps?.() },
-                  { label: 'My AI Learning Companion', tab: () => onNavigateToGaps?.() },
-                  { label: 'My Assessments', tab: () => onNavigateToGaps?.() },
-                  { label: 'My Remedial Lessons', tab: () => onNavigateToGaps?.() },
+                  { label: 'My Learning', tab: () => { setActiveStudentHubBanner('My Learning'); onNavigateToGaps?.(); } },
+                  { label: 'My AI Learning Companion', tab: () => { setActiveStudentHubBanner('My AI Learning Companion'); onNavigateToGaps?.(); } },
+                  { label: 'My Assessments', tab: () => { setActiveStudentHubBanner('My Assessments'); onNavigateToGaps?.(); } },
+                  { label: 'My Remedial Lessons', tab: () => { setActiveStudentHubBanner('My Remedial Lessons'); onNavigateToGaps?.(); } },
                   {
                     label: 'My English Lab',
                     tab: () => {
@@ -2166,13 +2452,60 @@ export const StudentIntelligenceStudio: React.FC<{
                       window.dispatchEvent(new PopStateEvent('popstate'));
                     }
                   },
-                  { label: 'My Progress Card', tab: () => setActiveSubTab('holistic-iedp') },
-                  { label: 'My Student Portfolio', tab: () => setActiveSubTab('portfolio-reports') },
-                  { label: 'My BMIT Profile', tab: () => setActiveSubTab('master-bmit-vak') },
-                  { label: 'My Projects', tab: () => setActiveSubTab('portfolio-reports') },
-                  { label: 'My Achievements', tab: () => setActiveSubTab('portfolio-reports') },
-                  { label: 'My Skills', tab: () => setActiveSubTab('holistic-iedp') },
-                  { label: 'My Future Career Exploration', tab: () => setActiveSubTab('career-16') }
+                  {
+                    label: 'My Progress Card',
+                    tab: () => {
+                      setSelectedHpcReport('2. Annual Holistic Progress Card');
+                      setActiveStudentHubBanner('My Progress Card · Showing Annual Holistic Progress Card & IEDP Goals');
+                      setActiveSubTab('holistic-iedp');
+                    }
+                  },
+                  {
+                    label: 'My Student Portfolio',
+                    tab: () => {
+                      setPortfolioFilter('ALL');
+                      setActiveStudentHubBanner('My Student Portfolio · Viewing all 23 Longitudinal Sections');
+                      setActiveSubTab('portfolio-reports');
+                    }
+                  },
+                  {
+                    label: 'My BMIT Profile',
+                    tab: () => {
+                      setActiveStudentHubBanner('My BMIT Profile · Viewing 8-Domain Intelligence & VAK Preferences');
+                      setActiveSubTab('master-bmit-vak');
+                    }
+                  },
+                  {
+                    label: 'My Projects',
+                    tab: () => {
+                      setPortfolioFilter('PROJECT');
+                      setActiveStudentHubBanner('My Projects · Filtered to Projects, Prototypes & Innovations');
+                      setActiveSubTab('portfolio-reports');
+                    }
+                  },
+                  {
+                    label: 'My Achievements',
+                    tab: () => {
+                      setPortfolioFilter('ACHIEVEMENT');
+                      setActiveStudentHubBanner('My Achievements · Filtered to Certificates, Awards & Commendations');
+                      setActiveSubTab('portfolio-reports');
+                    }
+                  },
+                  {
+                    label: 'My Skills',
+                    tab: () => {
+                      setSelectedHpcReport('5. Skill Development Report');
+                      setActiveStudentHubBanner('My Skills · Focused on 16 Future-Ready Competencies & Gap Analysis');
+                      setActiveSubTab('holistic-iedp');
+                    }
+                  },
+                  {
+                    label: 'My Future Career Exploration',
+                    tab: () => {
+                      setActiveStudentHubBanner('My Future Career Exploration · Viewing 16 Exploratory Clusters');
+                      setActiveSubTab('career-16');
+                    }
+                  }
                 ].map((hub, idx) => (
                   <button
                     key={idx}
@@ -2191,7 +2524,7 @@ export const StudentIntelligenceStudio: React.FC<{
       )}
 
       {/* VAK Calibration Modal */}
-      {showVakModal && (
+      {!initialStudentMode && showVakModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-slate-200 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
