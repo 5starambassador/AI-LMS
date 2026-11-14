@@ -227,7 +227,7 @@ function AppShell() {
           {/* VIEW 1: EDUCATOR & FACULTY PORTAL (Comprehensive Standalone Workspaces) */}
           {currentPortal === 'STAFF' && (
             <div>
-              {activeTab === 'home' && <StaffDashboard />}
+              {activeTab === 'home' && <StaffDashboard onNavigate={navigateTo} />}
               {activeTab === 'resources' && <CurriculumHub />}
               {activeTab === 'homework' && <HomeworkHub />}
               {activeTab === 'attendance' && <AttendanceHub />}

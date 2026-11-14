@@ -13,18 +13,77 @@ import {
   ArrowRight,
   TrendingUp,
   Activity,
-  Heart
+  Heart,
+  Target,
+  BrainCircuit
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
 import { apiFetch } from '../lib/api';
 import { QrSessionPanel } from './QrSessionPanel';
 
-export const StaffDashboard: React.FC = () => {
+const DEFAULT_HOMEWORKS: Homework[] = [
+  {
+    id: 'hw-demo-1',
+    title: 'Solar Rainwater Catchment Blueprint & Ratio Audit',
+    description: 'Calculate catchment collection volume ratios and present annotated diagrams using equivalent fractions.',
+    dueDate: '2026-11-18',
+    maxMarks: 20,
+    class: { id: 'cls-5', name: 'Grade 5' },
+    section: { id: 'sec-a', name: 'Innovation Studio A' },
+    subject: { id: 'sub-math', name: 'Mathematics & Ecological Stem' },
+    teacher: { id: 'tch-1', fullName: 'Dr. Meenakshi S.' },
+    _count: { submissions: 18 }
+  },
+  {
+    id: 'hw-demo-2',
+    title: 'The Great Banyan of Villianur · Oratory Reflection',
+    description: 'Prepare a 90-second persuasive narration explaining ecosystem interdependence with 5 domain vocabulary words.',
+    dueDate: '2026-11-19',
+    maxMarks: 15,
+    class: { id: 'cls-5', name: 'Grade 5' },
+    section: { id: 'sec-a', name: 'Innovation Studio A' },
+    subject: { id: 'sub-eng', name: 'English & Oratory Arts' },
+    teacher: { id: 'tch-2', fullName: 'Anitha Krishnan' },
+    _count: { submissions: 24 }
+  }
+];
+
+const DEFAULT_QUIZZES: Quiz[] = [
+  {
+    id: 'quiz-demo-1',
+    title: 'Equivalent Fractions to Percentages Diagnostic Check',
+    quizType: 'DIAGNOSTIC',
+    timeLimitMinutes: 15,
+    class: { id: 'cls-5', name: 'Grade 5' },
+    subject: { id: 'sub-math', name: 'Mathematics' },
+    _count: { questions: 8, submissions: 28 }
+  },
+  {
+    id: 'quiz-demo-2',
+    title: 'Photosynthesis & Cellular Energy Checkpoint',
+    quizType: 'FORMATIVE',
+    timeLimitMinutes: 12,
+    class: { id: 'cls-5', name: 'Grade 5' },
+    subject: { id: 'sub-sci', name: 'Science' },
+    _count: { questions: 6, submissions: 29 }
+  }
+];
+
+export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
   const [books, setBooks] = useState<Book[]>([]);
-  const [homeworks, setHomeworks] = useState<Homework[]>([]);
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [homeworks, setHomeworks] = useState<Homework[]>(DEFAULT_HOMEWORKS);
+  const [quizzes, setQuizzes] = useState<Quiz[]>(DEFAULT_QUIZZES);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const navigateToRoute = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      window.history.pushState(null, '', route);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
 
   // Modals & States
   const [activeModal, setActiveModal] = useState<'bookReader' | 'rollCall' | 'createHomework' | 'studentDirectory' | 'qrLogin' | null>(null);
@@ -51,10 +110,22 @@ export const StaffDashboard: React.FC = () => {
         apiFetch('/api/operations/students')
       ]);
 
-      if (bRes.ok) setBooks((await bRes.json()).books || []);
-      if (hRes.ok) setHomeworks((await hRes.json()).homeworks || []);
-      if (qRes.ok) setQuizzes((await qRes.json()).quizzes || []);
-      if (sRes.ok) setStudents((await sRes.json()).students || []);
+      if (bRes.ok) {
+        const list = (await bRes.json()).books || [];
+        if (list.length > 0) setBooks(list);
+      }
+      if (hRes.ok) {
+        const list = (await hRes.json()).homeworks || [];
+        if (list.length > 0) setHomeworks(list);
+      }
+      if (qRes.ok) {
+        const list = (await qRes.json()).quizzes || [];
+        if (list.length > 0) setQuizzes(list);
+      }
+      if (sRes.ok) {
+        const list = (await sRes.json()).students || [];
+        if (list.length > 0) setStudents(list);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -113,6 +184,103 @@ export const StaffDashboard: React.FC = () => {
             </span>
             <span>•</span>
             <span>Audience: Faculty, Scholars & Parents</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 1B. Flagship AI Academic & Student Intelligence Command Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div
+          onClick={() => navigateToRoute('/staff/learning-gaps')}
+          className="cursor-pointer group rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-violet-50 via-white to-purple-50/70 border border-violet-200/80 shadow-xs hover:shadow-md hover:border-violet-300 transition-all flex flex-col justify-between gap-4"
+        >
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <Target className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+                    AI-FIRST Flagship Module
+                  </span>
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
+                    AI Learning Gap, Remediation &amp; 100% Mastery Studio
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Traces exam errors across grades via the prerequisite DAG, auto-clusters students into shared-cause AI Remedial Circles, generates 1-page QR bridge worksheets, and enforces Dual-Threshold (80% / 85%) + Gold 100% Mastery with Zero-Code AI Concept Graph Builder.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {['Cross-Grade DAG', 'AI Remedial Circles', 'Dual-Threshold + Gold 100%', 'Zero-Code Concept Builder'].map(tag => (
+                <span key={tag} className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white border border-violet-200 text-violet-800">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-violet-100">
+            <span className="text-[11px] font-semibold text-violet-700">Pre-Primary to Grade 12 · Adaptive Cycle</span>
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                navigateToRoute('/staff/learning-gaps');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 group-hover:bg-violet-700 text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <span>Open Learning Gap Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <div
+          onClick={() => navigateToRoute('/staff/student-intelligence')}
+          className="cursor-pointer group rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-sky-50/70 border border-indigo-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between gap-4"
+        >
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-teal-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                    Whole-Child 360° Ecosystem
+                  </span>
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
+                    360° Student Intelligence, BMIT, VAK, E-Portfolio &amp; Career AI
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Longitudinal 24-section Student Master Profile uniting official BMIT 8-domain brain mapping (enrichment guide only), multimodal VAK prescriptions, 20 development dimensions, 16 future-ready skills, 23-section E-Portfolio, Parent AI Companion &amp; Career AI.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {['24-Section 360° Profile', '8-Domain BMIT', 'VAK Multimodal', '23-Section E-Portfolio', '16 Career Pathways'].map(tag => (
+                <span key={tag} className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white border border-indigo-200 text-indigo-800">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+            <span className="text-[11px] font-semibold text-indigo-700">14 Exportable Reports · Counsellor &amp; Parent Portal</span>
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                navigateToRoute('/staff/student-intelligence');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 group-hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <span>Open 360° BMIT &amp; Career Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
@@ -418,7 +586,31 @@ export const StaffDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-right pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    navigateToRoute('/staff/student-intelligence');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors"
+                >
+                  <BrainCircuit className="w-3.5 h-3.5" />
+                  <span>View 360° BMIT, VAK &amp; E-Portfolio</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    navigateToRoute('/staff/learning-gaps');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 rounded-xl text-xs font-bold transition-colors"
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  <span>Inspect Learning Gaps</span>
+                </button>
+              </div>
               <button
                 onClick={() => setActiveModal(null)}
                 className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"

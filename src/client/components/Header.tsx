@@ -133,7 +133,7 @@ function DropdownMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
           isGroupActive
             ? `${group.activeColor} border shadow-xs`
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -244,11 +244,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Staff nav */}
           {currentPortal === 'STAFF' && (
-            <nav className="hidden lg:flex items-center gap-1 flex-1">
+            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0">
               {/* Home — always direct */}
               <button
                 onClick={() => onNavigate('/staff/home')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                   activeTab === 'home'
                     ? 'bg-slate-100 text-slate-900 border-slate-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -265,14 +265,39 @@ export const Header: React.FC<HeaderProps> = ({
                 <DropdownMenu key={group.label} group={group} activeTab={activeTab} onNavigate={onNavigate} />
               ))}
 
+              {/* Direct Flagship AI Studio Pills */}
+              <button
+                onClick={() => onNavigate('/staff/learning-gaps')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+                  activeTab === 'learning-gaps'
+                    ? 'bg-violet-50 text-violet-800 border-violet-200 shadow-xs font-bold'
+                    : 'text-slate-700 hover:text-violet-800 hover:bg-violet-50/70 border-transparent'
+                }`}
+              >
+                <Target className="w-3.5 h-3.5 text-violet-600" />
+                <span>Learning Gap Studio</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate('/staff/student-intelligence')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+                  activeTab === 'student-intelligence'
+                    ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
+                    : 'text-slate-700 hover:text-indigo-800 hover:bg-indigo-50/70 border-transparent'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                <span>360° BMIT &amp; Career</span>
+              </button>
+
               {/* ── Divider: academic / utility ── */}
-              <span className="w-px h-5 bg-slate-200 mx-1 flex-shrink-0" />
+              <span className="w-px h-5 bg-slate-200 mx-0.5 flex-shrink-0" />
 
               {/* Standalone Leave for teachers (not in Operations group) */}
               {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
                 <button
                   onClick={() => onNavigate('/staff/leaves')}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                     activeTab === 'leaves'
                       ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -286,7 +311,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* AI Tools */}
               <button
                 onClick={() => onNavigate('/staff/aitools')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                   activeTab === 'aitools'
                     ? 'bg-teal-50 text-teal-800 border-teal-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -299,7 +324,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* My Space */}
               <button
                 onClick={() => onNavigate('/staff/myspace')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
                   activeTab === 'myspace'
                     ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -324,7 +349,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.tab}
                   onClick={() => onNavigate(item.route)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold border transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold border transition-all whitespace-nowrap ${
                     studentTab === item.tab
                       ? `${item.cls} shadow-xs font-bold`
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -337,20 +362,20 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Right: campus + user */}
-          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-            <div className="hidden sm:flex items-center bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs gap-2">
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <div className="hidden 2xl:flex items-center bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
               <span className="font-semibold text-slate-700 truncate max-w-[140px]">
                 {currentUser?.campus?.name || 'Achariya World Class Academy'}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm">
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
                 {currentPortal === 'SUPERADMIN' ? 'R' : currentPortal === 'STUDENT' ? 'A' : (currentUser?.fullName?.[0] ?? 'U')}
               </div>
               <div className="hidden md:block text-left">
-                <div className="text-xs font-bold leading-tight text-slate-900">
+                <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[145px]">
                   {currentPortal === 'SUPERADMIN'
                     ? 'Dr. V. Rajakumaran'
                     : currentPortal === 'STUDENT'
