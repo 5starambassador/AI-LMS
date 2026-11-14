@@ -115,7 +115,11 @@ export class LearningGapsController {
       where.studentId = studentId;
     }
 
-    if (campusId) where.campusId = campusId;
+    if (campusId) {
+      where.campusId = campusId;
+    } else if (user.campusId && user.roleName !== 'Super Admin') {
+      where.campusId = user.campusId;
+    }
     if (grade) where.grade = grade;
     if (subject) where.subject = subject;
     if (status) where.status = status;
@@ -845,6 +849,7 @@ export class LearningGapsController {
 
     const scorePct = Math.round((correctCount / questions.length) * 1000) / 10;
     const isMastered = scorePct >= (gap.concept.masteryThreshold || 85.0);
+    const isPerfect100 = scorePct >= 100;
 
     let pathwayPlan: any = { phases: [] };
     try { pathwayPlan = JSON.parse(gap.pathway.pathwayPlanJson); } catch {}
@@ -903,6 +908,8 @@ export class LearningGapsController {
       success: true,
       score: scorePct,
       isMastered,
+      isPerfect100,
+      masteryTier: isPerfect100 ? 'GOLD_100_PERFECT' : isMastered ? 'COMPETENT_PERFECTION_SPRINT_ELIGIBLE' : 'RETRY_REQUIRED',
       requiredScore: gap.concept.masteryThreshold || 85,
       feedbackList,
       nextPhase: isMastered ? 'PHASE_5_MASTERED' : 'PHASE_4_CURRENT_TEST',
@@ -918,6 +925,9 @@ export class LearningGapsController {
    */
   static async teacherInterventionAction(request: FastifyRequest, reply: FastifyReply) {
     const user = request.currentUser!;
+    if (user.roleName === 'Student') {
+      return reply.status(403).send({ success: false, error: 'Only faculty can record teacher interventions.' });
+    }
     const { id: gapId } = request.params as { id: string };
     const { action, notes, targetDate } = request.body as {
       action: 'APPROVE_INTERVENTION' | 'MODIFY_PATHWAY' | 'RECORD_OBSERVATION' | 'TRIGGER_REASSESSMENT' | 'RECOMMEND_CLOSURE';
@@ -982,6 +992,7 @@ export class LearningGapsController {
    * High-level metrics for Management, Principal and Learning Academy
    */
   static async getSummaryAnalytics(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser;
     const { campusId, grade, subject } = request.query as {
       campusId?: string;
       grade?: string;
@@ -989,7 +1000,11 @@ export class LearningGapsController {
     };
 
     const where: any = {};
-    if (campusId) where.campusId = campusId;
+    if (campusId) {
+      where.campusId = campusId;
+    } else if (user?.campusId && user.roleName !== 'Super Admin') {
+      where.campusId = user.campusId;
+    }
     if (grade) where.grade = grade;
     if (subject) where.subject = subject;
 
@@ -1357,5 +1372,86 @@ export class LearningGapsController {
 
     const vulnerabilities = await AIAdaptiveIntelligenceService.predictUpcomingVulnerabilities(studentId);
     return reply.send({ success: true, count: vulnerabilities.length, data: vulnerabilities });
+  }
+
+  /**
+   * POST /api/learning-gaps/ai/generate-concept
+   * 1-Click Zero-Code AI Concept & Prerequisite Graph Builder for Educators
+   */
+  static async generateNoCodeConceptGraph(request: FastifyRequest, reply: FastifyReply) {
+    const { gradeNumber = 7, subject = 'Mathematics', topicTitle = 'Linear Equations in One Variable' } = request.body as {
+      gradeNumber?: number;
+      subject?: string;
+      topicTitle?: string;
+    };
+
+    const cleanGrade = Math.max(1, Math.min(12, Number(gradeNumber) || 7));
+    const prereqGradeNum = Math.max(1, cleanGrade - 1);
+    const gradeLabel = `Grade ${cleanGrade}`;
+    const prereqGradeLabel = `Grade ${prereqGradeNum}`;
+    const subPrefix = subject.slice(0, 3).toUpperCase();
+    const slug = topicTitle.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'CONCPT';
+    const targetCode = `CON-${subPrefix}-G${cleanGrade}-${slug}`;
+    const prereqCode = `CON-${subPrefix}-G${prereqGradeNum}-${slug}-PRE`;
+
+    const prereqConcept = await prisma.curriculumConcept.upsert({
+      where: { conceptCode: prereqCode },
+      update: { name: `Foundations of ${topicTitle}`, subject, grade: prereqGradeLabel, gradeNumber: prereqGradeNum },
+      create: {
+        conceptCode: prereqCode,
+        grade: prereqGradeLabel,
+        gradeNumber: prereqGradeNum,
+        subject,
+        chapter: `Core ${subject} Foundations`,
+        topic: topicTitle,
+        name: `Foundations of ${topicTitle}`,
+        description: `Essential ${prereqGradeLabel} foundational prerequisite required before learning ${topicTitle} in ${gradeLabel}.`,
+        learningOutcome: `Demonstrate 100% foundational fluency in ${prereqGradeLabel} operations leading to ${topicTitle}.`,
+        difficulty: 'EASY',
+        masteryThreshold: 80.0
+      }
+    });
+
+    const targetConcept = await prisma.curriculumConcept.upsert({
+      where: { conceptCode: targetCode },
+      update: { name: topicTitle, subject, grade: gradeLabel, gradeNumber: cleanGrade },
+      create: {
+        conceptCode: targetCode,
+        grade: gradeLabel,
+        gradeNumber: cleanGrade,
+        subject,
+        chapter: topicTitle,
+        topic: topicTitle,
+        name: topicTitle,
+        description: `AI-generated ${gradeLabel} ${subject} concept node with automated cross-grade prerequisite mapping.`,
+        learningOutcome: `Solve multi-step ${gradeLabel} problems on ${topicTitle} with 100% conceptual and procedural mastery.`,
+        difficulty: 'MEDIUM',
+        masteryThreshold: 85.0
+      }
+    });
+
+    const link = await prisma.conceptPrerequisite.upsert({
+      where: {
+        conceptId_prerequisiteId: {
+          conceptId: targetConcept.id,
+          prerequisiteId: prereqConcept.id
+        }
+      },
+      update: {},
+      create: {
+        conceptId: targetConcept.id,
+        prerequisiteId: prereqConcept.id,
+        prerequisiteGrade: prereqGradeLabel,
+        prerequisiteGradeNumber: prereqGradeNum,
+        prerequisiteType: 'FOUNDATIONAL',
+        diagnosticMisconception: `Unmastered ${prereqGradeLabel} foundation in ${prereqConcept.name} causing errors in ${topicTitle}.`
+      }
+    });
+
+    return reply.send({
+      success: true,
+      message: `Zero-Code AI Concept Graph built: ${gradeLabel} "${topicTitle}" linked to ${prereqGradeLabel} prerequisite!`,
+      data: { concept: targetConcept, prerequisite: prereqConcept, link }
+    });
   }
 }

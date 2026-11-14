@@ -73,11 +73,12 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     const token = jwt.sign(
       {
-        sub:      user.id,
-        userKey:  user.userKey,
-        roleKey:  user.role.roleKey,
-        roleName: user.role.name,
-        campusId: user.campusId,
+        sub:       user.id,
+        userKey:   user.userKey,
+        fullName:  user.fullName,
+        roleKey:   user.role.roleKey,
+        roleName:  user.role.name,
+        campusId:  user.campusId,
         schoolKey: user.campus?.schoolKey ?? null
       },
       ENV.JWT_SECRET,
@@ -194,6 +195,9 @@ export async function authRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/api/auth/qr-session', { preHandler: [authenticateToken] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.currentUser!;
+    if (user.roleName === 'Student') {
+      return reply.status(403).send({ success: false, error: 'Only teachers and staff can generate classroom QR sessions.' });
+    }
     const { classId, sectionId } = request.body as { classId: string; sectionId?: string };
 
     if (!classId) {
@@ -330,13 +334,28 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ success: false, error: 'Student account not found.' });
     }
 
+    // Enforce single-use QR check-in before issuing a student JWT to prevent classmate impersonation
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const existing = await prisma.dailyAttendance.findUnique({
+      where: { date_studentId: { date: today, studentId: student.id } }
+    });
+    const alreadyCheckedIn = existing?.remarks === 'QR scan';
+    if (alreadyCheckedIn) {
+      return reply.status(409).send({
+        success: false,
+        error: 'This student has already checked in via QR today. Ask your teacher if you need to re-login.'
+      });
+    }
+
     const jwtToken = jwt.sign(
       {
-        sub:      student.id,
-        userKey:  student.userKey,
-        roleKey:  student.role.roleKey,
-        roleName: student.role.name,
-        campusId: student.campusId,
+        sub:       student.id,
+        userKey:   student.userKey,
+        fullName:  student.fullName,
+        roleKey:   student.role.roleKey,
+        roleName:  student.role.name,
+        campusId:  student.campusId,
         schoolKey: student.campus?.schoolKey ?? null
       },
       ENV.JWT_SECRET,
@@ -345,28 +364,19 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     await prisma.user.update({ where: { id: student.id }, data: { lastLoginAt: new Date() } });
 
-    // Auto-mark PRESENT for today via QR scan (single-use: skip if already claimed today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const existing = await prisma.dailyAttendance.findUnique({
-      where: { date_studentId: { date: today, studentId: student.id } }
+    await prisma.dailyAttendance.upsert({
+      where: { date_studentId: { date: today, studentId: student.id } },
+      update: { status: 'PRESENT', remarks: 'QR scan' },
+      create: {
+        date: today,
+        campusId: session.campusId,
+        classId: session.classId,
+        sectionId: session.sectionId ?? enrollment.sectionId ?? '',
+        studentId: student.id,
+        status: 'PRESENT',
+        remarks: 'QR scan'
+      }
     });
-    const alreadyCheckedIn = existing?.remarks === 'QR scan';
-    if (!alreadyCheckedIn) {
-      await prisma.dailyAttendance.upsert({
-        where: { date_studentId: { date: today, studentId: student.id } },
-        update: { status: 'PRESENT', remarks: 'QR scan' },
-        create: {
-          date: today,
-          campusId: session.campusId,
-          classId: session.classId,
-          sectionId: session.sectionId ?? enrollment.sectionId ?? '',
-          studentId: student.id,
-          status: 'PRESENT',
-          remarks: 'QR scan'
-        }
-      });
-    }
 
     return reply.send({
       success: true,

@@ -7,24 +7,25 @@ import { AiToolsHub } from './components/AiToolsHub';
 import { MySpaceHub } from './components/MySpaceHub';
 import { LsrStudentPortal } from './components/LsrStudentPortal';
 import { StudentHomeworkPortal } from './components/StudentHomeworkPortal';
-import { SuperAdminPanel } from './components/SuperAdminPanel';
 import { AttendanceHub } from './components/AttendanceHub';
 import { HomeworkHub } from './components/HomeworkHub';
-import { WorksheetCanvas } from './components/WorksheetCanvas';
-import { CurriculumHub } from './components/CurriculumHub';
 import { QrStudentPicker } from './components/QrStudentPicker';
-import { ScoreInsights } from './components/ScoreInsights';
 import { VoiceActivity } from './components/VoiceActivity';
-import { ExamHub } from './components/ExamHub';
 import { TimetableHub } from './components/TimetableHub';
 import { NoticeboardHub } from './components/NoticeboardHub';
-import { ReportCardHub } from './components/ReportCardHub';
 import { LeaveHub } from './components/LeaveHub';
 import { FeeHub } from './components/FeeHub';
 import { ParentPortal } from './components/ParentPortal';
-import { ExamBuilderStudio } from './components/ExamBuilderStudio';
-import { LearningGapStudio } from './components/LearningGapStudio';
 import { ShieldAlert } from 'lucide-react';
+
+const CurriculumHub = React.lazy(() => import('./components/CurriculumHub').then(m => ({ default: m.CurriculumHub })));
+const WorksheetCanvas = React.lazy(() => import('./components/WorksheetCanvas').then(m => ({ default: m.WorksheetCanvas })));
+const ScoreInsights = React.lazy(() => import('./components/ScoreInsights').then(m => ({ default: m.ScoreInsights })));
+const ExamHub = React.lazy(() => import('./components/ExamHub').then(m => ({ default: m.ExamHub })));
+const ReportCardHub = React.lazy(() => import('./components/ReportCardHub').then(m => ({ default: m.ReportCardHub })));
+const ExamBuilderStudio = React.lazy(() => import('./components/ExamBuilderStudio').then(m => ({ default: m.ExamBuilderStudio })));
+const LearningGapStudio = React.lazy(() => import('./components/LearningGapStudio').then(m => ({ default: m.LearningGapStudio })));
+const SuperAdminPanel = React.lazy(() => import('./components/SuperAdminPanel').then(m => ({ default: m.SuperAdminPanel })));
 
 function AppShell() {
   const { user: currentUser, isLoading, isAuthenticated, logout, loginWithToken } = useAuthContext();
@@ -217,55 +218,57 @@ function AppShell() {
 
       {/* Main Workspace Body: Routed Standalone Pages */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
-        {/* VIEW 1: EDUCATOR & FACULTY PORTAL (Comprehensive Standalone Workspaces) */}
-        {currentPortal === 'STAFF' && (
-          <div>
-            {activeTab === 'home' && <StaffDashboard />}
-            {activeTab === 'resources' && <CurriculumHub />}
-            {activeTab === 'homework' && <HomeworkHub />}
-            {activeTab === 'attendance' && <AttendanceHub />}
-            {activeTab === 'worksheet' && (
-              <WorksheetCanvas
-                onAssignAsHomework={(title, subject) => {
-                  navigateTo('/staff/homework');
-                }}
-              />
-            )}
-            {activeTab === 'exam-builder' && (
-              <ExamBuilderStudio
-                onBackToHub={() => navigateTo('/staff/aitools')}
-                onExamGenerated={() => navigateTo('/staff/exams')}
-              />
-            )}
-            {activeTab === 'learning-gaps' && <LearningGapStudio />}
-            {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
-            {activeTab === 'myspace' && <MySpaceHub />}
-            {activeTab === 'insights' && <ScoreInsights />}
-            {activeTab === 'exams' && <ExamHub />}
-            {activeTab === 'timetable' && <TimetableHub />}
-            {activeTab === 'noticeboard' && <NoticeboardHub />}
-            {activeTab === 'reportcard' && <ReportCardHub />}
-            {activeTab === 'leaves' && <LeaveHub />}
-            {activeTab === 'fees' && <FeeHub />}
-          </div>
-        )}
+        <React.Suspense fallback={<div className="py-16 text-center text-xs font-semibold text-slate-400">Loading studio workspace…</div>}>
+          {/* VIEW 1: EDUCATOR & FACULTY PORTAL (Comprehensive Standalone Workspaces) */}
+          {currentPortal === 'STAFF' && (
+            <div>
+              {activeTab === 'home' && <StaffDashboard />}
+              {activeTab === 'resources' && <CurriculumHub />}
+              {activeTab === 'homework' && <HomeworkHub />}
+              {activeTab === 'attendance' && <AttendanceHub />}
+              {activeTab === 'worksheet' && (
+                <WorksheetCanvas
+                  onAssignAsHomework={(title, subject) => {
+                    navigateTo('/staff/homework');
+                  }}
+                />
+              )}
+              {activeTab === 'exam-builder' && (
+                <ExamBuilderStudio
+                  onBackToHub={() => navigateTo('/staff/aitools')}
+                  onExamGenerated={() => navigateTo('/staff/exams')}
+                />
+              )}
+              {activeTab === 'learning-gaps' && <LearningGapStudio />}
+              {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
+              {activeTab === 'myspace' && <MySpaceHub />}
+              {activeTab === 'insights' && <ScoreInsights />}
+              {activeTab === 'exams' && <ExamHub />}
+              {activeTab === 'timetable' && <TimetableHub />}
+              {activeTab === 'noticeboard' && <NoticeboardHub />}
+              {activeTab === 'reportcard' && <ReportCardHub />}
+              {activeTab === 'leaves' && <LeaveHub />}
+              {activeTab === 'fees' && <FeeHub />}
+            </div>
+          )}
 
-        {/* VIEW 2: STUDENT PORTAL (VoiceLab & Homework Studio) */}
-        {currentPortal === 'STUDENT' && (
-          <div>
-            {studentTab === 'voicelab' && <LsrStudentPortal />}
-            {studentTab === 'voice' && <VoiceActivity />}
-            {studentTab === 'homework' && (
-              <StudentHomeworkPortal
-                onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}
-              />
-            )}
-            {studentTab === 'gaps' && <LearningGapStudio initialStudentMode={true} />}
-          </div>
-        )}
+          {/* VIEW 2: STUDENT PORTAL (VoiceLab & Homework Studio) */}
+          {currentPortal === 'STUDENT' && (
+            <div>
+              {studentTab === 'voicelab' && <LsrStudentPortal />}
+              {studentTab === 'voice' && <VoiceActivity />}
+              {studentTab === 'homework' && (
+                <StudentHomeworkPortal
+                  onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}
+                />
+              )}
+              {studentTab === 'gaps' && <LearningGapStudio initialStudentMode={true} />}
+            </div>
+          )}
 
-        {/* VIEW 3: SUPER ADMIN TRUST HQ */}
-        {currentPortal === 'SUPERADMIN' && <SuperAdminPanel />}
+          {/* VIEW 3: SUPER ADMIN TRUST HQ */}
+          {currentPortal === 'SUPERADMIN' && <SuperAdminPanel />}
+        </React.Suspense>
       </main>
 
       {/* Footer Demonstration Helper Bar - Ultra Light & Minimalist */}

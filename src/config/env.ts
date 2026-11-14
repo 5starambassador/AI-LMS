@@ -28,6 +28,7 @@ export const ENV = {
   CLOUD_VISION_API_KEY: optionalEnv('CLOUD_VISION_API_KEY'),
   WHISPER_API_KEY:      optionalEnv('WHISPER_API_KEY') || optionalEnv('OPENAI_API_KEY'),
   GEMINI_API_KEY:       optionalEnv('GEMINI_API_KEY'),
+  AI_MODEL_GEMINI:      optionalEnv('AI_MODEL_GEMINI', 'gemini-2.5-flash'),
 
   ALLOWED_ORIGINS: [
     'https://one.achariya.in',

@@ -76,15 +76,15 @@ export class ReportCardController {
     // === Homework — per-subject averages ===
     const submissions = await prisma.homeworkSubmission.findMany({
       where: { studentId },
-      include: { homework: { select: { subject: true, maxMarks: true } } },
+      include: { homework: { select: { maxMarks: true, subject: { select: { name: true } } } } },
     });
 
     const hwBySubject: Record<string, { total: number; count: number; max: number }> = {};
     for (const s of submissions) {
-      if (s.marksAwarded == null) continue;
-      const sub = s.homework.subject;
+      if (s.score == null) continue;
+      const sub = s.homework.subject?.name || 'General';
       if (!hwBySubject[sub]) hwBySubject[sub] = { total: 0, count: 0, max: 0 };
-      hwBySubject[sub].total += Number(s.marksAwarded);
+      hwBySubject[sub].total += Number(s.score);
       hwBySubject[sub].count++;
       hwBySubject[sub].max += s.homework.maxMarks;
     }
@@ -98,24 +98,24 @@ export class ReportCardController {
     // === Exams ===
     const examResults = await prisma.scoreStudentResult.findMany({
       where: { studentId },
-      include: { exam: { select: { title: true, subject: true, totalMarks: true, scheduledDate: true } } },
+      include: { exam: { select: { title: true, totalMarks: true, createdAt: true, subject: { select: { name: true } } } } },
       orderBy: { gradedAt: 'asc' },
     });
 
     const exams = examResults.map(r => ({
       title: r.exam.title,
-      subject: r.exam.subject,
+      subject: r.exam.subject?.name || 'General',
       marksObtained: r.marksObtained,
       totalMarks: r.exam.totalMarks,
       percentage: r.exam.totalMarks > 0 ? Math.round((r.marksObtained / r.exam.totalMarks) * 100) : 0,
-      scheduledDate: r.exam.scheduledDate,
+      scheduledDate: r.exam.createdAt,
       grade: calcGrade(r.exam.totalMarks > 0 ? (r.marksObtained / r.exam.totalMarks) * 100 : 0),
     }));
 
     // Overall exam average per subject
     const examBySubject: Record<string, { total: number; count: number }> = {};
     for (const e of examResults) {
-      const sub = e.exam.subject;
+      const sub = e.exam.subject?.name || 'General';
       if (!examBySubject[sub]) examBySubject[sub] = { total: 0, count: 0 };
       examBySubject[sub].total += e.exam.totalMarks > 0 ? (e.marksObtained / e.exam.totalMarks) * 100 : 0;
       examBySubject[sub].count++;

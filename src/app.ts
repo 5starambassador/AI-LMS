@@ -42,8 +42,7 @@ export async function buildApp() {
 
       if (
         ENV.ALLOWED_ORIGINS.includes(origin) ||
-        origin.endsWith('.achariya.in') ||
-        origin.endsWith('.chrysalis.world')
+        origin.endsWith('.achariya.in')
       ) {
         return cb(null, true);
       }

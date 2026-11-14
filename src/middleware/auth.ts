@@ -7,6 +7,7 @@ export interface AuthenticatedUserPayload {
   id?: string;
   sub: string;
   userKey: string;
+  fullName?: string;
   roleKey: string;
   roleName: string;
   campusId: string | null;
