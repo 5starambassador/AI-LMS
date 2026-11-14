@@ -128,6 +128,9 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
   const [palLevel, setPalLevel] = useState<'Beginner' | 'Progressing' | 'Proficient'>('Progressing');
   const [palAnswerChecked, setPalAnswerChecked] = useState(false);
   const [weeklyParentSent, setWeeklyParentSent] = useState(false);
+  const [insightGranularity, setInsightGranularity] = useState<'Student' | 'Question' | 'Concept' | 'LO' | 'Chapter' | 'Subject' | 'Class' | 'Campus'>('Student');
+  const [graderTeacherOverride, setGraderTeacherOverride] = useState<number>(4.5);
+  const [graderAuditSaved, setGraderAuditSaved] = useState(false);
   const [fiveArtsScores, setFiveArtsScores] = useState({
     visualArts: 92,
     performingMusic: 88,
@@ -1220,12 +1223,50 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 </div>
               )}
 
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Total Score: 46 / 50 Marks (92% - Grade A1). Result committed to Gradebook.</span>
+              <div className="p-3 bg-sky-50/70 rounded-xl border border-sky-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sky-950">Mathematical Step Evaluation &amp; Alternative Method Protection</span>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-700 text-white">Equivalence Protected</span>
+                </div>
+                <p className="text-[11px] text-sky-900">
+                  Evaluates intermediate steps, partial credit, and alternative solution paths — legitimate equivalent methods are never penalised.
+                </p>
+                <div className="p-2.5 bg-white rounded-xl border border-sky-100 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Teacher Verification &amp; Override (Q12 · 5.0M):</span>
+                    <span className="text-[11px] text-slate-500">AI Suggested: 4.5 / 5.0 · Audit Trail Active</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="5"
+                      step="0.5"
+                      value={graderTeacherOverride}
+                      onChange={e => {
+                        setGraderTeacherOverride(parseFloat(e.target.value));
+                        setGraderAuditSaved(false);
+                      }}
+                      className="w-28 accent-sky-700"
+                    />
+                    <span className="font-mono font-extrabold text-sky-900">{graderTeacherOverride.toFixed(1)} / 5.0</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-600 font-mono bg-white/80 p-2 rounded-lg border border-slate-200">
+                  Audit Log: AI Initial (4.5/5.0) → Faculty Override ({graderTeacherOverride.toFixed(1)}/5.0) → Final Awarded ({graderAuditSaved ? 'LOCKED' : 'PENDING REVIEW'})
+                </div>
               </div>
 
-              <div className="pt-2 flex justify-end">
+              <div className="pt-2 flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    setGraderAuditSaved(true);
+                    showToast(`Teacher override (${graderTeacherOverride.toFixed(1)}/5.0) & immutable audit trail saved.`);
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-colors"
+                >
+                  {graderAuditSaved ? 'Override Audited & Locked ✓' : 'Confirm Teacher Override'}
+                </button>
                 <button
                   onClick={() => setActiveModal(null)}
                   className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
@@ -1368,21 +1409,56 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
               </button>
             </div>
 
+            {/* 8-Level Analytical Granularity Switcher */}
+            <div className="flex flex-wrap items-center gap-1.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200 text-[11px]">
+              <span className="font-extrabold text-slate-600 mr-1 uppercase">8-Level Slice:</span>
+              {(['Student', 'Question', 'Concept', 'LO', 'Chapter', 'Subject', 'Class', 'Campus'] as const).map(lvl => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setInsightGranularity(lvl)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-colors ${
+                    insightGranularity === lvl
+                      ? 'bg-purple-700 text-white shadow-xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-purple-50'
+                  }`}
+                >
+                  {lvl === 'LO' ? 'Learning Outcome' : lvl}
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="text-[10px] text-slate-500 font-bold uppercase">CLASS AVERAGE</div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase">{insightGranularity} VIEW · BENCHMARK</div>
                 <div className="text-xl font-black text-slate-800 mt-1">46 / 50</div>
-                <div className="text-[10px] text-teal-700 font-semibold">92.0% · 90% Time Saved</div>
+                <div className="text-[10px] text-teal-700 font-semibold">Pilot Correction Time: 14m vs 120m manual</div>
               </div>
               <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200">
                 <div className="text-[10px] text-emerald-700 font-bold uppercase">PROFICIENT / PROGRESSING</div>
                 <div className="text-xl font-black text-emerald-900 mt-1">22 / 28</div>
-                <div className="text-[10px] text-emerald-700 font-semibold">16 Proficient · 6 Progressing</div>
+                <div className="text-[10px] text-emerald-700 font-semibold">Evidence-Based Concept Classification</div>
               </div>
               <div className="p-3.5 bg-rose-50 rounded-2xl border border-rose-200">
                 <div className="text-[10px] text-rose-700 font-bold uppercase">BEGINNER (REMEDIAL)</div>
                 <div className="text-xl font-black text-rose-800 mt-1">6 Scholars</div>
                 <div className="text-[10px] text-rose-700 font-semibold">Flagged Same-Day</div>
+              </div>
+            </div>
+
+            {/* Learning Academy Campus Standardisation & 8-Part Parent Report Preview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+              <div className="p-3 bg-indigo-50/60 border border-indigo-200 rounded-2xl space-y-1">
+                <span className="font-extrabold text-indigo-950 uppercase block">Parent Examination Report (8 Authorised Sections)</span>
+                <p className="text-indigo-900 leading-relaxed">
+                  Includes: Overall &amp; Subject performance, Question-wise scores, LO mastery, Concepts Mastered vs. Support Needed, Recommended Remedial Activities &amp; Comparison with Previous Assessments.
+                </p>
+              </div>
+              <div className="p-3 bg-teal-50/60 border border-teal-200 rounded-2xl space-y-1">
+                <span className="font-extrabold text-teal-950 uppercase block">Learning Academy Central Standardisation</span>
+                <p className="text-teal-900 leading-relaxed">
+                  Common blueprints, parallel Set A/B/C parity, standardised marking schemes &amp; cross-campus gap comparison (90% time reduction tracked as an active pilot validation target).
+                </p>
               </div>
             </div>
 

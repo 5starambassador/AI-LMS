@@ -28,6 +28,7 @@ export const LsrStudentPortal: React.FC = () => {
   const [activeDigitalActivity, setActiveDigitalActivity] = useState<'dubbing' | 'storybook' | 'conversation'>('dubbing');
   const [dubbingRecorded, setDubbingRecorded] = useState(false);
   const [conversationReply, setConversationReply] = useState<string | null>(null);
+  const [portfolioAudioSynced, setPortfolioAudioSynced] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -486,6 +487,48 @@ export const LsrStudentPortal: React.FC = () => {
             </div>
           </div>
 
+          <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200 text-xs flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <strong className="text-sky-950 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-sky-700" />
+                Accent-Neutral Language Evaluation Guarantee
+              </strong>
+              <p className="text-sky-900 mt-0.5">
+                Achariya VoiceLab evaluates clarity, phonemic intelligibility, fluency, vocabulary, sentence structure, and comprehension independently of regional or international accent conformity.
+              </p>
+            </div>
+            <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-white border border-sky-200 text-sky-800 shrink-0">
+              No Accent Penalty Policy
+            </span>
+          </div>
+
+          {/* 8-Dimension English Language Development Profile */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+              8-Dimension Baseline vs. Current Language Development Profile
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              {[
+                { dim: 'Listening Comprehension', base: '76%', curr: '93%' },
+                { dim: 'Speaking Ability', base: '71%', curr: '89%' },
+                { dim: 'Reading Fluency', base: '78 WCPM', curr: '114 WCPM' },
+                { dim: 'Reading Comprehension', base: '79%', curr: '92%' },
+                { dim: 'Vocabulary', base: '74%', curr: '90%' },
+                { dim: 'Pronunciation Clarity', base: '82%', curr: '95%' },
+                { dim: 'Expression & Pitch', base: '72%', curr: '91%' },
+                { dim: 'Language Confidence', base: '70%', curr: '94%' }
+              ].map((d, idx) => (
+                <div key={idx} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-0.5">
+                  <span className="text-[10px] font-bold text-slate-500 block">{d.dim}</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-black text-slate-900">{d.curr}</span>
+                    <span className="text-[10px] text-emerald-700 font-bold">from {d.base}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
             <span className="font-bold text-slate-900 block">Pedagogical Recommendation:</span>
             <p className="text-slate-600 leading-relaxed">
@@ -579,16 +622,41 @@ export const LsrStudentPortal: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <strong className="text-slate-900">Early L/S/R Diagnostic Summary:</strong>
-              <span className="text-slate-600 ml-2">
-                Listening (95%), Speaking Confidence (+44%), Oral Reading Fluency (114 WCPM), Vocabulary (+28 domain words mastered).
-              </span>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong className="text-slate-900">5-Checkpoint Longitudinal Voice Samples (Consent &amp; Retention Compliant):</strong>
+              <button
+                onClick={() => {
+                  setPortfolioAudioSynced(true);
+                  showToast('All 5 VoiceLab audio samples linked to Aarav Sundaram’s Student E-Portfolio!');
+                }}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors ${
+                  portfolioAudioSynced
+                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                    : 'bg-teal-700 hover:bg-teal-800 text-white'
+                }`}
+              >
+                {portfolioAudioSynced ? 'Synced to Student Portfolio ✓' : 'Sync Audio Evidence to Portfolio'}
+              </button>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white border border-slate-200 text-teal-800">
-              Processed on Achariya Servers in India
-            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+              {[
+                { label: '1. Initial Speaking', date: 'Jun 2026', val: '71% Clarity' },
+                { label: '2. Initial Reading', date: 'Jun 2026', val: '78 WCPM' },
+                { label: '3. Periodic Sample', date: 'Sep 2026', val: '98 WCPM' },
+                { label: '4. Year-End Speaking', date: 'Nov 2026', val: '89% Clarity' },
+                { label: '5. Year-End Reading', date: 'Nov 2026', val: '114 WCPM' }
+              ].map((s, idx) => (
+                <div key={idx} className="p-2.5 bg-white rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-600 block">{s.label}</span>
+                  <span className="font-extrabold text-teal-800 block mt-0.5">{s.val}</span>
+                  <span className="text-[10px] text-slate-400">{s.date}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Processed on <strong>Achariya Cloud Servers in India</strong> under institutional parent consent, encrypted retention, and authorised portfolio role-access policies.
+            </p>
           </div>
         </div>
       )}
