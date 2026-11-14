@@ -15,7 +15,14 @@ import {
   Activity,
   Heart,
   Target,
-  BrainCircuit
+  BrainCircuit,
+  Mic,
+  Compass,
+  FileText,
+  ScanLine,
+  ShieldCheck,
+  Database,
+  Layers
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
 import { apiFetch } from '../lib/api';
@@ -281,6 +288,264 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
               <span>Open 360° BMIT &amp; Career Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 1C. Achariya AI ONE · 4 Connected Pillars & One Connected Data Layer */}
+      <div className="rounded-3xl bg-white border border-slate-200/90 shadow-xs p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
+              Achariya AI ONE Architecture · Grades KG–12
+            </span>
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
+              Four Integrated Academic Pillars · All Campuses Standardised
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+            <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">90% Less Correction Time</span>
+            <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">Same-Day Remedial Planning</span>
+          </div>
+        </div>
+
+        {/* Top Row: Pillar 01 & Pillar 02 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Quadrant 01: AI-Powered Assessment & Evaluation */}
+          <div className="rounded-2xl border-2 border-blue-900/15 bg-blue-50/30 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-sky-300">01</span>
+                    <h3 className="text-sm font-extrabold">AI-Powered Assessment &amp; Evaluation</h3>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300 mt-0.5">
+                    Grades 1–12 · CBSE Competency Ready
+                  </p>
+                </div>
+                <FileText className="w-5 h-5 text-sky-300 shrink-0" />
+              </div>
+              <div className="p-4 space-y-2.5 text-xs">
+                <div className="space-y-1.5 text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-blue-700 shrink-0 mt-0.5" />
+                    <span><strong>Exam Builder:</strong> Blueprint-based papers in minutes tagged to Learning Outcomes &amp; Bloom&apos;s levels with <strong>Parallel Sets (Set A, B, C)</strong>.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-blue-700 shrink-0 mt-0.5" />
+                    <span><strong>Exam Grader:</strong> Grade scanned answer scripts consistently without bias and with AI reasoning.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-blue-700 shrink-0 mt-0.5" />
+                    <span><strong>Instant Insights &amp; Publish Reports:</strong> Question, outcome, class &amp; student mastery (<strong>Beginner, Progressing, Proficient</strong>) shared with parents for same-day remediation.</span>
+                  </div>
+                </div>
+                <div className="p-2.5 bg-white border-l-4 border-blue-900 rounded-r-xl text-[11px] font-semibold text-slate-800">
+                  <span className="block text-[9px] font-black uppercase tracking-wider text-blue-900 mb-0.5">Benefit for Achariya</span>
+                  90% less teacher correction time, giving hours back to experiential teaching with one standardised benchmark across all campuses.
+                </div>
+              </div>
+            </div>
+            <div className="px-4 pb-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => navigateToRoute('/staff/exams')}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] font-bold flex items-center gap-1"
+              >
+                <span>Open Exam Builder (Sets A/B/C)</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => navigateToRoute('/staff/aitools')}
+                className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-xl text-[11px] font-bold"
+              >
+                Grader &amp; Parent Reports
+              </button>
+            </div>
+          </div>
+
+          {/* Quadrant 02: AI English Language Lab */}
+          <div className="rounded-2xl border-2 border-sky-600/20 bg-sky-50/30 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="bg-sky-700 text-white px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-sky-200">02</span>
+                    <h3 className="text-sm font-extrabold">AI English Language Lab</h3>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-sky-100 mt-0.5">
+                    Listening · Speaking · Reading · Vocabulary | Grades 1–12
+                  </p>
+                </div>
+                <Mic className="w-5 h-5 text-sky-200 shrink-0" />
+              </div>
+              <div className="p-4 space-y-2.5 text-xs">
+                <div className="space-y-1.5 text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-sky-700 shrink-0 mt-0.5" />
+                    <span><strong>125+ Levelled Skill Checks:</strong> Adaptive Listening, Speaking, Reading fluency &amp; Vocabulary across grades.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-sky-700 shrink-0 mt-0.5" />
+                    <span><strong>AI Voice Scoring on Achariya Cloud (India):</strong> Scores reading aloud &amp; early-spots students needing L/S/R support.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-sky-700 shrink-0 mt-0.5" />
+                    <span><strong>Before-and-After Voice Evidence &amp; Digital Lab:</strong> Compare start-of-year vs. current recordings alongside <strong>Dubbing, Storybooks &amp; Conversations</strong>.</span>
+                  </div>
+                </div>
+                <div className="p-2.5 bg-white border-l-4 border-sky-700 rounded-r-xl text-[11px] font-semibold text-slate-800">
+                  <span className="block text-[9px] font-black uppercase tracking-wider text-sky-800 mb-0.5">Benefit for Achariya</span>
+                  Confident communicators with year-long competency evidence and tangible voice progress parents can hear at admissions &amp; PTMs.
+                </div>
+              </div>
+            </div>
+            <div className="px-4 pb-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => navigateToRoute('/student/voicelab')}
+                className="px-3 py-1.5 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-[11px] font-bold flex items-center gap-1"
+              >
+                <span>Launch VoiceLab &amp; Before/After Studio</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => navigateToRoute('/staff/aitools')}
+                className="px-3 py-1.5 bg-white border border-sky-200 hover:bg-sky-50 text-sky-900 rounded-xl text-[11px] font-bold"
+              >
+                Cohort LSR Spotter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Horizontal Spine: ONE CONNECTED DATA LAYER */}
+        <div className="rounded-2xl bg-gradient-to-r from-amber-50 via-white to-amber-50 border-y-2 border-amber-400 px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2.5 text-xs">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 text-amber-300 flex items-center justify-center shrink-0">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-black tracking-widest uppercase text-slate-900 text-[11px]">
+                ONE CONNECTED DATA LAYER
+              </span>
+              <span className="text-slate-600 font-medium text-xs ml-2">
+                — Every assessment, voice sample, BMIT observation and PAL activity builds one unified profile per child.
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold">
+            <span className="px-2.5 py-1 rounded-full bg-slate-900 text-white">10,480 Unified Profiles</span>
+            <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">40,000+ HPC Cards Scale</span>
+            <span className="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200">India-Hosted Privacy</span>
+          </div>
+        </div>
+
+        {/* Bottom Row: Pillar 03 & Pillar 04 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Quadrant 03: Holistic Progress Card */}
+          <div className="rounded-2xl border-2 border-pink-600/20 bg-pink-50/30 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="bg-pink-700 text-white px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-pink-200">03</span>
+                    <h3 className="text-sm font-extrabold">Holistic Progress Card (HPC)</h3>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-pink-100 mt-0.5">
+                    Grades KG–12 · NEP 2020 &amp; PARAKH Aligned
+                  </p>
+                </div>
+                <Compass className="w-5 h-5 text-pink-200 shrink-0" />
+              </div>
+              <div className="p-4 space-y-2.5 text-xs">
+                <div className="space-y-1.5 text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-pink-700 shrink-0 mt-0.5" />
+                    <span><strong>Beyond Marks:</strong> Authentic growth journey aligned with <strong>NEP 2020 and PARAKH</strong> 360° frameworks.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-pink-700 shrink-0 mt-0.5" />
+                    <span><strong>Competency-Level Reports:</strong> Personalised multi-domain feedback &amp; actionable next steps.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-pink-700 shrink-0 mt-0.5" />
+                    <span><strong>Proven at Scale:</strong> Built for <strong>40,000+ progress cards</strong> across campuses.</span>
+                  </div>
+                </div>
+                <div className="p-2.5 bg-white border-l-4 border-pink-700 rounded-r-xl text-[11px] font-semibold text-slate-800">
+                  <span className="block text-[9px] font-black uppercase tracking-wider text-pink-800 mb-0.5">Benefit for Achariya</span>
+                  The whole child made visible: BMIT Brain Mapping, Achariya Experiential Labs, and the 5 Arts beside academics.
+                </div>
+              </div>
+            </div>
+            <div className="px-4 pb-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => navigateToRoute('/staff/aitools')}
+                className="px-3 py-1.5 bg-pink-700 hover:bg-pink-800 text-white rounded-xl text-[11px] font-bold flex items-center gap-1"
+              >
+                <span>Open HPC &amp; 5 Arts Card</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => navigateToRoute('/staff/student-intelligence')}
+                className="px-3 py-1.5 bg-white border border-pink-200 hover:bg-pink-50 text-pink-900 rounded-xl text-[11px] font-bold"
+              >
+                BMIT &amp; Experiential Profile
+              </button>
+            </div>
+          </div>
+
+          {/* Quadrant 04: Personalised Learning & Student Insights */}
+          <div className="rounded-2xl border-2 border-amber-500/25 bg-amber-50/35 overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="bg-amber-500 text-slate-950 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-amber-950">04</span>
+                    <h3 className="text-sm font-extrabold">Personalised Learning &amp; Insights</h3>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-950/80 mt-0.5">
+                    Grades KG–12 · Adaptive PAL &amp; Student Portfolio
+                  </p>
+                </div>
+                <Layers className="w-5 h-5 text-amber-950 shrink-0" />
+              </div>
+              <div className="p-4 space-y-2.5 text-xs">
+                <div className="space-y-1.5 text-slate-700">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                    <span><strong>Personalised Adaptive Learning (PAL):</strong> Level-matched activities, summative growth tracking &amp; digital student portfolio.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                    <span><strong>Autograding Written Work:</strong> Instant correction &amp; diagnostic feedback for written responses.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                    <span><strong>Weekly Snapshot of the Child:</strong> Continuous term-to-term record with weekly home-support recommendations for parents.</span>
+                  </div>
+                </div>
+                <div className="p-2.5 bg-white border-l-4 border-amber-500 rounded-r-xl text-[11px] font-semibold text-slate-800">
+                  <span className="block text-[9px] font-black uppercase tracking-wider text-amber-800 mb-0.5">Benefit for Achariya</span>
+                  Every child learns at the right level reflecting Achariya&apos;s belief in individual intelligence; teachers &amp; parents get recommendations, not just data.
+                </div>
+              </div>
+            </div>
+            <div className="px-4 pb-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => navigateToRoute('/staff/aitools')}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[11px] font-bold flex items-center gap-1"
+              >
+                <span>Open PAL &amp; Weekly Snapshot</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => navigateToRoute('/staff/learning-gaps')}
+                className="px-3 py-1.5 bg-white border border-amber-200 hover:bg-amber-50 text-amber-900 rounded-xl text-[11px] font-bold"
+              >
+                Adaptive Remediation Loops
+              </button>
+            </div>
           </div>
         </div>
       </div>

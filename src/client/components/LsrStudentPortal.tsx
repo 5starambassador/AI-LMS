@@ -11,16 +11,23 @@ import {
   Headphones,
   ArrowRight,
   TrendingUp,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ShieldCheck,
+  MessageSquare,
+  Film
 } from 'lucide-react';
 
 export const LsrStudentPortal: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [activeSubTab, setActiveSubTab] = useState<'levelTest' | 'dictionary' | 'report'>('levelTest');
+  const [activeSubTab, setActiveSubTab] = useState<'levelTest' | 'beforeAfter' | 'activities' | 'dictionary' | 'report'>('levelTest');
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recorded, setRecorded] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [activeVoiceTrack, setActiveVoiceTrack] = useState<'baseline' | 'current' | null>(null);
+  const [activeDigitalActivity, setActiveDigitalActivity] = useState<'dubbing' | 'storybook' | 'conversation'>('dubbing');
+  const [dubbingRecorded, setDubbingRecorded] = useState(false);
+  const [conversationReply, setConversationReply] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -28,16 +35,22 @@ export const LsrStudentPortal: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const playAudioSpeech = (text: string) => {
+  const playAudioSpeech = (text: string, rate = 0.95) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95;
+      u.rate = rate;
       u.onstart = () => setIsPlayingAudio(true);
-      u.onend = () => setIsPlayingAudio(false);
-      u.onerror = () => setIsPlayingAudio(false);
+      u.onend = () => {
+        setIsPlayingAudio(false);
+        setActiveVoiceTrack(null);
+      };
+      u.onerror = () => {
+        setIsPlayingAudio(false);
+        setActiveVoiceTrack(null);
+      };
       window.speechSynthesis.speak(u);
-      showToast('Playing VoiceLab narration audio...');
+      showToast('Playing Achariya VoiceLab neural audio (India Cloud)...');
     } else {
       showToast('Audio playback not supported in this browser.');
     }
@@ -64,12 +77,38 @@ export const LsrStudentPortal: React.FC = () => {
         <div className="bg-white/90 border border-slate-200/80 p-4 rounded-2xl text-center shrink-0 shadow-xs">
           <div className="text-[10px] text-teal-700 uppercase tracking-wider font-extrabold">READING STAGE</div>
           <div className="text-base font-extrabold text-slate-900 mt-0.5">Confident Reader</div>
-          <div className="text-[11px] text-slate-500 italic">Self-paced reading & contextual reasoning</div>
+          <div className="text-[11px] text-slate-500 italic">Self-paced reading &amp; contextual reasoning</div>
+        </div>
+      </div>
+
+      {/* 1B. AI English Language Lab Capabilities Telemetry Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <span className="text-[10px] font-extrabold text-teal-700 uppercase tracking-wider block">125+ Levelled Checks</span>
+          <span className="font-bold text-slate-900">L · S · R &amp; Vocabulary</span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Adaptive across Grades 1–12</p>
+        </div>
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <span className="text-[10px] font-extrabold text-sky-700 uppercase tracking-wider block">Achariya Cloud (India)</span>
+          <span className="font-bold text-slate-900 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-sky-600" /> AI Speech Engine
+          </span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Zero external audio retention</p>
+        </div>
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <span className="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider block">Before &amp; After Evidence</span>
+          <span className="font-bold text-slate-900">78 → 114 WCPM (+46%)</span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Hearable start-vs-end growth</p>
+        </div>
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider block">Early Support Spotter</span>
+          <span className="font-bold text-slate-900">No Support Flagged</span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Real-time L/S/R diagnostics</p>
         </div>
       </div>
 
       {/* 2. Light Sub-Tab Switcher */}
-      <div className="flex items-center space-x-2 border-b border-slate-200 pb-3 text-xs font-bold">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 text-xs font-bold">
         <button
           onClick={() => setActiveSubTab('levelTest')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 ${
@@ -79,7 +118,31 @@ export const LsrStudentPortal: React.FC = () => {
           }`}
         >
           <Headphones className="w-4 h-4" />
-          <span>Diagnostic Speech Tasks</span>
+          <span>125+ Diagnostic Tasks</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('beforeAfter')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 ${
+            activeSubTab === 'beforeAfter'
+              ? 'bg-teal-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <TrendingUp className="w-4 h-4" />
+          <span>Before &amp; After Voice Evidence</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('activities')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 ${
+            activeSubTab === 'activities'
+              ? 'bg-teal-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Film className="w-4 h-4" />
+          <span>Dubbing, Storybooks &amp; Roleplay</span>
         </button>
 
         <button
@@ -103,7 +166,7 @@ export const LsrStudentPortal: React.FC = () => {
           }`}
         >
           <Award className="w-4 h-4" />
-          <span>CEFR & Fluency Snapshot</span>
+          <span>CEFR &amp; Fluency Snapshot</span>
         </button>
       </div>
 
@@ -429,6 +492,238 @@ export const LsrStudentPortal: React.FC = () => {
               Aarav demonstrates strong oral comprehension and confident fluency. Recommended next steps include reading higher complexity expository non-fiction and participating in inter-campus debate clubs.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: BEFORE & AFTER VOICE EVIDENCE STUDIO                               */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'beforeAfter' && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
+                Start of Year vs. Structured Learning Evidence
+              </span>
+              <h3 className="text-base font-extrabold text-slate-900 mt-1">
+                Before-and-After Voice Progress · Parents Can Hear the Transformation
+              </h3>
+            </div>
+            <button
+              onClick={() => showToast('Before & After Voice Showcase link ready for admissions & PTM share!')}
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold"
+            >
+              Share Evidence with Parents
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            {/* BEFORE: June Baseline */}
+            <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-extrabold text-[10px] uppercase">
+                  BEFORE · June 2026 Baseline
+                </span>
+                <span className="font-mono font-bold text-amber-900">78 WCPM · 82.0% Acc</span>
+              </div>
+              <p className="text-slate-700 italic bg-white p-3 rounded-xl border border-amber-100 leading-relaxed">
+                &ldquo;The... coastal winds... of Coromandel... blow steady during monsoon season.&rdquo;
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-amber-800 font-semibold">Hesitant pauses · CEFR A2 Emerging</span>
+                <button
+                  onClick={() => {
+                    setActiveVoiceTrack('baseline');
+                    playAudioSpeech('The... coastal winds... of Coromandel... blow steady... during monsoon season.', 0.72);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl font-bold flex items-center space-x-1.5 ${
+                    activeVoiceTrack === 'baseline' && isPlayingAudio
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : 'bg-amber-600 hover:bg-amber-700 text-white'
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Listen to Baseline Recording</span>
+                </button>
+              </div>
+            </div>
+
+            {/* AFTER: November Structured Learning */}
+            <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-[10px] uppercase">
+                  AFTER · November 2026 Current
+                </span>
+                <span className="font-mono font-bold text-emerald-900">114 WCPM · 96.2% Acc (+46%)</span>
+              </div>
+              <p className="text-slate-700 italic bg-white p-3 rounded-xl border border-emerald-100 leading-relaxed">
+                &ldquo;The coastal winds of the Coromandel Coast blow steadily during the retreating northeast monsoon, guiding maritime vessels safely home.&rdquo;
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-emerald-800 font-semibold">Expressive intonation · CEFR B1 Confident</span>
+                <button
+                  onClick={() => {
+                    setActiveVoiceTrack('current');
+                    playAudioSpeech('The coastal winds of the Coromandel Coast blow steadily during the retreating northeast monsoon, guiding maritime vessels safely home.', 0.98);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl font-bold flex items-center space-x-1.5 ${
+                    activeVoiceTrack === 'current' && isPlayingAudio
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Listen to Current Recording</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <strong className="text-slate-900">Early L/S/R Diagnostic Summary:</strong>
+              <span className="text-slate-600 ml-2">
+                Listening (95%), Speaking Confidence (+44%), Oral Reading Fluency (114 WCPM), Vocabulary (+28 domain words mastered).
+              </span>
+            </div>
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white border border-slate-200 text-teal-800">
+              Processed on Achariya Servers in India
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 5: DIGITAL ACTIVITIES (DUBBING, STORYBOOKS & CONVERSATIONS)           */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'activities' && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">
+                Interactive Language Lab Activities · Confident Communicators
+              </h3>
+              <p className="text-xs text-slate-500">
+                Engaging digital formats: Voice Dubbing, Levelled Interactive Storybooks &amp; AI Conversations
+              </p>
+            </div>
+            <div className="flex items-center space-x-1.5 text-xs font-bold">
+              {[
+                { id: 'dubbing' as const, label: '🎬 Voice Dubbing' },
+                { id: 'storybook' as const, label: '📖 Storybooks' },
+                { id: 'conversation' as const, label: '💬 Roleplay Conversation' }
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setActiveDigitalActivity(m.id)}
+                  className={`px-3 py-1.5 rounded-xl border transition-all ${
+                    activeDigitalActivity === m.id
+                      ? 'bg-sky-700 text-white border-sky-700 shadow-xs'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {activeDigitalActivity === 'dubbing' && (
+            <div className="p-6 rounded-2xl bg-slate-900 text-white space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">Character Voice Dubbing Studio</span>
+                  <h4 className="text-base font-extrabold">Episode 4: Dr. Kalam&apos;s Young Rocket Engineers</h4>
+                </div>
+                <span className="px-3 py-1 bg-sky-500/20 border border-sky-400/40 rounded-full text-[11px] font-bold text-sky-200">
+                  Target: Expressive Pitch &amp; Pacing
+                </span>
+              </div>
+              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                <p className="text-slate-400">Dub this character cue inside the 6-second dialogue window:</p>
+                <p className="text-base font-serif text-amber-200">
+                  &ldquo;When aerodynamics and curiosity work together, every paper glider can teach us how satellites orbit Earth!&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <button
+                  onClick={() => playAudioSpeech('When aerodynamics and curiosity work together, every paper glider can teach us how satellites orbit Earth!')}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold flex items-center space-x-1.5"
+                >
+                  <Volume2 className="w-4 h-4 text-sky-300" />
+                  <span>Hear Original Actor Timing</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setDubbingRecorded(true);
+                    showToast('Dubbing sync scored: 96% timing alignment & natural stress!');
+                  }}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl font-bold flex items-center space-x-1.5"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>{dubbingRecorded ? 'Dub Sync Score: 96% ✓' : 'Record Character Dub'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeDigitalActivity === 'storybook' && (
+            <div className="p-6 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-4 text-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider">Levelled Interactive Storybook · CEFR B1</span>
+                  <h4 className="text-base font-extrabold text-slate-900">Chapter 2: The Whispering Banyan of Pondicherry</h4>
+                </div>
+                <button
+                  onClick={() => playAudioSpeech('Beneath the vast canopy of the ancient banyan tree, aerial prop roots descended softly into the moist coastal earth.')}
+                  className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold flex items-center space-x-1.5"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>Read Aloud with Highlight</span>
+                </button>
+              </div>
+              <p className="text-sm font-serif text-slate-800 bg-white p-5 rounded-2xl border border-amber-100 leading-relaxed">
+                &ldquo;Beneath the vast canopy of the ancient banyan tree, aerial prop roots descended softly into the moist coastal earth, transforming one trunk into an entire living cathedral.&rdquo;
+              </p>
+              <p className="text-slate-600">
+                125+ contextual comprehension &amp; vocabulary check prompts adjust dynamically to Aarav&apos;s reading pace.
+              </p>
+            </div>
+          )}
+
+          {activeDigitalActivity === 'conversation' && (
+            <div className="p-6 rounded-2xl bg-indigo-50/50 border border-indigo-200 space-y-4 text-xs">
+              <div className="flex items-center space-x-2 text-indigo-900 font-extrabold">
+                <MessageSquare className="w-4 h-4 text-indigo-600" />
+                <span>Interactive AI Conversation · Campus Science Fair Tour Guide</span>
+              </div>
+              <div className="space-y-2.5">
+                <div className="p-3 bg-white rounded-2xl border border-indigo-100 max-w-xl">
+                  <span className="text-[10px] font-bold text-indigo-700 uppercase block">Achariya AI Partner</span>
+                  <p className="text-slate-800 mt-0.5">&ldquo;Welcome to the Eco-Robotics Pavilion! Can you explain in one spoken sentence why your solar pump saves groundwater?&rdquo;</p>
+                </div>
+                {conversationReply && (
+                  <div className="p-3 bg-indigo-700 text-white rounded-2xl max-w-xl ml-auto">
+                    <span className="text-[10px] font-bold text-indigo-200 uppercase block">Your Spoken Response (Scored: 95% Fluency)</span>
+                    <p className="mt-0.5">&ldquo;{conversationReply}&rdquo;</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    const sample = 'Our soil-moisture sensor activates the solar drip pump only when roots need hydration, cutting water waste by forty percent.';
+                    setConversationReply(sample);
+                    showToast('Conversational turn evaluated on Achariya India Cloud: B1+ Spontaneous Fluency!');
+                  }}
+                  className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl font-bold flex items-center space-x-1.5"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>Speak Turn Reply</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

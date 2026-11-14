@@ -157,6 +157,8 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
   const [existingExamCode, setExistingExamCode] = useState('exam:16:1616:1783619017070');
   const [bringOutcomesToo, setBringOutcomesToo] = useState(true);
   const [bookBackRatio, setBookBackRatio] = useState(0);
+  const [parallelSetsCount, setParallelSetsCount] = useState<1 | 2 | 3>(3);
+  const [activePreviewSet, setActivePreviewSet] = useState<'SET_A' | 'SET_B' | 'SET_C'>('SET_A');
 
   // Sections configuration
   const [sections, setSections] = useState<ExamSectionConfig[]>([
@@ -426,6 +428,8 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
       subjectId: catalog.subjectId,
       selectedOutcomesCount,
       bookBackRatio,
+      parallelSetsCount,
+      parallelSetLabels: parallelSetsCount === 1 ? ['SET A'] : parallelSetsCount === 2 ? ['SET A', 'SET B'] : ['SET A', 'SET B', 'SET C'],
       totalQuestions: grandTotalQuestions,
       totalMarks: grandTotalMarks,
       sections: sections.map(sec => ({
@@ -832,6 +836,41 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                   >
                     Use blueprint
                   </button>
+                </div>
+              </div>
+
+              {/* Parallel Paper Sets & CBSE Competency Mastery Bands */}
+              <div className="p-4 bg-purple-50/60 rounded-2xl border border-purple-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-extrabold text-purple-950">Instant Parallel Paper Sets</span>
+                    <span className="text-[10px] bg-purple-700 text-white font-bold px-2 py-0.5 rounded-full">
+                      Isomorphic LO &amp; Bloom&apos;s Lock
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-purple-800">
+                    Generates parallel seats testing the exact same Learning Outcomes &amp; Bloom&apos;s Taxonomy difficulty weights; tags learners as Beginner / Progressing / Proficient.
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-1.5 shrink-0">
+                  {([1, 2, 3] as const).map(cnt => (
+                    <button
+                      key={cnt}
+                      type="button"
+                      onClick={() => {
+                        setParallelSetsCount(cnt);
+                        showToast(`Parallel Set generator set to ${cnt} ${cnt === 1 ? 'paper' : 'isomorphic sets'}.`);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                        parallelSetsCount === cnt
+                          ? 'bg-purple-700 text-white border-purple-700 shadow-xs'
+                          : 'bg-white text-purple-900 border-purple-200 hover:bg-purple-100'
+                      }`}
+                    >
+                      {cnt === 1 ? '1 Set' : cnt === 2 ? '2 Sets (A, B)' : '3 Sets (A, B, C)'}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1320,10 +1359,43 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               </div>
             </div>
 
-            <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl text-xs space-y-1">
-              <span className="font-bold text-purple-900">Phase B Batch PDF Ready:</span>
+            <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl text-xs space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-bold text-purple-900">
+                  {generatedExamModal.parallelSetsCount || 3} Parallel Isomorphic Paper Sets Compiled:
+                </span>
+                <div className="flex items-center space-x-1">
+                  {(['SET_A', 'SET_B', 'SET_C'] as const)
+                    .slice(0, generatedExamModal.parallelSetsCount || 3)
+                    .map(setKey => (
+                      <button
+                        key={setKey}
+                        type="button"
+                        onClick={() => setActivePreviewSet(setKey)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold border transition-colors ${
+                          activePreviewSet === setKey
+                            ? 'bg-purple-700 text-white border-purple-700'
+                            : 'bg-white text-purple-800 border-purple-200'
+                        }`}
+                      >
+                        {setKey.replace('_', ' ')}
+                      </button>
+                    ))}
+                </div>
+              </div>
+              <div className="p-2.5 bg-white rounded-xl border border-purple-100 text-[11px] text-slate-700 space-y-1">
+                <div className="flex items-center justify-between font-bold text-purple-900">
+                  <span>Active Preview: {activePreviewSet.replace('_', ' ')} (Same LO &amp; Bloom&apos;s Weight)</span>
+                  <span className="text-emerald-700">Beginner / Progressing / Proficient Calibrated</span>
+                </div>
+                <p>
+                  {activePreviewSet === 'SET_A' && 'Variant A — Base numerical values (e.g. 47,825 place value; 40 km in 45 min), standard item order.'}
+                  {activePreviewSet === 'SET_B' && 'Variant B — Isomorphic alternate numbers (e.g. 64,915 place value; 48 km in 40 min) with rotated distractors.'}
+                  {activePreviewSet === 'SET_C' && 'Variant C — Parallel contextual prompt (e.g. 82,340 place value; 54 km in 45 min) testing identical Bloom L2/L3 skill.'}
+                </p>
+              </div>
               <p className="text-purple-800">
-                You can now assign this exam to Grade 5A scholars to compile personalized booklets with 4-corner 2D QR positioning anchors and Section A bubble OMR grid.
+                Phase B Batch PDF embeds 4-corner 2D QR optical anchors + same-day remedial &amp; parent outcome insights upon scanning.
               </p>
             </div>
 
