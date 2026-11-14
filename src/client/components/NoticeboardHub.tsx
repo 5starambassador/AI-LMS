@@ -16,6 +16,7 @@ export function NoticeboardHub() {
   const [form, setForm] = useState({ title: '', imageUrl: '', targetRole: 'ALL', clickUrl: '', priority: '0' });
   const [submitting, setSubmitting] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(true);
+  const [actionError, setActionError] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -29,34 +30,57 @@ export function NoticeboardHub() {
   const submit = async () => {
     if (!form.title) return;
     setSubmitting(true);
-    const res = await apiPost('/api/noticeboard', {
-      title: form.title,
-      imageUrl: form.imageUrl || undefined,
-      targetRole: form.targetRole,
-      clickUrl: form.clickUrl || undefined,
-      priority: parseInt(form.priority) || 0,
-    });
-    if (res.success) {
-      setBanners(prev => [res.banner, ...prev]);
-      setForm({ title: '', imageUrl: '', targetRole: 'ALL', clickUrl: '', priority: '0' });
-      setShowForm(false);
+    setActionError('');
+    try {
+      const res = await apiPost('/api/noticeboard', {
+        title: form.title,
+        imageUrl: form.imageUrl || undefined,
+        targetRole: form.targetRole,
+        clickUrl: form.clickUrl || undefined,
+        priority: parseInt(form.priority) || 0,
+      });
+      if (res.success) {
+        setBanners(prev => [res.banner, ...prev]);
+        setForm({ title: '', imageUrl: '', targetRole: 'ALL', clickUrl: '', priority: '0' });
+        setShowForm(false);
+      } else {
+        setActionError('Could not publish notice. Check your permissions.');
+      }
+    } catch {
+      setActionError('Failed to save notice. Please check your connection and try again.');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const toggle = async (id: string) => {
-    const token = localStorage.getItem('achariya_token');
-    const res = await fetch(`/api/noticeboard/${id}/toggle`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.json());
-    if (res.success) setBanners(prev => prev.map(b => b.id === id ? res.banner : b));
+    setActionError('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const res = await fetch(`/api/noticeboard/${id}/toggle`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(r => r.json());
+      if (res.success) setBanners(prev => prev.map(b => b.id === id ? res.banner : b));
+      else setActionError('Could not update notice visibility.');
+    } catch {
+      setActionError('Network error while updating notice status.');
+    }
   };
 
   const remove = async (id: string) => {
-    const token = localStorage.getItem('achariya_token');
-    await fetch(`/api/noticeboard/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    setBanners(prev => prev.filter(b => b.id !== id));
+    setActionError('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const r = await fetch(`/api/noticeboard/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) {
+        setActionError('Could not delete notice from server.');
+        return;
+      }
+      setBanners(prev => prev.filter(b => b.id !== id));
+    } catch {
+      setActionError('Network error while deleting notice.');
+    }
   };
 
   const roleColor: Record<string, string> = {
@@ -87,6 +111,13 @@ export function NoticeboardHub() {
           </button>
         </div>
       </div>
+
+      {actionError && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-rose-700 text-xs font-semibold flex items-center justify-between">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError('')} className="text-rose-500 hover:text-rose-800 font-bold">✕</button>
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white rounded-2xl border border-teal-200 p-6 shadow-sm">

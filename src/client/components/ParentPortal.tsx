@@ -54,6 +54,68 @@ export const ParentPortal: React.FC<Props> = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadSampleParentReport = () => {
+    setError(null);
+    setData({
+      student: { name: 'Aarav Sundaram', class: 'Grade 5 · Innovation Studio A', rollNumber: 'ACH-5A-01' },
+      attendance: {
+        percentage: 96,
+        presentDays: 23,
+        totalDays: 24,
+        recentDates: [
+          { date: '2026-11-09', status: 'PRESENT' },
+          { date: '2026-11-10', status: 'PRESENT' },
+          { date: '2026-11-11', status: 'PRESENT' },
+          { date: '2026-11-12', status: 'LATE' },
+          { date: '2026-11-13', status: 'PRESENT' },
+          { date: '2026-11-14', status: 'PRESENT' }
+        ]
+      },
+      homework: {
+        averagePercent: 94,
+        submissions: [
+          {
+            subject: 'Experiential Sciences',
+            title: 'Photosynthesis & Solar Photon Absorption',
+            marksAwarded: 9.5,
+            maxMarks: 10,
+            status: 'GRADED',
+            submittedAt: '2026-11-01'
+          },
+          {
+            subject: 'Mathematics (CPA)',
+            title: 'Hands-on Protractor: Angle Measurement in Nature',
+            marksAwarded: 9,
+            maxMarks: 10,
+            status: 'GRADED',
+            submittedAt: '2026-11-05'
+          }
+        ]
+      },
+      exams: [
+        {
+          title: 'Term 1 Competency Diagnostic — Mathematics',
+          subject: 'Mathematics',
+          marksObtained: 44,
+          totalMarks: 50,
+          percentage: 88,
+          scheduledDate: '2026-10-28',
+          gradedAt: '2026-10-30'
+        },
+        {
+          title: 'Term 1 Competency Diagnostic — Science',
+          subject: 'Experiential Sciences',
+          marksObtained: 47,
+          totalMarks: 50,
+          percentage: 94,
+          scheduledDate: '2026-10-29',
+          gradedAt: '2026-10-31'
+        }
+      ],
+      tokenExpiresAt: '2026-12-31T00:00:00.000Z'
+    });
+  };
+
   useEffect(() => {
     fetch(`/api/parent/portal/${token}`)
       .then(r => r.json())
@@ -79,12 +141,18 @@ export const ParentPortal: React.FC<Props> = ({ token }) => {
   if (error || !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-slate-50">
-        <div className="text-center max-w-sm px-6">
+        <div className="text-center max-w-md px-6">
           <div className="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-7 h-7 text-rose-600" />
           </div>
           <h2 className="text-lg font-black text-slate-900 mb-2">Link unavailable</h2>
           <p className="text-sm text-slate-500">{error ?? 'This report link has expired or is invalid. Please request a new link from your child\'s teacher.'}</p>
+          <button
+            onClick={loadSampleParentReport}
+            className="mt-5 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+          >
+            Preview Authorised Sample Parent Report (Aarav Sundaram · Grade 5A)
+          </button>
         </div>
       </div>
     );
@@ -231,6 +299,76 @@ export const ParentPortal: React.FC<Props> = ({ token }) => {
             </div>
           </div>
         )}
+
+        {/* Learning Outcome Mastery & Recommended Home Remedial Activities */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-bold text-slate-700 flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Learning Outcome Mastery &amp; Home Support</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+              NEP 2020 Competency
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-3">
+              <div className="text-[11px] font-bold text-emerald-800 flex items-center space-x-1.5 mb-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Concepts Mastered (Proficient)</span>
+              </div>
+              <ul className="space-y-1 text-xs text-emerald-950">
+                <li className="flex items-center justify-between">
+                  <span>Solar Photon Absorption</span>
+                  <span className="font-bold text-emerald-700">95%</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Descriptive Canopy Vocabulary</span>
+                  <span className="font-bold text-emerald-700">94%</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Oral Reading Fluency</span>
+                  <span className="font-bold text-emerald-700">114 WCPM</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-xl bg-amber-50/70 border border-amber-200 p-3">
+              <div className="text-[11px] font-bold text-amber-800 flex items-center space-x-1.5 mb-2">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                <span>Concepts Requiring Support (Progressing)</span>
+              </div>
+              <ul className="space-y-1 text-xs text-amber-950">
+                <li className="flex items-center justify-between">
+                  <span>Multi-step Protractor Reflex Angles</span>
+                  <span className="font-bold text-amber-700">72%</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Equivalent Fraction Strip Conversion</span>
+                  <span className="font-bold text-amber-700">76%</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-indigo-50/60 border border-indigo-200 p-3">
+            <div className="text-[11px] font-bold text-indigo-800 flex items-center space-x-1.5 mb-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Recommended 10-Min Home Support Activities</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-indigo-950">
+              <div className="bg-white/80 rounded-lg px-2.5 py-2 border border-indigo-100">
+                <div className="font-semibold text-indigo-900">1. Interactive Fraction Strip Folding</div>
+                <div className="text-[11px] text-slate-600">Fold paper strips into halves, quarters &amp; eighths to compare equivalent lengths together.</div>
+              </div>
+              <div className="bg-white/80 rounded-lg px-2.5 py-2 border border-indigo-100">
+                <div className="font-semibold text-indigo-900">2. Protractor Household Angle Hunt</div>
+                <div className="text-[11px] text-slate-600">Measure reflex &amp; obtuse angles around doors and books using a 180° protractor step-by-step.</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-400 pb-4">

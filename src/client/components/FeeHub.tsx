@@ -35,6 +35,7 @@ export function FeeHub() {
   const [submitting, setSubmitting] = useState(false);
   const [marking, setMarking] = useState<string | null>(null);
   const [students, setStudents] = useState<{ id: string; name: string; roll: string }[]>([]);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -57,49 +58,76 @@ export function FeeHub() {
   useEffect(() => { load(); }, [filterStatus]);
 
   useEffect(() => {
-    apiGet('/api/reportcard/students').then(d => {
-      if (d.success) setStudents(d.students ?? []);
-    });
+    apiGet('/api/reportcard/students')
+      .then(d => {
+        if (d.success) setStudents(d.students ?? []);
+      })
+      .catch(() => {});
   }, []);
 
   const submit = async () => {
     if (!form.studentId || !form.amount || !form.dueDate) return;
     setSubmitting(true);
-    const res = await apiPost('/api/fees', {
-      studentId: form.studentId,
-      feeType: form.feeType,
-      amount: parseFloat(form.amount),
-      dueDate: form.dueDate,
-      remarks: form.remarks || undefined,
-    });
-    if (res.success) {
-      setView('list');
-      setForm({ studentId: '', feeType: 'TUITION', amount: '', dueDate: '', remarks: '' });
-      load();
+    setErrorMsg('');
+    try {
+      const res = await apiPost('/api/fees', {
+        studentId: form.studentId,
+        feeType: form.feeType,
+        amount: parseFloat(form.amount),
+        dueDate: form.dueDate,
+        remarks: form.remarks || undefined,
+      });
+      if (res.success) {
+        setView('list');
+        setForm({ studentId: '', feeType: 'TUITION', amount: '', dueDate: '', remarks: '' });
+        load();
+      } else {
+        setErrorMsg('Could not create fee record.');
+      }
+    } catch {
+      setErrorMsg('Failed to create fee record. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const markPaid = async (id: string) => {
     setMarking(id);
-    const token = localStorage.getItem('achariya_token');
-    const res = await fetch(`/api/fees/${id}/pay`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({}),
-    }).then(r => r.json());
-    if (res.success) {
-      setFees(prev => prev.map(f => f.id === id ? { ...f, status: 'PAID', paidAt: res.fee.paidAt } : f));
-      load();
+    setErrorMsg('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const res = await fetch(`/api/fees/${id}/pay`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({}),
+      }).then(r => r.json());
+      if (res.success) {
+        setFees(prev => prev.map(f => f.id === id ? { ...f, status: 'PAID', paidAt: res.fee.paidAt } : f));
+        load();
+      } else {
+        setErrorMsg('Could not update payment status.');
+      }
+    } catch {
+      setErrorMsg('Network error while recording fee payment.');
+    } finally {
+      setMarking(null);
     }
-    setMarking(null);
   };
 
   const remove = async (id: string) => {
-    const token = localStorage.getItem('achariya_token');
-    await fetch(`/api/fees/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    setFees(prev => prev.filter(f => f.id !== id));
-    load();
+    setErrorMsg('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const r = await fetch(`/api/fees/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) {
+        setErrorMsg('Could not remove fee record.');
+        return;
+      }
+      setFees(prev => prev.filter(f => f.id !== id));
+      load();
+    } catch {
+      setErrorMsg('Network error while deleting fee record.');
+    }
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -129,6 +157,13 @@ export function FeeHub() {
           {view === 'new' ? '← Back' : '+ Add Fee'}
         </button>
       </div>
+
+      {errorMsg && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-rose-700 text-xs font-semibold flex items-center justify-between">
+          <span>{errorMsg}</span>
+          <button onClick={() => setErrorMsg('')} className="text-rose-500 hover:text-rose-800 font-bold">✕</button>
+        </div>
+      )}
 
       {/* Summary cards */}
       {summary && (
@@ -233,12 +268,12 @@ export function FeeHub() {
                   </thead>
                   <tbody>
                     {fees.map(f => {
-                      const enr = f.student.enrollments[0];
+                      const enr = f.student?.enrollments?.[0];
                       return (
                         <tr key={f.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                           <td className="px-4 py-3">
-                            <div className="font-semibold text-slate-800">{f.student.fullName}</div>
-                            {enr && <div className="text-slate-400">{enr.class.name}/{enr.section.name} · {enr.rollNumber}</div>}
+                            <div className="font-semibold text-slate-800">{f.student?.fullName ?? 'Scholar'}</div>
+                            {enr && <div className="text-slate-400">{enr.class?.name}/{enr.section?.name} · {enr.rollNumber}</div>}
                           </td>
                           <td className="px-3 py-3 font-medium text-slate-700">{f.feeType}</td>
                           <td className="px-3 py-3 text-right font-bold text-slate-800">{fmt(parseFloat(f.amount))}</td>

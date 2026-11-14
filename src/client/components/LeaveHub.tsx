@@ -39,35 +39,60 @@ export function LeaveHub() {
   useEffect(load, [filterStatus]);
 
   const submit = async () => {
-    if (!form.reason || !form.startDate || !form.endDate) return;
+    if (!form.reason || !form.startDate || !form.endDate || form.endDate < form.startDate) return;
     setSubmitting(true);
-    const res = await apiPost('/api/leave', form);
-    if (res.success) {
-      setView('list');
-      setForm({ type: 'CASUAL', reason: '', startDate: '', endDate: '' });
-      load();
+    setLoadError('');
+    try {
+      const res = await apiPost('/api/leave', form);
+      if (res.success) {
+        setView('list');
+        setForm({ type: 'CASUAL', reason: '', startDate: '', endDate: '' });
+        load();
+      } else {
+        setLoadError('Failed to submit leave request.');
+      }
+    } catch {
+      setLoadError('Failed to submit leave request. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const approve = async (id: string, action: 'APPROVED' | 'REJECTED') => {
     setActing(id);
-    const token = localStorage.getItem('achariya_token');
-    const res = await fetch(`/api/leave/${id}/approve`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ action }),
-    }).then(r => r.json());
-    if (res.success) {
-      setLeaves(prev => prev.map(l => l.id === id ? res.leave : l));
+    setLoadError('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const res = await fetch(`/api/leave/${id}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action }),
+      }).then(r => r.json());
+      if (res.success) {
+        setLeaves(prev => prev.map(l => l.id === id ? res.leave : l));
+      } else {
+        setLoadError('Could not update leave decision.');
+      }
+    } catch {
+      setLoadError('Network error while updating leave request.');
+    } finally {
+      setActing(null);
     }
-    setActing(null);
   };
 
   const withdraw = async (id: string) => {
-    const token = localStorage.getItem('achariya_token');
-    await fetch(`/api/leave/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    setLeaves(prev => prev.filter(l => l.id !== id));
+    setLoadError('');
+    try {
+      const token = localStorage.getItem('achariya_token') ?? '';
+      const r = await fetch(`/api/leave/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) {
+        setLoadError('Could not withdraw leave request.');
+        return;
+      }
+      setLeaves(prev => prev.filter(l => l.id !== id));
+    } catch {
+      setLoadError('Network error while withdrawing request.');
+    }
   };
 
   const days = (s: string, e: string) => {
@@ -124,6 +149,11 @@ export function LeaveHub() {
                 rows={3} placeholder="Brief reason for leave…"
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none resize-none" />
             </div>
+            {form.startDate && form.endDate && form.endDate < form.startDate && (
+              <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 font-semibold">
+                End date cannot be earlier than start date.
+              </p>
+            )}
             {form.startDate && form.endDate && form.endDate >= form.startDate && (
               <p className="text-xs text-teal-700 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2 font-semibold">
                 Duration: {days(form.startDate, form.endDate)} day{days(form.startDate, form.endDate) > 1 ? 's' : ''}
@@ -131,7 +161,7 @@ export function LeaveHub() {
             )}
             <div className="flex gap-2 pt-1">
               <button onClick={() => setView('list')} className="flex-1 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-              <button onClick={submit} disabled={!form.reason || !form.startDate || !form.endDate || submitting}
+              <button onClick={submit} disabled={!form.reason || !form.startDate || !form.endDate || form.endDate < form.startDate || submitting}
                 className="flex-1 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 disabled:opacity-50">
                 {submitting ? 'Submitting…' : 'Submit Request'}
               </button>

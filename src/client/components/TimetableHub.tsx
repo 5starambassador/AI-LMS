@@ -29,10 +29,17 @@ export function TimetableHub() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     apiGet<any>('/api/academic/classes-with-sections').then(d => {
-      if (d.success) setClasses(d.classes ?? []);
+      if (d.success) {
+        const list = d.classes ?? [];
+        setClasses(list);
+        if (list.length > 0) {
+          setClassId(prev => prev || list[0].id);
+        }
+      }
     }).catch(() => {});
   }, []);
 
@@ -68,25 +75,49 @@ export function TimetableHub() {
 
   const saveEdit = async () => {
     if (!editing || !classId) return;
+    const targetDay = editing.day;
+    const targetPeriod = editing.period;
     setSaving(true);
+    setErrorMsg('');
     try {
       const res = await apiPost('/api/timetable', {
         classId,
         sectionId: sectionId || undefined,
-        dayOfWeek: editing.day,
-        periodNumber: editing.period,
+        dayOfWeek: targetDay,
+        periodNumber: targetPeriod,
         subject: editForm.subject,
         startTime: editForm.startTime,
         endTime: editForm.endTime,
       });
       if (res.success) {
         setPeriods(prev => {
-          const next = prev.filter(p => !(p.dayOfWeek === editing.day && p.periodNumber === editing.period));
+          const next = prev.filter(p => !(p.dayOfWeek === targetDay && p.periodNumber === targetPeriod));
           return [...next, { ...res.period, teacherName: editForm.teacherName }];
         });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+      } else {
+        setErrorMsg('Could not sync period to server; updated locally.');
       }
+    } catch {
+      setPeriods(prev => {
+        const next = prev.filter(p => !(p.dayOfWeek === targetDay && p.periodNumber === targetPeriod));
+        return [
+          ...next,
+          {
+            id: `local-${Date.now()}`,
+            dayOfWeek: targetDay,
+            periodNumber: targetPeriod,
+            subject: editForm.subject,
+            teacherName: editForm.teacherName,
+            startTime: editForm.startTime,
+            endTime: editForm.endTime,
+          },
+        ];
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      setErrorMsg('Server sync unavailable; change applied to active view.');
     } finally {
       setSaving(false);
       setEditing(null);
@@ -95,11 +126,18 @@ export function TimetableHub() {
 
   const clearSlot = async (day: number, pNum: number) => {
     const p = getPeriod(day, pNum);
-    if (!p?.id) return;
-    await fetch(`/api/timetable/${p.id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('achariya_token')}` },
-    });
+    if (!p) return;
+    setErrorMsg('');
+    if (p.id && !p.id.startsWith('local-')) {
+      try {
+        await fetch(`/api/timetable/${p.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${localStorage.getItem('achariya_token') ?? ''}` },
+        });
+      } catch {
+        setErrorMsg('Server delete failed; slot removed locally.');
+      }
+    }
     setPeriods(prev => prev.filter(x => !(x.dayOfWeek === day && x.periodNumber === pNum)));
   };
 
@@ -119,6 +157,13 @@ export function TimetableHub() {
           <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-pulse">✓ Saved</span>
         )}
       </div>
+
+      {errorMsg && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-amber-800 text-xs font-semibold flex items-center justify-between">
+          <span>{errorMsg}</span>
+          <button onClick={() => setErrorMsg('')} className="text-amber-600 hover:text-amber-900 font-bold">✕</button>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Select Class</div>

@@ -14,6 +14,13 @@ export function QrStudentPicker({ token, onLoggedIn }: Props) {
   const [claiming, setClaiming] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
 
   useEffect(() => {
     fetch(`/api/auth/qr/${token}/students`)
