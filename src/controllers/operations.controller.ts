@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { resolveCampusId } from '../middleware/auth.js';
 
 export class OperationsController {
   // ==========================================
@@ -27,6 +28,12 @@ export class OperationsController {
       return reply.status(400).send({ success: false, error: 'Missing mandatory roll call fields.' });
     }
 
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { campusId: true } });
+    const campusId = user?.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
+    if (!campusId) {
+      return reply.status(400).send({ success: false, error: 'Unable to resolve campus for roll call.' });
+    }
+
     const attendanceDate = new Date(date);
     attendanceDate.setHours(0, 0, 0, 0);
 
@@ -45,7 +52,7 @@ export class OperationsController {
         },
         create: {
           date: attendanceDate,
-          campusId: user!.campusId!,
+          campusId,
           classId,
           sectionId,
           studentId: r.studentId,
@@ -193,6 +200,12 @@ export class OperationsController {
       return reply.status(400).send({ success: false, error: 'Missing mandatory batch migration targets.' });
     }
 
+    const cls = await prisma.class.findUnique({ where: { id: targetClassId }, select: { campusId: true } });
+    const campusId = user?.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
+    if (!campusId) {
+      return reply.status(400).send({ success: false, error: 'Unable to resolve campus for batch migration.' });
+    }
+
     const migrated = [];
     for (let i = 0; i < studentIds.length; i++) {
       const studentId = studentIds[i];
@@ -208,7 +221,7 @@ export class OperationsController {
       const newEnrollment = await prisma.studentEnrollment.create({
         data: {
           studentId,
-          campusId: user!.campusId!,
+          campusId,
           batchId: targetBatchId,
           classId: targetClassId,
           sectionId: targetSectionId,

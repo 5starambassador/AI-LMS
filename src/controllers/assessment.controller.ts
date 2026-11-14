@@ -216,7 +216,9 @@ export class AssessmentController {
       return reply.status(404).send({ success: false, error: 'Submission not found.' });
     }
 
-    const isAdmin = user.roleName === 'Super Admin' || user.roleName === 'Principal' || user.roleName === 'Coordinator';
+    const isAdmin =
+      ['Super Admin', 'Principal', 'Coordinator', 'Manager', 'School Admin'].includes(user.roleName ?? '') ||
+      ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'].includes(user.roleKey);
     if (!isAdmin && submission.homework.teacherId !== user.id) {
       return reply.status(403).send({
         success: false,

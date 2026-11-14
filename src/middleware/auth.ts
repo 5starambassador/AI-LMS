@@ -90,3 +90,40 @@ export function enforceClientDomain(portal: 'STAFF' | 'STUDENT') {
     }
   };
 }
+
+export function isUmbrellaRole(user?: AuthenticatedUserPayload | null): boolean {
+  if (!user) return false;
+  return (
+    user.roleKey === 'role-ach-superadmin' ||
+    user.roleKey === 'role-ach-manager' ||
+    user.roleName === 'Super Admin' ||
+    user.roleName === 'Manager'
+  );
+}
+
+/**
+ * Resolves an effective campusId for the request.
+ * Campus-bound users always use their own `user.campusId`.
+ * Umbrella roles (`GLOBAL` Super Admin / `REGIONAL` Manager with `campusId: null`)
+ * can pass an explicit `requestedCampusId` or fall back to the primary active campus.
+ */
+export async function resolveCampusId(
+  user?: AuthenticatedUserPayload | null,
+  requestedCampusId?: string | null
+): Promise<string | null> {
+  if (user && isUmbrellaRole(user) && requestedCampusId) {
+    return requestedCampusId;
+  }
+  if (user?.campusId) {
+    return user.campusId;
+  }
+  if (user && isUmbrellaRole(user)) {
+    const primaryCampus = await prisma.campus.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true }
+    });
+    return primaryCampus?.id ?? null;
+  }
+  return null;
+}

@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { isUmbrellaRole, resolveCampusId } from '../middleware/auth.js';
 
 export class TimetableController {
   /** GET /api/timetable?classId=&sectionId= */
@@ -40,7 +41,8 @@ export class TimetableController {
       return reply.status(400).send({ success: false, error: 'classId, dayOfWeek, periodNumber, subject, startTime, endTime are required.' });
     }
 
-    const campusId = user.campusId;
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { campusId: true } });
+    const campusId = user.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
     if (!campusId) return reply.status(400).send({ success: false, error: 'User not assigned to a campus.' });
 
     const period = await prisma.timetablePeriod.upsert({
@@ -65,7 +67,7 @@ export class TimetableController {
     const user = request.currentUser!;
 
     const existing = await prisma.timetablePeriod.findUnique({ where: { id } });
-    if (!existing || existing.campusId !== user.campusId) {
+    if (!existing || (!isUmbrellaRole(user) && existing.campusId !== user.campusId)) {
       return reply.status(404).send({ success: false, error: 'Period not found.' });
     }
 
@@ -89,7 +91,8 @@ export class TimetableController {
       }>;
     };
 
-    const campusId = user.campusId;
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { campusId: true } });
+    const campusId = user.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
     if (!campusId) return reply.status(400).send({ success: false, error: 'User not assigned to a campus.' });
 
     // Delete existing periods for this class/section

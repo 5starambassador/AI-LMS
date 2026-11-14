@@ -58,7 +58,7 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal', 'role-ach-curriculum'];
+const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'];
 
 interface NavGroup {
   label: string;
@@ -199,9 +199,16 @@ export const Header: React.FC<HeaderProps> = ({
   const displayInitial = displayName !== '—' ? displayName[0].toUpperCase() : 'U';
   const displaySubtitle =
     currentUser?.roleName
-      ? `${currentUser.roleName} · ${currentUser?.campus?.name || 'Achariya'}`
+      ? `${currentUser.roleName} · ${
+          currentUser?.campus?.name ||
+          (currentUser.scope === 'GLOBAL'
+            ? 'Trust Umbrella (Global)'
+            : currentUser.scope === 'REGIONAL'
+            ? 'Regional Umbrella'
+            : 'Achariya')
+        }`
       : currentPortal === 'SUPERADMIN'
-      ? 'Super Admin · Central Campus'
+      ? 'Super Admin · Trust Umbrella (Global)'
       : currentPortal === 'STUDENT'
       ? 'Scholar · Grade 5A'
       : `Staff · ${currentUser?.campus?.name || 'Achariya'}`;
@@ -375,12 +382,26 @@ export const Header: React.FC<HeaderProps> = ({
               {displayInitial}
             </div>
             <div className="hidden md:block text-left min-w-0">
-              <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[140px]">
-                {displayName}
+              <div className="flex items-center gap-1.5">
+                <div className="text-xs font-bold leading-tight text-slate-900 truncate max-w-[140px]">
+                  {displayName}
+                </div>
+                {currentUser?.scope && (
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 flex-shrink-0">
+                    {currentUser.scope}
+                  </span>
+                )}
               </div>
               <div
-                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[155px]"
-                title={currentUser?.campus?.name || 'Achariya World Class Academy'}
+                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[195px]"
+                title={
+                  currentUser?.campus?.name ||
+                  (currentUser?.scope === 'GLOBAL'
+                    ? 'Trust Umbrella (All Campuses)'
+                    : currentUser?.scope === 'REGIONAL'
+                    ? 'Regional Umbrella'
+                    : 'Achariya World Class Academy')
+                }
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
                 <span className="truncate">{displaySubtitle}</span>

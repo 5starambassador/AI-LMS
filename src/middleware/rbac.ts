@@ -19,7 +19,11 @@ export function requirePermission(permissionCode: string) {
       return void reply.status(401).send({ success: false, error: 'Unauthorized.' });
     }
 
-    if (user.roleKey === 'key0000000000001' || user.roleName === 'Super Admin') {
+    if (
+      user.roleKey === 'role-ach-superadmin' ||
+      user.roleKey === 'key0000000000001' ||
+      user.roleName === 'Super Admin'
+    ) {
       return;
     }
 

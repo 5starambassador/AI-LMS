@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { ENV } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, resolveCampusId } from '../middleware/auth.js';
 import { checkRateLimit } from '../lib/rate-limit.js';
 
 const QR_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -175,10 +175,12 @@ export async function authRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/api/academic/classes-with-sections', { preHandler: [authenticateToken] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.currentUser!;
-    if (!user.campusId) return reply.send({ success: true, classes: [] });
+    const queryCampusId = (request.query as { campusId?: string })?.campusId;
+    const targetCampusId = await resolveCampusId(user, queryCampusId);
+    if (!targetCampusId) return reply.send({ success: true, classes: [] });
 
     const classes = await prisma.class.findMany({
-      where: { campusId: user.campusId },
+      where: { campusId: targetCampusId },
       include: { sections: { select: { id: true, name: true }, orderBy: { name: 'asc' } } },
       orderBy: { orderIndex: 'asc' }
     });
@@ -204,7 +206,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ success: false, error: 'classId is required.' });
     }
 
-    if (!user.campusId) {
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { campusId: true } });
+    const targetCampusId = user.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
+    if (!targetCampusId) {
       return reply.status(400).send({ success: false, error: 'User is not assigned to a campus.' });
     }
 
@@ -216,7 +220,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     const expiresAt = new Date(Date.now() + QR_TTL_MS);
     const session = await prisma.qrSession.create({
       data: {
-        campusId: user.campusId,
+        campusId: targetCampusId,
         classId,
         sectionId: sectionId ?? null,
         createdById: user.sub,

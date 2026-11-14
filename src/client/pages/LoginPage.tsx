@@ -117,6 +117,48 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
             ? 'Students: use Achariya VoiceLab app on mobile for best experience.'
             : 'Educators: contact your campus administrator if you need access.'}
         </p>
+
+        {/* Umbrella & Campus Role Quick-Fill Matrix */}
+        <div className="mt-5 bg-white/90 rounded-2xl border border-slate-200 p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Umbrella &amp; Campus Role Switcher
+            </span>
+            <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">
+              5 Scopes · Click to Fill
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { role: 'Super Admin', scope: 'GLOBAL', badge: 'bg-indigo-100 text-indigo-700', email: 'superadmin@achariya.in', targetPortal: 'STAFF' as const },
+              { role: 'Manager', scope: 'REGIONAL', badge: 'bg-violet-100 text-violet-700', email: 'manager@achariya.in', targetPortal: 'STAFF' as const },
+              { role: 'Principal', scope: 'CAMPUS', badge: 'bg-teal-100 text-teal-700', email: 'admin@achariya.in', targetPortal: 'STAFF' as const },
+              { role: 'Curriculum Lead', scope: 'CAMPUS', badge: 'bg-sky-100 text-sky-700', email: 'uploader@achariya.in', targetPortal: 'STAFF' as const },
+              { role: 'Teacher', scope: 'ASSIGNED', badge: 'bg-amber-100 text-amber-700', email: 'teacher@achariya.in', targetPortal: 'STAFF' as const },
+              { role: 'Scholar', scope: 'OWN', badge: 'bg-emerald-100 text-emerald-700', email: 'student@achariya.in', targetPortal: 'STUDENT' as const },
+            ].map(item => (
+              <button
+                key={item.email}
+                type="button"
+                onClick={() => {
+                  setPortal(item.targetPortal);
+                  setEmail(item.email);
+                  setPassword('Pass@1234');
+                  setError(null);
+                }}
+                className="flex items-center justify-between px-2.5 py-2 rounded-xl border border-slate-200 hover:border-teal-400 hover:bg-teal-50/40 text-left transition-colors"
+              >
+                <div className="min-w-0 pr-1">
+                  <div className="text-xs font-bold text-slate-800 truncate">{item.role}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{item.email}</div>
+                </div>
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${item.badge}`}>
+                  {item.scope}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

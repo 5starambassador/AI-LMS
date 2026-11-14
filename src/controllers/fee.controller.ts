@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { isUmbrellaRole, resolveCampusId } from '../middleware/auth.js';
 
 export class FeeController {
   /** GET /api/fees?status=&studentId= — list fee records */
@@ -68,7 +69,8 @@ export class FeeController {
       return reply.status(400).send({ success: false, error: 'studentId, feeType, amount, dueDate are required.' });
     }
 
-    const campusId = user.campusId;
+    const student = await prisma.user.findUnique({ where: { id: studentId }, select: { campusId: true } });
+    const campusId = user.campusId ?? student?.campusId ?? (await resolveCampusId(user));
     if (!campusId) return reply.status(400).send({ success: false, error: 'User not assigned to a campus.' });
 
     const fee = await prisma.feePayment.create({
@@ -98,7 +100,8 @@ export class FeeController {
       remarks?: string;
     };
 
-    const campusId = user.campusId;
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { campusId: true } });
+    const campusId = user.campusId ?? cls?.campusId ?? (await resolveCampusId(user));
     if (!campusId) return reply.status(400).send({ success: false, error: 'User not assigned to a campus.' });
 
     const enrollments = await prisma.studentEnrollment.findMany({
@@ -133,7 +136,7 @@ export class FeeController {
     const { reference } = request.body as { reference?: string };
 
     const existing = await prisma.feePayment.findUnique({ where: { id } });
-    if (!existing || existing.campusId !== user.campusId) {
+    if (!existing || (!isUmbrellaRole(user) && existing.campusId !== user.campusId)) {
       return reply.status(404).send({ success: false, error: 'Fee record not found.' });
     }
 
@@ -155,7 +158,7 @@ export class FeeController {
     const user = request.currentUser!;
 
     const existing = await prisma.feePayment.findUnique({ where: { id } });
-    if (!existing || existing.campusId !== user.campusId) {
+    if (!existing || (!isUmbrellaRole(user) && existing.campusId !== user.campusId)) {
       return reply.status(404).send({ success: false, error: 'Fee record not found.' });
     }
 

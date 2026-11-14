@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
+import { isUmbrellaRole, resolveCampusId } from '../middleware/auth.js';
 
 export class LeaveController {
   /** POST /api/leave — submit leave request */
@@ -16,7 +17,7 @@ export class LeaveController {
       return reply.status(400).send({ success: false, error: 'reason, startDate, endDate are required.' });
     }
 
-    const campusId = user.campusId;
+    const campusId = await resolveCampusId(user);
     if (!campusId) return reply.status(400).send({ success: false, error: 'User not assigned to a campus.' });
 
     const leave = await prisma.leaveRequest.create({
@@ -38,9 +39,12 @@ export class LeaveController {
     const user = request.currentUser!;
     const { status, userId } = request.query as { status?: string; userId?: string };
 
-    const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].some(r =>
-      user.roleName?.toUpperCase().includes(r)
-    );
+    const isAdmin =
+      isUmbrellaRole(user) ||
+      ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'].includes(user.roleKey) ||
+      ['ADMIN', 'SUPER_ADMIN', 'SUPER ADMIN', 'MANAGER'].some(r =>
+        user.roleName?.toUpperCase().includes(r)
+      );
 
     const leaves = await prisma.leaveRequest.findMany({
       where: {
@@ -67,7 +71,7 @@ export class LeaveController {
     const { action, remarks } = request.body as { action: 'APPROVED' | 'REJECTED'; remarks?: string };
 
     const leave = await prisma.leaveRequest.findUnique({ where: { id } });
-    if (!leave || leave.campusId !== user.campusId) {
+    if (!leave || (!isUmbrellaRole(user) && leave.campusId !== user.campusId)) {
       return reply.status(404).send({ success: false, error: 'Leave request not found.' });
     }
     if (leave.status !== 'PENDING') {

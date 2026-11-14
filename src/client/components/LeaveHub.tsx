@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiGet, apiPost } from '../lib/api';
+import { useAuthContext } from '../context/AuthContext';
 
 interface Leave {
   id: string; type: string; reason: string; startDate: string; endDate: string;
@@ -17,6 +18,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function LeaveHub() {
+  const { user: currentUser } = useAuthContext();
+  const canApprove = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'].includes(currentUser?.roleKey ?? '');
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'new'>('list');
@@ -215,12 +218,18 @@ export function LeaveHub() {
                     <div className="flex items-center gap-2 shrink-0">
                       {l.status === 'PENDING' && (
                         <>
-                          <button onClick={() => approve(l.id, 'APPROVED')} disabled={acting === l.id}
-                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50">Approve</button>
-                          <button onClick={() => approve(l.id, 'REJECTED')} disabled={acting === l.id}
-                            className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold hover:bg-rose-200 disabled:opacity-50">Reject</button>
-                          <button onClick={() => withdraw(l.id)}
-                            className="text-xs text-slate-400 hover:text-rose-500 font-bold px-1">✕</button>
+                          {canApprove && (
+                            <>
+                              <button onClick={() => approve(l.id, 'APPROVED')} disabled={acting === l.id}
+                                className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50">Approve</button>
+                              <button onClick={() => approve(l.id, 'REJECTED')} disabled={acting === l.id}
+                                className="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold hover:bg-rose-200 disabled:opacity-50">Reject</button>
+                            </>
+                          )}
+                          {(l.user?.id === currentUser?.id || !canApprove) && (
+                            <button onClick={() => withdraw(l.id)}
+                              className="text-xs text-slate-400 hover:text-rose-500 font-bold px-1">✕</button>
+                          )}
                         </>
                       )}
                     </div>

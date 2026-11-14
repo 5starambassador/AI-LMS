@@ -110,7 +110,7 @@ function AppShell() {
   useEffect(() => {
     if (!currentUser) return;
     const { roleKey } = currentUser;
-    const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal', 'role-ach-curriculum'];
+    const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'];
     const SUPERADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager'];
 
     if (roleKey === 'role-ach-student' && currentPortal !== 'STUDENT') {
@@ -318,7 +318,13 @@ function AppShell() {
           <div className="flex items-center space-x-2">
             <span className="font-bold text-slate-800">Achariya AI ONE · Enterprise Learning Ecosystem</span>
             <span>·</span>
-            <span>Puducherry Central Campus</span>
+            <span>
+              {currentUser.scope === 'GLOBAL'
+                ? 'Trust Umbrella HQ · All Campuses'
+                : currentUser.scope === 'REGIONAL'
+                ? 'Regional Cluster Umbrella · Multi-Campus'
+                : currentUser.campus?.name || 'Achariya World Class Academy'}
+            </span>
           </div>
 
           <div className="flex items-center space-x-3">
