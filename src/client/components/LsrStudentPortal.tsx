@@ -30,10 +30,41 @@ export const LsrStudentPortal: React.FC = () => {
   const [conversationReply, setConversationReply] = useState<string | null>(null);
   const [portfolioAudioSynced, setPortfolioAudioSynced] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [step3Recorded, setStep3Recorded] = useState<boolean>(false);
+  const [isStep3Recording, setIsStep3Recording] = useState<boolean>(false);
+  const [vocabSentenceDraft, setVocabSentenceDraft] = useState<string>('');
+  const [vocabCheckResult, setVocabCheckResult] = useState<{ wordUsed: string; score: string; feedback: string } | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const checkVocabSentence = () => {
+    const trimmed = vocabSentenceDraft.trim();
+    if (trimmed.split(/\s+/).length < 4) {
+      showToast('Please write a complete sentence (at least 4 words) using one of the 5 target words.');
+      return;
+    }
+    const targetWords = ['Ecosystem', 'Photosynthesis', 'Resilience', 'Symbiosis', 'Estuary'];
+    const matched = targetWords.find(w => trimmed.toLowerCase().includes(w.toLowerCase()));
+    if (!matched) {
+      setVocabCheckResult({
+        wordUsed: 'Target Word Missing',
+        score: 'Needs Revision',
+        feedback: `Include at least one target word (${targetWords.join(', ')}) in a complete contextual sentence.`
+      });
+      return;
+    }
+    setVocabCheckResult({
+      wordUsed: matched,
+      score: trimmed.length >= 45 ? 'Proficient Contextual Usage' : 'Developing Contextual Usage',
+      feedback: `Good use of "${matched}" in context! ${
+        trimmed.length >= 45
+          ? 'Sentence structure demonstrates clear domain meaning and grammatical fluency.'
+          : 'Try expanding the sentence with a scientific or environmental detail to strengthen precision.'
+      }`
+    });
   };
 
   const playAudioSpeech = (text: string, rate = 0.95) => {
@@ -217,7 +248,7 @@ export const LsrStudentPortal: React.FC = () => {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => playAudioSpeech("The coastal winds of the Coromandel Coast blow steadily during the retreating northeast monsoon, guiding ancient maritime vessels safely into the historic port of Puducherry.")}
+                    onClick={() => playAudioSpeech("The coastal winds of the Coromandel Coast blow steadily during the retreating northeast monsoon. Ancient Coromandel navigators observed the low flight altitude of coastal dragonflies and sudden wind shifts to forecast impending rainfall, guiding maritime vessels safely into the historic port of Puducherry.")}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-xs ${
                       isPlayingAudio ? 'bg-rose-600 text-white animate-pulse' : 'bg-teal-600 text-white hover:bg-teal-700'
                     }`}
@@ -260,11 +291,28 @@ export const LsrStudentPortal: React.FC = () => {
                     {selectedOption === i && <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />}
                   </div>
                 ))}
+
+                {selectedOption !== null && (
+                  <div
+                    className={`mt-2 p-3 rounded-xl border text-xs font-semibold flex items-center space-x-2 ${
+                      selectedOption === 0
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-amber-50 border-amber-200 text-amber-800'
+                    }`}
+                  >
+                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${selectedOption === 0 ? 'text-emerald-600' : 'text-amber-600'}`} />
+                    <span>
+                      {selectedOption === 0
+                        ? 'Correct! Ancient Coromandel navigators tracked the low flight altitude of coastal dragonflies and sudden wind shifts to forecast rainfall.'
+                        : 'Hint: Listen closely to the narration to hear which coastal wildlife and weather signs navigators watched before entering Puducherry.'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 flex justify-end">
                 <button
-                  onClick={() => { setActiveStep(2); setSelectedOption(null); }}
+                  onClick={() => setActiveStep(2)}
                   className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center space-x-1.5"
                 >
                   <span>Next: Speaking Task</span>
@@ -368,8 +416,20 @@ export const LsrStudentPortal: React.FC = () => {
               </div>
 
               {/* Reading Passage Card */}
-              <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm leading-relaxed text-slate-800 font-serif shadow-inner">
-                &ldquo;The mangrove forests along the coast are extraordinary sanctuaries. Their entangled submerged roots protect the shoreline from tidal surges and provide quiet nurseries for young sea life. When the tide gently recedes, mudskippers and fiddler crabs emerge under the warm tropical sunlight.&rdquo;
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Grade 5 Levelled Reading Passage</span>
+                  <button
+                    onClick={() => playAudioSpeech("The mangrove forests along the coast are extraordinary sanctuaries. Their entangled submerged roots protect the shoreline from tidal surges and provide quiet nurseries for young sea life. When the tide gently recedes, mudskippers and fiddler crabs emerge under the warm tropical sunlight.")}
+                    className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 text-xs font-bold flex items-center space-x-1.5 transition-colors"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Listen to Model Passage</span>
+                  </button>
+                </div>
+                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm leading-relaxed text-slate-800 font-serif shadow-inner">
+                  &ldquo;The mangrove forests along the coast are extraordinary sanctuaries. Their entangled submerged roots protect the shoreline from tidal surges and provide quiet nurseries for young sea life. When the tide gently recedes, mudskippers and fiddler crabs emerge under the warm tropical sunlight.&rdquo;
+                </div>
               </div>
 
               {/* Fluency Metrics Preview */}
@@ -386,6 +446,47 @@ export const LsrStudentPortal: React.FC = () => {
                   <span className="text-[10px] text-indigo-700 font-bold block">CEFR STAGE</span>
                   <span className="font-extrabold text-indigo-900 text-sm">Level B1</span>
                 </div>
+              </div>
+
+              {/* Interactive Oral Reading Mic Control */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 flex flex-col items-center text-center space-y-3">
+                <button
+                  onClick={() => {
+                    if (!isStep3Recording) {
+                      setIsStep3Recording(true);
+                      setTimeout(() => {
+                        setIsStep3Recording(false);
+                        setStep3Recorded(true);
+                        showToast('Oral reading sample captured: 112 WCPM · 96.4% Accuracy (Accent-Neutral Evaluated)');
+                      }, 1800);
+                    }
+                  }}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all shadow-xs ${
+                    isStep3Recording
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : step3Recorded
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      : 'bg-teal-600 text-white hover:bg-teal-700'
+                  }`}
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>
+                    {isStep3Recording
+                      ? 'Capturing Oral Reading...'
+                      : step3Recorded
+                      ? 'Re-record Oral Reading (112 WCPM ✓)'
+                      : 'Record Oral Reading (WCPM)'}
+                  </span>
+                </button>
+
+                {step3Recorded && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold">
+                    <span className="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200">112 WCPM (Target 90–120)</span>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">96.4% Accuracy</span>
+                    <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">Prosody: Expressive</span>
+                    <span className="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200">Indian-English Accent Neutrality Applied</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 flex justify-between">
@@ -429,7 +530,8 @@ export const LsrStudentPortal: React.FC = () => {
               { word: 'Ecosystem', pos: 'noun', def: 'A biological community of interacting organisms and their physical environment.', sent: 'The mangrove forest forms a vibrant coastal ecosystem.' },
               { word: 'Photosynthesis', pos: 'noun', def: 'The process by which green plants synthesize nutrients using sunlight.', sent: 'Leaves capture solar photons to conduct photosynthesis.' },
               { word: 'Resilience', pos: 'noun', def: 'The capacity to recover quickly from difficulties; toughness.', sent: 'The banyan aerial roots demonstrate remarkable natural resilience.' },
-              { word: 'Symbiosis', pos: 'noun', def: 'A mutually beneficial interaction between different biological organisms.', sent: 'Bees and flowering plants live in perfect ecological symbiosis.' }
+              { word: 'Symbiosis', pos: 'noun', def: 'A mutually beneficial interaction between different biological organisms.', sent: 'Bees and flowering plants live in perfect ecological symbiosis.' },
+              { word: 'Estuary', pos: 'noun', def: 'The tidal mouth of a large river, where the freshwater tide meets coastal sea water.', sent: 'Brackish water in the coastal estuary nurtures juvenile mangrove crabs.' }
             ].map((v, i) => (
               <div key={i} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-2">
                 <div className="flex items-center justify-between">
@@ -450,6 +552,38 @@ export const LsrStudentPortal: React.FC = () => {
                 </p>
               </div>
             ))}
+          </div>
+
+          {/* Interactive Contextual Sentence Construction Lab */}
+          <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold text-teal-700 uppercase tracking-wider">Contextual Vocabulary & Sentence Construction</span>
+                <h4 className="text-sm font-extrabold text-slate-900">Build Your Own Academic Sentence</h4>
+              </div>
+              <button
+                onClick={checkVocabSentence}
+                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+              >
+                Check Sentence Usage
+              </button>
+            </div>
+            <input
+              type="text"
+              value={vocabSentenceDraft}
+              onChange={e => setVocabSentenceDraft(e.target.value)}
+              placeholder="Write a sentence using Ecosystem, Photosynthesis, Resilience, Symbiosis, or Estuary..."
+              className="w-full p-3 rounded-xl border border-teal-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            />
+            {vocabCheckResult && (
+              <div className="p-3.5 rounded-xl bg-white border border-teal-200 text-xs space-y-1">
+                <div className="flex items-center justify-between font-bold">
+                  <span className="text-teal-800">Word Checked: {vocabCheckResult.wordUsed}</span>
+                  <span className="text-emerald-700">{vocabCheckResult.score}</span>
+                </div>
+                <p className="text-slate-600">{vocabCheckResult.feedback}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

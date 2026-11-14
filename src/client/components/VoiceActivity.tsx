@@ -6,19 +6,22 @@ import { apiPost } from '../lib/api';
 const PASSAGES = [
   {
     level: 'Easy',
-    color: 'emerald',
+    activeCardClass: 'border-emerald-400 bg-emerald-50',
+    badgeTextClass: 'text-emerald-600',
     title: 'The Sun and the Seed',
     text: 'A tiny seed is buried deep in the dark soil. Rain falls and the seed begins to grow. The roots push down and a green shoot pushes up. Soon the sun gives it energy to make food.'
   },
   {
     level: 'Medium',
-    color: 'teal',
+    activeCardClass: 'border-teal-400 bg-teal-50',
+    badgeTextClass: 'text-teal-600',
     title: 'Energy in Nature',
     text: 'A machine with moving parts that converts thermal energy into mechanical power is called an engine. In nature, trees capture solar photons to fuel cellular respiration.'
   },
   {
     level: 'Hard',
-    color: 'indigo',
+    activeCardClass: 'border-indigo-400 bg-indigo-50',
+    badgeTextClass: 'text-indigo-600',
     title: 'Science of Sound',
     text: 'Sound travels in longitudinal pressure waves through any elastic medium such as air, water, or metal. The frequency of vibration determines the pitch and the amplitude determines the volume perceived by the listener.'
   }
@@ -179,6 +182,42 @@ export const VoiceActivity: React.FC = () => {
     setPhase('ready');
   };
 
+  const runSimulatedEvaluation = () => {
+    setError('');
+    setPhase('analyzing');
+    setTimeout(() => {
+      const tokens = passage.text.replace(/[.,]/g, '').split(/\s+/).filter(Boolean);
+      const words: EvaluatedWord[] = tokens.map((w, idx) => ({
+        word: w,
+        status: idx === Math.floor(tokens.length / 2) ? 'MISPRONOUNCED' : 'CORRECT',
+        confidence: idx === Math.floor(tokens.length / 2) ? 0.78 : 0.97
+      }));
+      setResult({
+        success: true,
+        transcript: passage.text,
+        provider: 'Achariya VoiceLab Sample Acoustic Model (India Cloud · Accent-Neutral)',
+        metrics: {
+          wcpm: passage.level === 'Easy' ? 118 : passage.level === 'Medium' ? 112 : 104,
+          pronunciationScore: 95,
+          accuracyScore: 97,
+          fluencyScore: 94,
+          totalWordsSpoken: tokens.length,
+          durationSeconds: Math.max(12, Math.round(tokens.length * 0.54)),
+          cefrLevel: passage.level === 'Hard' ? 'B2' : 'B1'
+        },
+        words,
+        articulationStrengths: [
+          `Clear consonant articulation across "${passage.title}" with steady breathing and natural phrase grouping.`,
+          'Evaluated using accent-neutral acoustic thresholds suitable for Indian English speakers.'
+        ],
+        coachingTips: [
+          `Pause briefly at comma boundaries and emphasize multi-syllable terms such as "${words[Math.floor(tokens.length / 2)]?.word ?? 'energy'}".`
+        ]
+      });
+      setPhase('result');
+    }, 900);
+  };
+
   const mins = Math.floor(elapsed / 60);
   const secs = String(elapsed % 60).padStart(2, '0');
 
@@ -207,11 +246,11 @@ export const VoiceActivity: React.FC = () => {
                 onClick={() => { setPassageIdx(i); setPhase('ready'); }}
                 className={`rounded-2xl border-2 p-3 text-left transition-all ${
                   passageIdx === i && phase !== 'pick'
-                    ? `border-${p.color}-400 bg-${p.color}-50`
+                    ? p.activeCardClass
                     : 'border-slate-200 hover:border-slate-300 bg-white'
                 }`}
               >
-                <span className={`text-[10px] font-extrabold uppercase tracking-wide text-${p.color}-600`}>{p.level}</span>
+                <span className={`text-[10px] font-extrabold uppercase tracking-wide ${p.badgeTextClass}`}>{p.level}</span>
                 <p className="text-xs font-bold text-slate-800 mt-0.5 leading-tight">{p.title}</p>
               </button>
             ))}
@@ -223,7 +262,7 @@ export const VoiceActivity: React.FC = () => {
       {phase !== 'pick' && phase !== 'result' && (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <span className={`text-xs font-extrabold uppercase tracking-wide text-${passage.color}-600`}>
+            <span className={`text-xs font-extrabold uppercase tracking-wide ${passage.badgeTextClass}`}>
               {passage.level} · {passage.title}
             </span>
             <button
@@ -239,19 +278,36 @@ export const VoiceActivity: React.FC = () => {
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">{error}</div>
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium flex flex-wrap items-center justify-between gap-2">
+              <span>{error}</span>
+              <button
+                onClick={runSimulatedEvaluation}
+                className="px-3 py-1 bg-white border border-rose-200 rounded-lg font-bold text-rose-800 hover:bg-rose-100 transition-colors"
+              >
+                Load Sample AI Evaluation Result →
+              </button>
+            </div>
           )}
 
           {/* Recording controls */}
           <div className="flex flex-col items-center gap-3 pt-2">
             {phase === 'ready' && (
-              <button
-                onClick={startRecording}
-                className="flex items-center gap-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-bold text-sm shadow-sm transition-colors"
-              >
-                <Mic className="w-4 h-4" />
-                Start Recording
-              </button>
+              <>
+                <button
+                  onClick={startRecording}
+                  className="flex items-center gap-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-bold text-sm shadow-sm transition-colors"
+                >
+                  <Mic className="w-4 h-4" />
+                  Start Recording
+                </button>
+                <button
+                  onClick={runSimulatedEvaluation}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                  Simulate AI Speech Evaluation (Sample Audio)
+                </button>
+              </>
             )}
 
             {phase === 'recording' && (

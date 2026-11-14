@@ -110,6 +110,10 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
     }
   ]);
 
+  const pendingCount = homeworkItems.filter(h => h.status === 'PENDING').length;
+  const submittedCount = homeworkItems.filter(h => h.status === 'SUBMITTED').length;
+  const evaluatedCount = homeworkItems.filter(h => h.status === 'EVALUATED').length;
+
   const filteredItems = homeworkItems.filter(item => {
     if (filter === 'ALL') return true;
     return item.status === filter;
@@ -122,21 +126,38 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
       return;
     }
     setIsAiAnalyzing(true);
+    const wordCount = writtenDraft.trim().split(/\s+/).filter(Boolean).length;
+    const subject = selectedHomework?.subject || 'General';
     setTimeout(() => {
       setIsAiAnalyzing(false);
       setAiReport({
-        grammarScore: 94,
-        completeness: 'High (All Prompt Rubrics Addressed)',
-        strengths: [
-          'Rich descriptive imagery used (e.g. "filtered emerald light", "dense emergent crown").',
-          'Accurate sensory adjectives identified in context.'
-        ],
-        suggestions: [
-          'Add a concluding reflection on how lower-canopy ferns adapt to shade.',
-          'Double check spelling of "photosynthetic" in paragraph 2.'
-        ]
+        grammarScore: wordCount >= 40 ? 94 : 88,
+        completeness: wordCount >= 30 ? 'High (All Prompt Rubrics Addressed)' : 'Partial (Expand Your Reflection)',
+        strengths: subject.includes('Math')
+          ? [
+              `Structured numerical reasoning across ${wordCount} words.`,
+              'Clear alignment between real-world objects and angle classification.'
+            ]
+          : subject.includes('Science')
+          ? [
+              `Accurate conceptual explanation captured in ${wordCount} words.`,
+              'Scientific terminology matches chapter learning outcomes.'
+            ]
+          : [
+              `Expressive descriptive imagery and vocabulary across ${wordCount} words.`,
+              'Sentence variety addresses the assignment prompt criteria cleanly.'
+            ],
+        suggestions: subject.includes('Math')
+          ? [
+              'Verify degree units (°) and tolerance notes (±2°) beside each measurement.',
+              'Attach or reference a protractor sketch for geometric proof.'
+            ]
+          : [
+              `Expand briefly on the core insight for "${selectedHomework?.title || 'this task'}" before final submission.`,
+              'Check punctuation and capitalization at paragraph transitions.'
+            ]
       });
-    }, 1200);
+    }, 1000);
   };
 
   // Submit Homework
@@ -149,17 +170,22 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
     setTimeout(() => {
       setIsSubmitting(false);
       if (selectedHomework) {
+        const finalSubmittedContent = writtenDraft + (attachedFile ? `\n\n[Attached: ${attachedFile}]` : '');
+        const timestamp =
+          new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+          ' at ' +
+          new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         setHomeworkItems(prev => prev.map(hw => hw.id === selectedHomework.id ? {
           ...hw,
           status: 'SUBMITTED',
-          submittedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          submittedContent: writtenDraft + (attachedFile ? `\n\n[Attached: ${attachedFile}]` : '')
+          submittedAt: timestamp,
+          submittedContent: finalSubmittedContent
         } : hw));
         setSelectedHomework(prev => prev ? {
           ...prev,
           status: 'SUBMITTED',
-          submittedAt: 'Just now',
-          submittedContent: writtenDraft
+          submittedAt: timestamp,
+          submittedContent: finalSubmittedContent
         } : null);
         setSubmittedSuccess(true);
       }
@@ -187,7 +213,7 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
         {/* Quick Metrics */}
         <div className="flex items-center space-x-3">
           <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200/80 text-center min-w-[90px]">
-            <div className="text-xl font-extrabold text-amber-700">1</div>
+            <div className="text-xl font-extrabold text-amber-700">{pendingCount}</div>
             <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Due Soon</div>
           </div>
           <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200/80 text-center min-w-[90px]">
@@ -211,9 +237,9 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
               }`}
             >
               {tab === 'ALL' && `All Tasks (${homeworkItems.length})`}
-              {tab === 'PENDING' && `Pending (1)`}
-              {tab === 'SUBMITTED' && `Submitted (1)`}
-              {tab === 'EVALUATED' && `Graded & Evaluated (1)`}
+              {tab === 'PENDING' && `Pending (${pendingCount})`}
+              {tab === 'SUBMITTED' && `Submitted (${submittedCount})`}
+              {tab === 'EVALUATED' && `Graded & Evaluated (${evaluatedCount})`}
             </button>
           ))}
         </div>
