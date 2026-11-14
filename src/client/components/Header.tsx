@@ -190,7 +190,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Brand */}
           <button
-            onClick={() => onNavigate('/staff/home')}
+            onClick={() => onNavigate(currentUser?.roleKey === 'role-ach-student' ? '/student/gaps' : '/staff/home')}
             className="flex items-center gap-2 flex-shrink-0"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-xs font-bold text-base">
@@ -204,52 +204,16 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
 
-          {/* Portal switcher — hidden for students; Trust HQ only for super-admins */}
-          {currentUser?.roleKey !== 'role-ach-student' && currentUser?.roleKey !== 'role-ach-parent' && (
-            <div className="hidden md:flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/80 text-[11px] flex-shrink-0">
-              <button
-                onClick={() => onNavigate('/staff/home')}
-                className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all whitespace-nowrap ${
-                  currentPortal === 'STAFF'
-                    ? 'bg-white text-slate-900 shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Educator LMS
-              </button>
-              <button
-                onClick={() => onNavigate('/student/voicelab')}
-                className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all flex items-center gap-1 whitespace-nowrap ${
-                  currentPortal === 'STUDENT'
-                    ? 'bg-white text-teal-700 shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <span>🎙️</span><span>VoiceLab AI</span>
-              </button>
-              {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
-                <button
-                  onClick={() => onNavigate('/superadmin')}
-                  className={`px-2.5 py-1 rounded-[10px] font-semibold transition-all whitespace-nowrap ${
-                    currentPortal === 'SUPERADMIN'
-                      ? 'bg-white text-indigo-700 shadow-xs font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Trust HQ
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Staff nav */}
-          {currentPortal === 'STAFF' && (
-            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
+          {/* Role-based Staff / Admin nav */}
+          {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
+            currentUser?.roleKey !== 'role-ach-student' &&
+            currentUser?.roleKey !== 'role-ach-parent' && (
+            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0">
               {/* Home — always direct */}
               <button
                 onClick={() => onNavigate('/staff/home')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  activeTab === 'home'
+                  currentPortal === 'STAFF' && activeTab === 'home'
                     ? 'bg-slate-100 text-slate-900 border-slate-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
                 }`}
@@ -262,7 +226,12 @@ export const Header: React.FC<HeaderProps> = ({
               {NAV_GROUPS.filter(group =>
                 !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
               ).map(group => (
-                <DropdownMenu key={group.label} group={group} activeTab={activeTab} onNavigate={onNavigate} />
+                <DropdownMenu
+                  key={group.label}
+                  group={group}
+                  activeTab={currentPortal === 'STAFF' ? activeTab : 'home'}
+                  onNavigate={onNavigate}
+                />
               ))}
 
               {/* Direct Flagship AI Studio Pills */}
@@ -270,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => onNavigate('/staff/learning-gaps')}
                 title="AI Learning Gap & Remediation Studio"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  activeTab === 'learning-gaps'
+                  currentPortal === 'STAFF' && activeTab === 'learning-gaps'
                     ? 'bg-violet-50 text-violet-800 border-violet-200 shadow-xs font-bold'
                     : 'text-slate-700 hover:text-violet-800 hover:bg-violet-50/70 border-transparent'
                 }`}
@@ -283,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => onNavigate('/staff/student-intelligence')}
                 title="Student 360°, BMIT, VAK, E-Portfolio & Career AI"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  activeTab === 'student-intelligence'
+                  currentPortal === 'STAFF' && activeTab === 'student-intelligence'
                     ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
                     : 'text-slate-700 hover:text-indigo-800 hover:bg-indigo-50/70 border-transparent'
                 }`}
@@ -300,7 +269,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   onClick={() => onNavigate('/staff/leaves')}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                    activeTab === 'leaves'
+                    currentPortal === 'STAFF' && activeTab === 'leaves'
                       ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
                   }`}
@@ -314,7 +283,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onNavigate('/staff/aitools')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  activeTab === 'aitools'
+                  currentPortal === 'STAFF' && activeTab === 'aitools'
                     ? 'bg-teal-50 text-teal-800 border-teal-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
                 }`}
@@ -327,7 +296,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onNavigate('/staff/myspace')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  activeTab === 'myspace'
+                  currentPortal === 'STAFF' && activeTab === 'myspace'
                     ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
                 }`}
@@ -335,12 +304,27 @@ export const Header: React.FC<HeaderProps> = ({
                 <Compass className="w-3.5 h-3.5 text-indigo-500" />
                 <span>My Space</span>
               </button>
+
+              {/* Trust HQ — only for Super Admin & Trust Manager */}
+              {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
+                <button
+                  onClick={() => onNavigate('/superadmin')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+                    currentPortal === 'SUPERADMIN'
+                      ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-indigo-800 hover:bg-indigo-50/70 border-transparent'
+                  }`}
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Trust HQ</span>
+                </button>
+              )}
             </nav>
           )}
 
           {/* Student nav */}
           {currentPortal === 'STUDENT' && (
-            <nav className="hidden sm:flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto text-xs">
+            <nav className="hidden sm:flex items-center gap-1.5 flex-1 min-w-0 text-xs">
               {[
                 { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
