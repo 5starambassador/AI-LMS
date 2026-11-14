@@ -68,19 +68,89 @@ export class ScoreController {
    */
   static async createExam(request: FastifyRequest, reply: FastifyReply) {
     const user = request.currentUser;
-    const { classId, sectionId, subjectId, title, totalMarks = 50, durationMins = 90, blueprint, rubric } = request.body as {
-      classId: string;
+    const {
+      classId,
+      sectionId,
+      subjectId,
+      subject,
+      grade,
+      title,
+      totalMarks = 50,
+      durationMins = 90,
+      blueprint,
+      rubric
+    } = request.body as {
+      classId?: string;
       sectionId?: string;
-      subjectId: string;
+      subjectId?: string;
+      subject?: string;
+      grade?: string;
       title: string;
       totalMarks?: number;
       durationMins?: number;
-      blueprint: any;
-      rubric: any;
+      blueprint?: any;
+      rubric?: any;
     };
 
-    if (!classId || !subjectId || !title) {
-      return reply.status(400).send({ success: false, error: 'Missing mandatory exam parameters.' });
+    if (!title || !String(title).trim()) {
+      return reply.status(400).send({ success: false, error: 'Exam title is required.' });
+    }
+
+    let resolvedClass = classId
+      ? await prisma.class.findUnique({ where: { id: classId } })
+      : null;
+
+    if (!resolvedClass) {
+      const classes = await prisma.class.findMany({ orderBy: { orderIndex: 'asc' } });
+      const gradeTerm = String(grade || '').trim().toLowerCase();
+      resolvedClass =
+        (gradeTerm ? classes.find(c => c.name.toLowerCase() === gradeTerm || c.name.toLowerCase().includes(gradeTerm)) : undefined) ||
+        classes[0] ||
+        null;
+    }
+
+    if (!resolvedClass) {
+      return reply.status(400).send({ success: false, error: 'No active class found to attach exam.' });
+    }
+
+    let resolvedSubject = subjectId
+      ? await prisma.subject.findUnique({ where: { id: subjectId } })
+      : null;
+
+    if (!resolvedSubject) {
+      const classSubjects = await prisma.subject.findMany({ where: { classId: resolvedClass.id } });
+      const subjTerm = String(subject || '').trim().toLowerCase();
+      resolvedSubject =
+        (subjTerm
+          ? classSubjects.find(
+              s => s.name.toLowerCase() === subjTerm || s.name.toLowerCase().includes(subjTerm) || subjTerm.includes(s.name.toLowerCase())
+            )
+          : undefined) ||
+        classSubjects[0] ||
+        null;
+
+      if (!resolvedSubject) {
+        const allSubjects = await prisma.subject.findMany();
+        resolvedSubject =
+          (subjTerm
+            ? allSubjects.find(
+                s => s.name.toLowerCase() === subjTerm || s.name.toLowerCase().includes(subjTerm)
+              )
+            : undefined) ||
+          null;
+      }
+
+      if (!resolvedSubject) {
+        const cleanSubjName = String(subject || 'General').trim() || 'General';
+        resolvedSubject = await prisma.subject.create({
+          data: {
+            campusId: resolvedClass.campusId,
+            classId: resolvedClass.id,
+            name: cleanSubjName,
+            code: cleanSubjName.slice(0, 3).toUpperCase() + '-101'
+          }
+        });
+      }
     }
 
     const defaultBlueprint = blueprint || {
@@ -101,13 +171,13 @@ export class ScoreController {
 
     const exam = await prisma.scoreExam.create({
       data: {
-        classId,
+        classId: resolvedClass.id,
         sectionId: sectionId || null,
-        subjectId,
+        subjectId: resolvedSubject.id,
         teacherId: user!.id,
-        title,
-        totalMarks,
-        durationMins,
+        title: String(title).trim(),
+        totalMarks: Number(totalMarks) || 50,
+        durationMins: Number(durationMins) || 90,
         blueprintJson: JSON.stringify(defaultBlueprint),
         rubricJson: JSON.stringify(defaultRubric)
       },
@@ -122,6 +192,10 @@ export class ScoreController {
       message: 'Summative exam blueprint created and configured.',
       exam: {
         ...exam,
+        subject: exam.subject?.name || String(subject || 'General'),
+        subjectDetails: exam.subject,
+        className: exam.class?.name || String(grade || ''),
+        scheduledDate: exam.createdAt,
         blueprint: JSON.parse(exam.blueprintJson),
         rubric: JSON.parse(exam.rubricJson)
       }
@@ -148,7 +222,16 @@ export class ScoreController {
       orderBy: { createdAt: 'desc' }
     });
 
-    return reply.send({ success: true, count: exams.length, exams });
+    const formatted = exams.map(e => ({
+      ...e,
+      subject: e.subject?.name || 'General',
+      subjectDetails: e.subject,
+      className: e.class?.name || '',
+      scheduledDate: e.createdAt,
+      status: 'PUBLISHED'
+    }));
+
+    return reply.send({ success: true, count: formatted.length, exams: formatted });
   }
 
   /**

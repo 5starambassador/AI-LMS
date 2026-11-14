@@ -25,12 +25,170 @@ import {
   Copy,
   Info
 } from 'lucide-react';
+import { apiPost } from '../lib/api';
 import {
   ACHARIYA_EXAM_CATALOG,
   SubjectCurriculumCatalog,
   ChapterLessonCurriculum,
   LearningOutcomeItem
 } from '../data/exam-builder-catalog';
+
+interface QuestionBankEntry {
+  id: string;
+  catalogKey: 'g5-math' | 'g5-sci';
+  boards: string[];
+  type: 'MCQ' | 'Short Answer' | 'Case Study' | 'Long Answer';
+  category: 'Competency-Based' | 'Application-Based' | 'Higher-Order Thinking (HOTS)';
+  difficulty: 'Foundation' | 'Standard' | 'HOTS';
+  marks: number;
+  chapter: string;
+  lo: string;
+  q: string;
+  ans: string;
+  scheme: string;
+  bloom: 'Knowledge' | 'Comprehension' | 'Application' | 'Analysis' | 'Synthesis';
+}
+
+const DEFAULT_QUESTION_BANK: QuestionBankEntry[] = [
+  {
+    id: 'qb-m-1', catalogKey: 'g5-math', boards: ['CBSE', 'ICSE', 'STATE'],
+    type: 'MCQ', category: 'Competency-Based', difficulty: 'Foundation', marks: 1,
+    chapter: 'We the Travellers - I', lo: '#35326',
+    q: 'What is the place value of digit 7 in 47,825?',
+    ans: '7,000 (Thousands)', scheme: '1M full credit for option B', bloom: 'Knowledge'
+  },
+  {
+    id: 'qb-m-2', catalogKey: 'g5-math', boards: ['CBSE', 'STATE'],
+    type: 'Short Answer', category: 'Application-Based', difficulty: 'Standard', marks: 2,
+    chapter: 'We the Travellers - I', lo: '#35327',
+    q: 'Round off 34,562 to the nearest ten and nearest hundred.',
+    ans: '34,560 and 34,600', scheme: '1M for nearest ten + 1M for nearest hundred', bloom: 'Comprehension'
+  },
+  {
+    id: 'qb-m-3', catalogKey: 'g5-math', boards: ['CBSE', 'ICSE'],
+    type: 'Case Study', category: 'Application-Based', difficulty: 'Standard', marks: 2,
+    chapter: 'Fractions', lo: '#35341',
+    q: 'Out of 25 saplings planted in the campus garden, 18 survived. Express this fraction with denominator 100 and as a percentage.',
+    ans: '72/100 = 72%', scheme: '1M equivalent fraction scaling (x4) + 1M percentage conversion', bloom: 'Application'
+  },
+  {
+    id: 'qb-m-4', catalogKey: 'g5-math', boards: ['CBSE', 'ICSE', 'STATE'],
+    type: 'Long Answer', category: 'Higher-Order Thinking (HOTS)', difficulty: 'HOTS', marks: 5,
+    chapter: 'We the Travellers - II', lo: '#35364',
+    q: 'A train travels from Puducherry to Villupuram (40 km) in 45 minutes. Calculate average speed.',
+    ans: '53.33 km/h (accept 53 1/3 km/h or equivalent method)',
+    scheme: '1M convert 45m -> 0.75h + 2M formula v=d/t + 2M calculation (any valid method accepted)', bloom: 'Analysis'
+  },
+  {
+    id: 'qb-m-5', catalogKey: 'g5-math', boards: ['CBSE', 'STATE'],
+    type: 'Short Answer', category: 'Competency-Based', difficulty: 'Standard', marks: 2,
+    chapter: 'Angles as Turns', lo: '#35352',
+    q: 'Through how many degrees does the minute hand of a clock rotate between 9:00 AM and 9:15 AM?',
+    ans: '90° (one-quarter turn = right angle)', scheme: '1M quarter-turn identification + 1M degree calculation', bloom: 'Application'
+  },
+  {
+    id: 'qb-s-1', catalogKey: 'g5-sci', boards: ['CBSE', 'ICSE', 'STATE'],
+    type: 'MCQ', category: 'Competency-Based', difficulty: 'Foundation', marks: 1,
+    chapter: 'Energy, Solar Radiation & Chlorophyll', lo: '#40101',
+    q: 'Which pigment inside plant leaves absorbs solar photons during photosynthesis?',
+    ans: 'Chlorophyll (in chloroplasts)', scheme: '1M full credit for Chlorophyll', bloom: 'Knowledge'
+  },
+  {
+    id: 'qb-s-2', catalogKey: 'g5-sci', boards: ['CBSE', 'STATE'],
+    type: 'Short Answer', category: 'Application-Based', difficulty: 'Standard', marks: 2,
+    chapter: 'Energy, Solar Radiation & Chlorophyll', lo: '#40102',
+    q: 'Write the balanced word equation for photosynthesis and state both raw materials.',
+    ans: 'Carbon dioxide + Water --(Sunlight, Chlorophyll)--> Glucose + Oxygen',
+    scheme: '1M raw materials (CO2 + Water) + 1M products (Glucose + O2)', bloom: 'Comprehension'
+  },
+  {
+    id: 'qb-s-3', catalogKey: 'g5-sci', boards: ['CBSE', 'ICSE'],
+    type: 'Long Answer', category: 'Higher-Order Thinking (HOTS)', difficulty: 'HOTS', marks: 5,
+    chapter: 'Energy, Solar Radiation & Chlorophyll', lo: '#40103',
+    q: 'Design a simple classroom experiment using an aquatic plant (Hydrilla) to prove oxygen is released under sunlight.',
+    ans: 'Invert funnel over Hydrilla in beaker with water + sodium bicarbonate; gas bubbles collect in inverted test tube and relight a glowing splinter.',
+    scheme: '2M labelled setup + 1M control vs sunlit tube + 2M glowing splinter oxygen test', bloom: 'Synthesis'
+  }
+];
+
+const BLUEPRINT_PRESETS: Record<string, { label: string; duration: string; bookBackRatio: number; sections: ExamSectionConfig[] }> = {
+  TERM_50: {
+    label: 'Term 1 Standard (50M)',
+    duration: '1 hr 30 min',
+    bookBackRatio: 20,
+    sections: [
+      {
+        id: 'sec-preset-t1', romanNumeral: 'I', name: 'Section I — Objective', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-p1', type: 'MCQ', label: '◉ MCQ', icon: '◉', badgeBg: 'bg-purple-100 text-purple-900 border-purple-200', count: 5, marksEach: 1 },
+          { id: 'qt-p2', type: 'FILL_BLANK', label: '_ Fill Blank', icon: '_', badgeBg: 'bg-sky-100 text-sky-900 border-sky-200', count: 5, marksEach: 1 },
+          { id: 'qt-p3', type: 'TRUE_FALSE', label: '✓X True / False', icon: '✓X', badgeBg: 'bg-amber-100 text-amber-900 border-amber-200', count: 4, marksEach: 1 }
+        ]
+      },
+      {
+        id: 'sec-preset-t2', romanNumeral: 'II', name: 'Section II — Short Answer & Case Study', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-p4', type: 'SHORT_ANSWER', label: '✏️ Short Answer', icon: '✏️', badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200', count: 4, marksEach: 2 },
+          { id: 'qt-p5', type: 'CASE_STUDY', label: '📖 Case Study', icon: '📖', badgeBg: 'bg-indigo-100 text-indigo-900 border-indigo-200', count: 1, marksEach: 2 },
+          { id: 'qt-p6', type: 'MATCH_FOLLOWING', label: '🔗 Match Following', icon: '🔗', badgeBg: 'bg-rose-100 text-rose-900 border-rose-200', count: 1, marksEach: 1 }
+        ]
+      },
+      {
+        id: 'sec-preset-t3', romanNumeral: 'III', name: 'Section III — Long Answer & HOTS', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-p7', type: 'LONG_ANSWER', label: '📝 Long Answer', icon: '📝', badgeBg: 'bg-teal-100 text-teal-900 border-teal-200', count: 5, marksEach: 5 }
+        ]
+      }
+    ]
+  },
+  DIAGNOSTIC_25: {
+    label: 'Periodic Diagnostic (25M)',
+    duration: '45 min',
+    bookBackRatio: 10,
+    sections: [
+      {
+        id: 'sec-preset-d1', romanNumeral: 'I', name: 'Section I — Competency MCQs', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-d1', type: 'MCQ', label: '◉ MCQ', icon: '◉', badgeBg: 'bg-purple-100 text-purple-900 border-purple-200', count: 10, marksEach: 1 }
+        ]
+      },
+      {
+        id: 'sec-preset-d2', romanNumeral: 'II', name: 'Section II — Prerequisite Reasoning', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-d2', type: 'SHORT_ANSWER', label: '✏️ Short Answer', icon: '✏️', badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200', count: 5, marksEach: 2 },
+          { id: 'qt-d3', type: 'LONG_ANSWER', label: '📝 Long Answer', icon: '📝', badgeBg: 'bg-teal-100 text-teal-900 border-teal-200', count: 1, marksEach: 5 }
+        ]
+      }
+    ]
+  },
+  CBSE_80: {
+    label: 'CBSE Competency Board (80M)',
+    duration: '3 hrs',
+    bookBackRatio: 25,
+    sections: [
+      {
+        id: 'sec-preset-c1', romanNumeral: 'I', name: 'Section I — Competency MCQ & Assertion-Reason', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-c1', type: 'MCQ', label: '◉ MCQ', icon: '◉', badgeBg: 'bg-purple-100 text-purple-900 border-purple-200', count: 16, marksEach: 1 },
+          { id: 'qt-c2', type: 'ASSERTION_REASON', label: '⚡ Assertion & Reason', icon: '⚡', badgeBg: 'bg-orange-100 text-orange-900 border-orange-200', count: 4, marksEach: 2 }
+        ]
+      },
+      {
+        id: 'sec-preset-c2', romanNumeral: 'II', name: 'Section II — Short Application & Case Studies', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-c3', type: 'SHORT_ANSWER', label: '✏️ Short Answer', icon: '✏️', badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200', count: 10, marksEach: 2 },
+          { id: 'qt-c4', type: 'CASE_STUDY', label: '📖 Case Study', icon: '📖', badgeBg: 'bg-indigo-100 text-indigo-900 border-indigo-200', count: 5, marksEach: 2 }
+        ]
+      },
+      {
+        id: 'sec-preset-c3', romanNumeral: 'III', name: 'Section III — HOTS Long Answers', selectedOutcomeIds: [],
+        questionTypes: [
+          { id: 'qt-c5', type: 'LONG_ANSWER', label: '📝 Long Answer', icon: '📝', badgeBg: 'bg-teal-100 text-teal-900 border-teal-200', count: 5, marksEach: 5 }
+        ]
+      }
+    ]
+  }
+};
 
 export type QuestionTypeId =
   | 'MCQ'
@@ -200,9 +358,22 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
   const [showQuestionBankBrowser, setShowQuestionBankBrowser] = useState(false);
   const [showOutcomeScopeModal, setShowOutcomeScopeModal] = useState<string | null>(null);
   const [qbFilterBoard, setQbFilterBoard] = useState('CBSE');
+  const [qbFilterChapter, setQbFilterChapter] = useState('ALL');
   const [qbFilterBloom, setQbFilterBloom] = useState('ALL');
   const [qbFilterDifficulty, setQbFilterDifficulty] = useState('ALL');
   const [qbFilterType, setQbFilterType] = useState('ALL');
+  const [customBankQuestions, setCustomBankQuestions] = useState<QuestionBankEntry[]>([]);
+  const [showAddCustomQ, setShowAddCustomQ] = useState(false);
+  const [customQDraft, setCustomQDraft] = useState({
+    q: '',
+    ans: '',
+    scheme: '',
+    chapter: 'We the Travellers - I',
+    bloom: 'Application' as QuestionBankEntry['bloom'],
+    difficulty: 'Standard' as QuestionBankEntry['difficulty'],
+    type: 'Short Answer' as QuestionBankEntry['type'],
+    marks: 2
+  });
   const [academicValidated, setAcademicValidated] = useState(true);
   const [isGeneratingExam, setIsGeneratingExam] = useState(false);
   const [generatedExamModal, setGeneratedExamModal] = useState<any | null>(null);
@@ -400,13 +571,58 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
     );
   };
 
-  // Blueprint Cloning
+  const handleCatalogChange = (newKey: string) => {
+    setSelectedCatalogKey(newKey);
+    setQbFilterChapter('ALL');
+    const nextCatalog = ACHARIYA_EXAM_CATALOG[newKey] || ACHARIYA_EXAM_CATALOG['g5-math'];
+    const nextOutcomes: Record<string, boolean> = {};
+    nextCatalog.lessons.forEach(les => {
+      les.outcomes.forEach(oc => {
+        nextOutcomes[oc.id] = true;
+      });
+    });
+    setSelectedOutcomeIds(nextOutcomes);
+    const firstId = nextCatalog.lessons[0]?.id;
+    setExpandedLessonIds(firstId ? { [firstId]: true } : {});
+    setCustomQDraft(prev => ({
+      ...prev,
+      chapter: nextCatalog.lessons[0]?.title || prev.chapter
+    }));
+    showToast(`Switched curriculum catalog to ${selectedGrade} · ${nextCatalog.subjectName} (${nextCatalog.totalOutcomesCount} outcomes loaded).`);
+  };
+
+  // Blueprint Cloning & Presets
+  const applyBlueprintPreset = (presetKey: keyof typeof BLUEPRINT_PRESETS, sourceLabel?: string) => {
+    const preset = BLUEPRINT_PRESETS[presetKey];
+    if (!preset) return;
+    setSections(
+      preset.sections.map((sec, idx) => ({
+        ...sec,
+        id: `sec-${Date.now()}-${idx}`,
+        questionTypes: sec.questionTypes.map((qt, qIdx) => ({ ...qt, id: `qt-${Date.now()}-${idx}-${qIdx}` }))
+      }))
+    );
+    setDuration(preset.duration);
+    setBookBackRatio(preset.bookBackRatio);
+    if (bringOutcomesToo) {
+      handleSelectAllOutcomes();
+    }
+    showToast(`${sourceLabel || preset.label} synced to sections, duration (${preset.duration}) & weights.`);
+  };
+
   const handleUseBlueprint = () => {
-    if (!existingExamCode.trim()) {
+    const code = existingExamCode.trim();
+    if (!code) {
       showToast('Please enter an exam code to reuse blueprint.');
       return;
     }
-    showToast(`Blueprint '${existingExamCode}' loaded. Sections and weighting synced.`);
+    if (code.includes('25') || code.toLowerCase().includes('diag')) {
+      applyBlueprintPreset('DIAGNOSTIC_25', `Blueprint '${code}'`);
+    } else if (code.includes('80') || code.toLowerCase().includes('board')) {
+      applyBlueprintPreset('CBSE_80', `Blueprint '${code}'`);
+    } else {
+      applyBlueprintPreset('TERM_50', `Blueprint '${code}'`);
+    }
   };
 
   // Final Exam Generation
@@ -419,6 +635,11 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
 
     if (grandTotalQuestions === 0 || grandTotalMarks === 0) {
       showToast('Please configure at least 1 question in your sections.');
+      return;
+    }
+
+    if (!academicValidated) {
+      showToast('Please confirm "Curriculum-Aligned & Academically Validated Before Publication" before generating.');
       return;
     }
 
@@ -445,23 +666,52 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
           (a, b) => a + (Number(b.count) || 0) * (Number(b.marksEach) || 0),
           0
         ),
-        questionTypes: sec.questionTypes
+        questionTypes: sec.questionTypes,
+        selectedOutcomeIds: sec.selectedOutcomeIds
       }))
     };
 
-    // Simulate API compilation call to SCORE service
-    setTimeout(() => {
+    const parsedHoursMatch = duration.match(/(\d+(?:\.\d+)?)\s*hr/i);
+    const parsedMinsMatch = duration.match(/(\d+)\s*min/i);
+    const durationMins =
+      (parsedHoursMatch ? Math.round(parseFloat(parsedHoursMatch[1]) * 60) : 0) +
+      (parsedMinsMatch ? parseInt(parsedMinsMatch[1], 10) : 0) || 60;
+
+    let persistedExamId = `ACH-EXAM-${Date.now().toString().slice(-6)}`;
+    let persistedToServer = false;
+
+    try {
+      const res = await apiPost<any>('/api/score/exams', {
+        title: `${examTitle.trim()} (${selectedGrade})`,
+        grade: selectedGrade,
+        subject: catalog.subjectName,
+        totalMarks: grandTotalMarks,
+        durationMins,
+        blueprint: payload
+      });
+      if (res?.success && res.exam?.id) {
+        persistedExamId = res.exam.id;
+        persistedToServer = true;
+      }
+    } catch {
+      // Fallback gracefully when unauthenticated or offline
+    } finally {
       setIsGeneratingExam(false);
       setGeneratedExamModal({
-        examId: `ACH-EXAM-${Date.now().toString().slice(-6)}`,
-        blueprintCode: `exam:16:1595:${Date.now()}`,
+        examId: persistedExamId,
+        persistedToServer,
+        blueprintCode: `exam:16:${catalog.subjectId}:${Date.now()}`,
         ...payload
       });
       if (onExamGenerated) {
-        onExamGenerated(payload);
+        onExamGenerated({ ...payload, examId: persistedExamId });
       }
-      showToast('Exam successfully generated and compiled to SCORE repository!');
-    }, 1400);
+      showToast(
+        persistedToServer
+          ? 'Exam compiled & saved to Exam Hub (SCORE repository)!'
+          : 'Exam compiled locally with Set A/B/C & 2D QR ready!'
+      );
+    }
   };
 
   return (
@@ -518,11 +768,11 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               <div className="relative">
                 <select
                   value={selectedCatalogKey}
-                  onChange={e => setSelectedCatalogKey(e.target.value)}
+                  onChange={e => handleCatalogChange(e.target.value)}
                   className="appearance-none bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl px-3 py-1 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
                 >
-                  <option value="g5-math">Mathematics (ID: 1595)</option>
-                  <option value="g5-sci">Experiential Sciences (ID: 1596)</option>
+                  <option value="g5-math">{selectedGrade} · Mathematics (ID: 1595)</option>
+                  <option value="g5-sci">{selectedGrade} · Experiential Sciences (ID: 1596)</option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
@@ -530,7 +780,10 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
 
             {/* All Exams Pill Button */}
             <button
-              onClick={() => showToast('Opening archive of all compiled and scanned exams...')}
+              onClick={() => {
+                window.history.pushState({}, '', '/staff/exams');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
               className="mt-3.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-xs"
             >
               <span>📋</span>
@@ -581,7 +834,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               <div>
                 <h1 className="text-2xl font-black tracking-tight">{catalog.subjectName}</h1>
                 <p className="text-xs text-indigo-100 mt-1 font-medium">
-                  {catalog.grade} · Subject ID: {catalog.subjectId} · Standard CBSE Syllabus
+                  {selectedGrade} · Subject ID: {catalog.subjectId} · Standard CBSE Syllabus
                 </p>
               </div>
 
@@ -841,6 +1094,20 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                   >
                     Use blueprint
                   </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Presets:</span>
+                  {(['TERM_50', 'DIAGNOSTIC_25', 'CBSE_80'] as const).map(presetKey => (
+                    <button
+                      key={presetKey}
+                      type="button"
+                      onClick={() => applyBlueprintPreset(presetKey)}
+                      className="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-800 border border-purple-200 rounded-lg text-[11px] font-bold transition-colors"
+                    >
+                      {BLUEPRINT_PRESETS[presetKey].label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -1154,8 +1421,18 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                 </div>
               </div>
 
-              {/* Total Marks & Generate Button */}
-              <div className="flex items-center space-x-4">
+              {/* Validation Gate & Generate Button */}
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="flex items-center space-x-2 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={academicValidated}
+                    onChange={e => setAcademicValidated(e.target.checked)}
+                    className="w-3.5 h-3.5 accent-emerald-600"
+                  />
+                  <span>Academically Validated</span>
+                </label>
+
                 <div className="text-right">
                   <div className="text-base font-black text-slate-900">
                     {grandTotalQuestions} questions · {grandTotalMarks} marks
@@ -1220,10 +1497,11 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
               </button>
             ) : (
               <button
+                disabled={isGeneratingExam}
                 onClick={handleTriggerExamGeneration}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1"
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1 disabled:opacity-50"
               >
-                <span>Continue →</span>
+                <span>{isGeneratingExam ? 'Compiling...' : 'Generate Exam →'}</span>
               </button>
             )}
           </div>
@@ -1279,13 +1557,126 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                 <h3 className="font-extrabold text-sm text-slate-900">Achariya AI Question Bank &amp; Marking Schemes</h3>
                 <p className="text-xs text-slate-500">Filter by Board, Grade, Subject, Chapter, Concept, LO, Bloom&apos;s, Difficulty, Marks &amp; Type</p>
               </div>
-              <button onClick={() => setShowQuestionBankBrowser(false)} className="text-slate-400 hover:text-slate-700 font-bold">
-                ✕
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustomQ(prev => !prev)}
+                  className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-[11px] font-bold transition-colors"
+                >
+                  {showAddCustomQ ? 'Cancel Custom Q' : '+ Add Custom Question'}
+                </button>
+                <button onClick={() => setShowQuestionBankBrowser(false)} className="text-slate-400 hover:text-slate-700 font-bold">
+                  ✕
+                </button>
+              </div>
             </div>
 
+            {showAddCustomQ && (
+              <div className="p-3.5 bg-purple-50/60 border border-purple-200 rounded-2xl space-y-2.5 text-xs">
+                <div className="font-bold text-purple-900">Author New Curriculum-Aligned Bank Item ({catalog.subjectName})</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <select
+                    value={customQDraft.chapter}
+                    onChange={e => setCustomQDraft(p => ({ ...p, chapter: e.target.value }))}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold"
+                  >
+                    {catalog.lessons.map(l => (
+                      <option key={l.id} value={l.title}>{l.title}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={customQDraft.bloom}
+                    onChange={e => setCustomQDraft(p => ({ ...p, bloom: e.target.value as QuestionBankEntry['bloom'] }))}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold"
+                  >
+                    <option value="Knowledge">Knowledge</option>
+                    <option value="Comprehension">Comprehension</option>
+                    <option value="Application">Application</option>
+                    <option value="Analysis">Analysis</option>
+                    <option value="Synthesis">Synthesis</option>
+                  </select>
+                  <div className="flex items-center space-x-1.5">
+                    <select
+                      value={customQDraft.difficulty}
+                      onChange={e => setCustomQDraft(p => ({ ...p, difficulty: e.target.value as QuestionBankEntry['difficulty'] }))}
+                      className="flex-1 px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold"
+                    >
+                      <option value="Foundation">Foundation</option>
+                      <option value="Standard">Standard</option>
+                      <option value="HOTS">HOTS</option>
+                    </select>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={customQDraft.marks}
+                      onChange={e => setCustomQDraft(p => ({ ...p, marks: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      className="w-16 px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-center"
+                      title="Marks"
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Question prompt..."
+                  value={customQDraft.q}
+                  onChange={e => setCustomQDraft(p => ({ ...p, q: e.target.value }))}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white"
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Official Answer Key..."
+                    value={customQDraft.ans}
+                    onChange={e => setCustomQDraft(p => ({ ...p, ans: e.target.value }))}
+                    className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Step-wise Marking Scheme..."
+                    value={customQDraft.scheme}
+                    onChange={e => setCustomQDraft(p => ({ ...p, scheme: e.target.value }))}
+                    className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!customQDraft.q.trim() || !customQDraft.ans.trim()) {
+                        showToast('Please enter both a question prompt and an answer key.');
+                        return;
+                      }
+                      const newEntry: QuestionBankEntry = {
+                        id: `qb-custom-${Date.now()}`,
+                        catalogKey: selectedCatalogKey === 'g5-sci' ? 'g5-sci' : 'g5-math',
+                        boards: [qbFilterBoard, 'CBSE'],
+                        type: customQDraft.type,
+                        category: customQDraft.difficulty === 'HOTS' ? 'Higher-Order Thinking (HOTS)' : customQDraft.difficulty === 'Standard' ? 'Application-Based' : 'Competency-Based',
+                        difficulty: customQDraft.difficulty,
+                        marks: customQDraft.marks,
+                        chapter: customQDraft.chapter,
+                        lo: catalog.lessons.find(l => l.title === customQDraft.chapter)?.outcomes[0]?.code || '#CUSTOM',
+                        q: customQDraft.q.trim(),
+                        ans: customQDraft.ans.trim(),
+                        scheme: customQDraft.scheme.trim() || `${customQDraft.marks}M for accurate step-wise solution`,
+                        bloom: customQDraft.bloom
+                      };
+                      setCustomBankQuestions(prev => [newEntry, ...prev]);
+                      setCustomQDraft(prev => ({ ...prev, q: '', ans: '', scheme: '' }));
+                      setShowAddCustomQ(false);
+                      showToast('Custom question added to Question Bank.');
+                    }}
+                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold"
+                  >
+                    Save to Question Bank
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 10-Facet Filter Strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-50 p-3 rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] bg-slate-50 p-3 rounded-2xl border border-slate-200">
               <div>
                 <span className="font-bold text-slate-500 block mb-0.5">Board / Grade / Subject</span>
                 <select
@@ -1299,6 +1690,19 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                 </select>
               </div>
               <div>
+                <span className="font-bold text-slate-500 block mb-0.5">Chapter</span>
+                <select
+                  value={qbFilterChapter}
+                  onChange={e => setQbFilterChapter(e.target.value)}
+                  className="w-full px-2 py-1 rounded-lg border border-slate-300 bg-white font-semibold"
+                >
+                  <option value="ALL">All Chapters</option>
+                  {Array.from(new Set(catalog.lessons.map(l => l.title))).map(ch => (
+                    <option key={ch} value={ch}>{ch}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <span className="font-bold text-slate-500 block mb-0.5">Bloom&apos;s Level</span>
                 <select
                   value={qbFilterBloom}
@@ -1307,6 +1711,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                 >
                   <option value="ALL">All Bloom&apos;s Levels</option>
                   <option value="Knowledge">Remember / Knowledge</option>
+                  <option value="Comprehension">Comprehension</option>
                   <option value="Application">Application</option>
                   <option value="Analysis">Analysis / HOTS</option>
                 </select>
@@ -1340,32 +1745,31 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
             </div>
 
             <div className="space-y-3 text-xs">
-              {[
-                {
-                  type: 'MCQ', category: 'Competency-Based', difficulty: 'Foundation', marks: 1,
-                  chapter: 'Place Value & Number Systems', lo: 'LO-MTH-05.1',
-                  q: 'What is the place value of digit 7 in 47,825?',
-                  ans: '7,000 (Thousands)', scheme: '1M full credit for option B', bloom: 'Knowledge'
-                },
-                {
-                  type: 'Short Answer', category: 'Application-Based', difficulty: 'Standard', marks: 2,
-                  chapter: 'Estimation & Rounding', lo: 'LO-MTH-05.2',
-                  q: 'Round off 34,562 to the nearest ten and nearest hundred.',
-                  ans: '34,560 and 34,600', scheme: '1M for nearest ten + 1M for nearest hundred', bloom: 'Application'
-                },
-                {
-                  type: 'Long Answer', category: 'Higher-Order Thinking (HOTS)', difficulty: 'HOTS', marks: 5,
-                  chapter: 'Speed, Time & Fractions', lo: 'LO-MTH-05.8',
-                  q: 'A train travels from Puducherry to Villupuram (40 km) in 45 minutes. Calculate average speed.',
-                  ans: '53.33 km/h (accept 53 1/3 km/h or equivalent method)',
-                  scheme: '1M convert 45m -> 0.75h + 2M formula v=d/t + 2M calculation (any valid method accepted)', bloom: 'Analysis'
+              {(() => {
+                const bankItems = [...customBankQuestions, ...DEFAULT_QUESTION_BANK]
+                  .filter(i => i.catalogKey === (selectedCatalogKey === 'g5-sci' ? 'g5-sci' : 'g5-math'))
+                  .filter(i => i.boards.includes(qbFilterBoard))
+                  .filter(i => qbFilterChapter === 'ALL' || i.chapter === qbFilterChapter)
+                  .filter(i => qbFilterBloom === 'ALL' || i.bloom === qbFilterBloom)
+                  .filter(i => qbFilterDifficulty === 'ALL' || i.difficulty === qbFilterDifficulty)
+                  .filter(
+                    i =>
+                      qbFilterType === 'ALL' ||
+                      (qbFilterType === 'MCQ' && i.type === 'MCQ') ||
+                      (qbFilterType === 'Application' && (i.type === 'Short Answer' || i.type === 'Case Study' || i.category.includes('Application'))) ||
+                      (qbFilterType === 'HOTS' && i.difficulty === 'HOTS')
+                  );
+
+                if (bankItems.length === 0) {
+                  return (
+                    <div className="p-6 text-center bg-slate-50 border border-slate-200 rounded-2xl text-slate-500 font-medium">
+                      No matching bank questions found for {catalog.subjectName} with current filters. Reset filters or add a custom item above.
+                    </div>
+                  );
                 }
-              ]
-                .filter(i => qbFilterBloom === 'ALL' || i.bloom === qbFilterBloom)
-                .filter(i => qbFilterDifficulty === 'ALL' || i.difficulty === qbFilterDifficulty)
-                .filter(i => qbFilterType === 'ALL' || (qbFilterType === 'MCQ' && i.type === 'MCQ') || (qbFilterType === 'Application' && i.category.includes('Application')) || (qbFilterType === 'HOTS' && i.difficulty === 'HOTS'))
-                .map((item, idx) => (
-                  <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+
+                return bankItems.map(item => (
+                  <div key={item.id} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <div className="flex items-center space-x-1.5">
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-200">
@@ -1374,7 +1778,7 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-900 border border-sky-200">
                           {item.category}
                         </span>
-                        <span className="text-[10px] font-mono font-bold text-slate-600">{item.lo}</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-600">{item.lo} · {item.chapter}</span>
                       </div>
                       <span className="text-[10px] text-slate-500 font-semibold">Bloom: {item.bloom} · {item.difficulty}</span>
                     </div>
@@ -1382,7 +1786,8 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                     <p className="text-[11px] text-emerald-700 font-mono">Answer Key: {item.ans}</p>
                     <p className="text-[11px] text-slate-500"><strong>Marking Scheme:</strong> {item.scheme}</p>
                   </div>
-                ))}
+                ));
+              })()}
             </div>
 
             {/* Curriculum Validation Gate Before Publication */}
@@ -1411,6 +1816,122 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
       )}
 
       {/* ========================================================================= */}
+      {/* MODAL 2B: SECTION LEARNING OUTCOMES SCOPE PICKER                          */}
+      {/* ========================================================================= */}
+      {showOutcomeScopeModal && (() => {
+        const activeSection = sections.find(s => s.id === showOutcomeScopeModal);
+        if (!activeSection) return null;
+        const enabledStep1Ids = allOutcomeIds.filter(id => selectedOutcomeIds[id]);
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">
+                    Section Learning Outcome Scope — {activeSection.name}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Lock specific Learning Outcomes for this section, or leave empty to draw from all {enabledStep1Ids.length} exam outcomes.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowOutcomeScopeModal(null)}
+                  className="text-slate-400 hover:text-slate-700 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSections(prev =>
+                      prev.map(s =>
+                        s.id === activeSection.id ? { ...s, selectedOutcomeIds: [...enabledStep1Ids] } : s
+                      )
+                    );
+                    showToast(`Locked ${enabledStep1Ids.length} selected outcomes to ${activeSection.name}.`);
+                  }}
+                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold"
+                >
+                  Select All Outcomes for Section
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSections(prev =>
+                      prev.map(s => (s.id === activeSection.id ? { ...s, selectedOutcomeIds: [] } : s))
+                    );
+                    showToast(`${activeSection.name} reset to draw from all selected exam outcomes.`);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                >
+                  Use All Exam Outcomes (Default)
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-[45vh] overflow-y-auto pr-1">
+                {catalog.lessons.map(lesson => (
+                  <div key={lesson.id} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <div className="text-xs font-extrabold text-slate-800">{lesson.title}</div>
+                    <div className="space-y-1.5">
+                      {lesson.outcomes.map(oc => {
+                        const checked = activeSection.selectedOutcomeIds.includes(oc.id);
+                        return (
+                          <label
+                            key={oc.id}
+                            className="flex items-start space-x-2 text-xs text-slate-700 cursor-pointer hover:bg-white p-1.5 rounded-lg"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setSections(prev =>
+                                  prev.map(s => {
+                                    if (s.id !== activeSection.id) return s;
+                                    const exists = s.selectedOutcomeIds.includes(oc.id);
+                                    return {
+                                      ...s,
+                                      selectedOutcomeIds: exists
+                                        ? s.selectedOutcomeIds.filter(id => id !== oc.id)
+                                        : [...s.selectedOutcomeIds, oc.id]
+                                    };
+                                  })
+                                );
+                              }}
+                              className="mt-0.5 w-3.5 h-3.5 accent-purple-600"
+                            />
+                            <span className="flex-1">
+                              <strong className="font-mono text-purple-700">{oc.code}</strong> — {oc.text}
+                              {!selectedOutcomeIds[oc.id] && (
+                                <span className="ml-1.5 text-[10px] text-amber-700 font-bold">(Unselected in Step 1)</span>
+                              )}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowOutcomeScopeModal(null)}
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold"
+                >
+                  Save Scope ({activeSection.selectedOutcomeIds.length || 'All'} Outcomes)
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ========================================================================= */}
       {/* MODAL 3: EXAM GENERATION SUCCESS & BATCH DOWNLOAD MODAL                   */}
       {/* ========================================================================= */}
       {generatedExamModal && (
@@ -1423,7 +1944,12 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">Exam Blueprint Compiled</h3>
-                  <p className="text-xs text-slate-500 font-mono">ID: {generatedExamModal.examId}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-xs text-slate-500 font-mono">ID: {generatedExamModal.examId}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${generatedExamModal.persistedToServer ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {generatedExamModal.persistedToServer ? 'Saved to Exam Hub' : 'Local Preview'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setGeneratedExamModal(null)} className="text-slate-400 hover:text-slate-700 font-bold">
@@ -1480,17 +2006,56 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
                     ))}
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-xl border border-purple-100 text-[11px] text-slate-700 space-y-1">
-                <div className="flex items-center justify-between font-bold text-purple-900">
-                  <span>Active Preview: {activePreviewSet.replace('_', ' ')} (Same LO &amp; Bloom&apos;s Weight)</span>
-                  <span className="text-emerald-700">Beginner / Progressing / Proficient Calibrated</span>
-                </div>
-                <p>
-                  {activePreviewSet === 'SET_A' && 'Variant A — Base numerical values (e.g. 47,825 place value; 40 km in 45 min), standard item order.'}
-                  {activePreviewSet === 'SET_B' && 'Variant B — Isomorphic alternate numbers (e.g. 64,915 place value; 48 km in 40 min) with rotated distractors.'}
-                  {activePreviewSet === 'SET_C' && 'Variant C — Parallel contextual prompt (e.g. 82,340 place value; 54 km in 45 min) testing identical Bloom L2/L3 skill.'}
-                </p>
-              </div>
+              {(() => {
+                const isScience = generatedExamModal.subjectId === '1596';
+                const sampleBySet = isScience
+                  ? {
+                      SET_A: {
+                        q: 'Q1 (1M · Knowledge): Which leaf pigment captures solar energy for photosynthesis? Q2 (2M · Application): State two raw materials plants absorb to synthesize glucose.',
+                        ans: 'A1: Chlorophyll | A2: Carbon dioxide (stomata) & water (roots).',
+                        scheme: '1M pigment identification + 1M CO2 + 1M H2O (full credit for balanced word equation).'
+                      },
+                      SET_B: {
+                        q: 'Q1 (1M · Knowledge): Name the green organelle where solar photons convert water and CO2 into food. Q2 (2M · Application): Why does a variegated leaf form starch only in its green zones?',
+                        ans: 'A1: Chloroplast | A2: Non-green zones lack chlorophyll needed for light absorption.',
+                        scheme: '1M organelle name + 2M causal link between chlorophyll presence & starch synthesis.'
+                      },
+                      SET_C: {
+                        q: 'Q1 (1M · Knowledge): Identify the gaseous byproduct released into the atmosphere during photosynthesis. Q2 (2M · Application): Compare leaf starch test results after 48h in darkness vs sunlight.',
+                        ans: 'A1: Oxygen (O2) | A2: Sunlight leaf turns blue-black with iodine; dark leaf stays brown.',
+                        scheme: '1M oxygen + 1M iodine color change + 1M light dependency explanation.'
+                      }
+                    }
+                  : {
+                      SET_A: {
+                        q: 'Q1 (1M · Knowledge): Write the place value of 7 in 47,825. Q2 (5M · Analysis): A train travels from Puducherry to Villupuram (40 km) in 45 minutes. Find average speed.',
+                        ans: 'A1: 7,000 | A2: 53.33 km/h (accept 53 1/3 km/h)',
+                        scheme: '1M place value + 1M 45m->0.75h + 2M v=d/t + 2M arithmetic (alternate valid methods accepted).'
+                      },
+                      SET_B: {
+                        q: 'Q1 (1M · Knowledge): Write the place value of 6 in 64,915. Q2 (5M · Analysis): A bus covers 48 km between two campuses in 40 minutes. Calculate its average speed in km/h.',
+                        ans: 'A1: 60,000 | A2: 72 km/h',
+                        scheme: '1M place value + 1M 40m->2/3 h + 2M v=d/t + 2M final speed.'
+                      },
+                      SET_C: {
+                        q: 'Q1 (1M · Knowledge): Write the place value of 2 in 82,340. Q2 (5M · Analysis): A cyclist travels 54 km in 45 minutes along a coastal track. Determine average speed.',
+                        ans: 'A1: 2,000 | A2: 72 km/h',
+                        scheme: '1M place value + 1M time conversion + 2M speed formula + 2M final value.'
+                      }
+                    };
+                const activeSample = sampleBySet[activePreviewSet];
+                return (
+                  <div className="p-2.5 bg-white rounded-xl border border-purple-100 text-[11px] text-slate-700 space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-purple-900">
+                      <span>Active Preview: {activePreviewSet.replace('_', ' ')} ({generatedExamModal.subject})</span>
+                      <span className="text-emerald-700">Beginner / Progressing / Proficient Calibrated</span>
+                    </div>
+                    <p className="font-semibold text-slate-800">{activeSample.q}</p>
+                    <p className="text-emerald-700 font-mono"><strong>Key:</strong> {activeSample.ans}</p>
+                    <p className="text-slate-500"><strong>Marking Scheme:</strong> {activeSample.scheme}</p>
+                  </div>
+                );
+              })()}
               <p className="text-purple-800">
                 Phase B Batch PDF embeds 4-corner 2D QR optical anchors + same-day remedial &amp; parent outcome insights upon scanning.
               </p>
@@ -1499,13 +2064,36 @@ export const ExamBuilderStudio: React.FC<ExamBuilderStudioProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => {
-                  window.open('/api/score/exams/ACH-EXAM-2026-T1/batch-pdf', '_blank');
+                  window.open(`/api/score/exams/${generatedExamModal.examId}/batch-pdf`, '_blank');
                   showToast('Initiating binary PDF download...');
                 }}
                 className="py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Batch PDF</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  window.print();
+                  showToast('Opened print preview for question paper & marking scheme.');
+                }}
+                className="py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Paper &amp; Key</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setGeneratedExamModal(null);
+                  window.history.pushState({}, '', '/staff/exams');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }}
+                className="py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1.5 shadow-xs"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Open in Exam Hub →</span>
               </button>
 
               <button

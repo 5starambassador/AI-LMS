@@ -18,7 +18,8 @@ import {
 interface ScoreExam {
   id: string;
   title: string;
-  subject: string;
+  subject: string | { id: string; name: string; code?: string | null };
+  subjectDetails?: { id: string; name: string; code?: string | null };
   totalMarks: number;
   scheduledDate: string | null;
   classId: string;
@@ -45,6 +46,37 @@ interface ExamResultsData {
 }
 
 type View = 'list' | 'entry' | 'gradecard';
+
+function getSubjectLabel(sub: ScoreExam['subject']): string {
+  if (!sub) return 'General';
+  return typeof sub === 'string' ? sub : sub.name || 'General';
+}
+
+function computeGradeFromPct(pct: number | null): string | null {
+  if (pct === null || Number.isNaN(pct)) return null;
+  if (pct >= 90) return 'A+';
+  if (pct >= 80) return 'A';
+  if (pct >= 70) return 'B+';
+  if (pct >= 60) return 'B';
+  if (pct >= 50) return 'C';
+  return 'D';
+}
+
+function classifyMasteryTier(pct: number | null): {
+  label: 'Proficient' | 'Progressing' | 'Beginner' | 'Pending';
+  badge: string;
+} {
+  if (pct === null || Number.isNaN(pct)) {
+    return { label: 'Pending', badge: 'bg-slate-100 text-slate-500 border-slate-200' };
+  }
+  if (pct >= 75) {
+    return { label: 'Proficient', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+  }
+  if (pct >= 50) {
+    return { label: 'Progressing', badge: 'bg-amber-100 text-amber-800 border-amber-200' };
+  }
+  return { label: 'Beginner', badge: 'bg-rose-100 text-rose-800 border-rose-200' };
+}
 
 function gradeColor(grade: string | null) {
   if (!grade) return 'bg-slate-100 text-slate-500';
@@ -77,8 +109,8 @@ function GradeCard({ exam, results, qrUrls }: { exam: ScoreExam; results: Studen
         <div className="text-2xl font-black text-slate-900">Achariya World Class Academy</div>
         <div className="text-sm text-slate-500 mt-1">Puducherry Central Campus</div>
         <div className="mt-4 text-xl font-bold text-indigo-700">{exam.title}</div>
-        <div className="flex items-center justify-center gap-6 mt-2 text-xs text-slate-600">
-          <span>Subject: <strong>{exam.subject}</strong></span>
+        <div className="flex flex-wrap items-center justify-center gap-6 mt-2 text-xs text-slate-600">
+          <span>Subject: <strong>{getSubjectLabel(exam.subject)}</strong></span>
           <span>Total Marks: <strong>{exam.totalMarks}</strong></span>
           {exam.scheduledDate && (
             <span>Date: <strong>{new Date(exam.scheduledDate).toLocaleDateString('en-IN')}</strong></span>
@@ -97,6 +129,7 @@ function GradeCard({ exam, results, qrUrls }: { exam: ScoreExam; results: Studen
             <th className="py-2 px-3 text-center border border-slate-200">Marks</th>
             <th className="py-2 px-3 text-center border border-slate-200">%</th>
             <th className="py-2 px-3 text-center border border-slate-200">Grade</th>
+            <th className="py-2 px-3 text-center border border-slate-200">Mastery Tier</th>
             <th className="py-2 px-3 text-left border border-slate-200">Remarks</th>
             {Object.keys(qrUrls).length > 0 && (
               <th className="py-2 px-3 text-center border border-slate-200">Verify (Parent QR)</th>
@@ -104,39 +137,47 @@ function GradeCard({ exam, results, qrUrls }: { exam: ScoreExam; results: Studen
           </tr>
         </thead>
         <tbody>
-          {results.map((r, i) => (
-            <tr key={r.studentId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-              <td className="py-2 px-3 border border-slate-200 text-slate-500">{r.rollNumber ?? '—'}</td>
-              <td className="py-2 px-3 border border-slate-200 font-medium text-slate-800">{r.studentName}</td>
-              <td className="py-2 px-3 border border-slate-200 text-center font-bold">
-                {r.marksObtained !== null ? `${r.marksObtained}/${exam.totalMarks}` : '—'}
-              </td>
-              <td className={`py-2 px-3 border border-slate-200 text-center font-semibold ${pctColor(r.percentage)}`}>
-                {r.percentage !== null ? `${r.percentage}%` : '—'}
-              </td>
-              <td className="py-2 px-3 border border-slate-200 text-center">
-                {r.grade ? (
-                  <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${gradeColor(r.grade)}`}>{r.grade}</span>
-                ) : '—'}
-              </td>
-              <td className="py-2 px-3 border border-slate-200 text-xs text-slate-500">
-                {r.percentage !== null
-                  ? r.percentage >= 75 ? 'Excellent' : r.percentage >= 60 ? 'Good' : r.percentage >= 40 ? 'Needs Improvement' : 'At Risk'
-                  : 'Absent'}
-              </td>
-              {Object.keys(qrUrls).length > 0 && (
+          {results.map((r, i) => {
+            const mastery = classifyMasteryTier(r.percentage);
+            return (
+              <tr key={r.studentId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                <td className="py-2 px-3 border border-slate-200 text-slate-500">{r.rollNumber ?? '—'}</td>
+                <td className="py-2 px-3 border border-slate-200 font-medium text-slate-800">{r.studentName}</td>
+                <td className="py-2 px-3 border border-slate-200 text-center font-bold">
+                  {r.marksObtained !== null ? `${r.marksObtained}/${exam.totalMarks}` : '—'}
+                </td>
+                <td className={`py-2 px-3 border border-slate-200 text-center font-semibold ${pctColor(r.percentage)}`}>
+                  {r.percentage !== null ? `${r.percentage}%` : '—'}
+                </td>
                 <td className="py-2 px-3 border border-slate-200 text-center">
-                  {qrUrls[r.studentId] ? (
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(qrUrls[r.studentId])}`}
-                      alt="Verify"
-                      className="w-12 h-12 mx-auto"
-                    />
+                  {r.grade ? (
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${gradeColor(r.grade)}`}>{r.grade}</span>
                   ) : '—'}
                 </td>
-              )}
-            </tr>
-          ))}
+                <td className="py-2 px-3 border border-slate-200 text-center">
+                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${mastery.badge}`}>
+                    {mastery.label}
+                  </span>
+                </td>
+                <td className="py-2 px-3 border border-slate-200 text-xs text-slate-500">
+                  {r.percentage !== null
+                    ? r.percentage >= 75 ? 'Excellent' : r.percentage >= 60 ? 'Good' : r.percentage >= 40 ? 'Needs Improvement' : 'At Risk'
+                    : 'Absent'}
+                </td>
+                {Object.keys(qrUrls).length > 0 && (
+                  <td className="py-2 px-3 border border-slate-200 text-center">
+                    {qrUrls[r.studentId] ? (
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(qrUrls[r.studentId])}`}
+                        alt="Verify"
+                        className="w-12 h-12 mx-auto"
+                      />
+                    ) : '—'}
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -240,8 +281,11 @@ export const ExamHub: React.FC = () => {
     setSaving(true);
     setSaveMsg(null);
     const entries = Object.entries(marksMap)
-      .filter(([, v]) => v !== '')
-      .map(([studentId, v]) => ({ studentId, marksObtained: parseFloat(v) }));
+      .filter(([, v]) => v !== '' && !Number.isNaN(parseFloat(v)))
+      .map(([studentId, v]) => ({
+        studentId,
+        marksObtained: Math.min(Math.max(parseFloat(v), 0), selectedExam.totalMarks)
+      }));
     try {
       const res = await apiPost(`/api/score/exams/${selectedExam.id}/results/batch-entry`, { entries });
       setSaveMsg(`✓ ${res.saved} result${res.saved !== 1 ? 's' : ''} saved.`);
@@ -263,7 +307,7 @@ export const ExamHub: React.FC = () => {
       await apiPost('/api/score/exams', {
         title: newTitle.trim(),
         subject: newSubject.trim(),
-        totalMarks: parseInt(newMaxMarks, 10),
+        totalMarks: parseInt(newMaxMarks, 10) || 100,
         scheduledDate: newDate || undefined
       });
       setShowCreate(false);
@@ -281,7 +325,7 @@ export const ExamHub: React.FC = () => {
     return (
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
               <ClipboardList className="w-5 h-5 text-indigo-700" />
@@ -291,13 +335,34 @@ export const ExamHub: React.FC = () => {
               <p className="text-xs text-slate-500">Summative exams · mark entry · grade card PDF export</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowCreate(!showCreate)}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Exam</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/staff/exam-builder');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="flex items-center space-x-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Exam Builder →</span>
+            </button>
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/staff/aitools');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="flex items-center space-x-1.5 px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded-xl text-xs font-bold transition-colors"
+            >
+              <span>AI Exam Grader →</span>
+            </button>
+            <button
+              onClick={() => setShowCreate(!showCreate)}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Exam</span>
+            </button>
+          </div>
         </div>
 
         {/* Create form */}
@@ -388,7 +453,8 @@ export const ExamHub: React.FC = () => {
                   <div>
                     <div className="text-sm font-bold text-slate-900">{exam.title}</div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {exam.subject} · {exam.totalMarks} marks
+                      {getSubjectLabel(exam.subject)} · {exam.totalMarks} marks
+                      {exam.className ? ` · ${exam.className}` : ''}
                       {exam.scheduledDate && ` · ${new Date(exam.scheduledDate).toLocaleDateString('en-IN')}`}
                     </div>
                   </div>
@@ -450,8 +516,26 @@ export const ExamHub: React.FC = () => {
 
   // ── Mark Entry View ──
   if (view === 'entry' && selectedExam) {
-    const graded = resultsData?.results.filter(r => r.marksObtained !== null).length ?? 0;
-    const total = resultsData?.results.length ?? 0;
+    const computedRows = (resultsData?.results ?? []).map(r => {
+      const raw = marksMap[r.studentId];
+      const hasInput = raw !== undefined && raw.trim() !== '' && !Number.isNaN(Number(raw));
+      const clampedNum = hasInput
+        ? Math.min(Math.max(parseFloat(raw), 0), selectedExam.totalMarks)
+        : null;
+      const livePct =
+        clampedNum !== null && selectedExam.totalMarks > 0
+          ? Math.round((clampedNum / selectedExam.totalMarks) * 100)
+          : r.percentage;
+      const liveGrade = clampedNum !== null ? computeGradeFromPct(livePct) : r.grade;
+      const mastery = classifyMasteryTier(livePct);
+      return { r, hasInput, livePct, liveGrade, mastery };
+    });
+
+    const graded = computedRows.filter(row => row.hasInput || row.r.marksObtained !== null).length;
+    const total = computedRows.length;
+    const proficientCount = computedRows.filter(row => row.mastery.label === 'Proficient').length;
+    const progressingCount = computedRows.filter(row => row.mastery.label === 'Progressing').length;
+    const beginnerCount = computedRows.filter(row => row.mastery.label === 'Beginner').length;
 
     return (
       <div className="space-y-5">
@@ -467,7 +551,9 @@ export const ExamHub: React.FC = () => {
             <span className="text-slate-300">/</span>
             <div>
               <span className="text-sm font-black text-slate-900">{selectedExam.title}</span>
-              <span className="ml-2 text-xs text-slate-500">{selectedExam.subject} · {selectedExam.totalMarks} marks</span>
+              <span className="ml-2 text-xs text-slate-500">
+                {getSubjectLabel(selectedExam.subject)} · {selectedExam.totalMarks} marks
+              </span>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -499,16 +585,29 @@ export const ExamHub: React.FC = () => {
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress & Cohort Mastery Distribution Bar */}
         {resultsData && (
-          <div className="flex items-center space-x-3 text-xs text-slate-500">
-            <Users className="w-4 h-4" />
-            <span>{graded} of {total} students graded</span>
-            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden max-w-xs">
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all"
-                style={{ width: total > 0 ? `${(graded / total) * 100}%` : '0%' }}
-              />
+          <div className="bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-3 text-slate-600 flex-1 min-w-[220px]">
+              <Users className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span className="font-semibold">{graded} of {total} students graded</span>
+              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden max-w-xs">
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all"
+                  style={{ width: total > 0 ? `${(graded / total) * 100}%` : '0%' }}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 font-bold">
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Proficient (≥75%): {proficientCount}
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+                Progressing (50–74%): {progressingCount}
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
+                Beginner (&lt;50%): {beginnerCount}
+              </span>
             </div>
           </div>
         )}
@@ -539,10 +638,11 @@ export const ExamHub: React.FC = () => {
                   <th className="py-3 px-4 text-center w-40">Marks (out of {selectedExam.totalMarks})</th>
                   <th className="py-3 px-4 text-center w-24">%</th>
                   <th className="py-3 px-4 text-center w-20">Grade</th>
+                  <th className="py-3 px-4 text-center w-28">Mastery Tier</th>
                 </tr>
               </thead>
               <tbody>
-                {resultsData.results.map((r, i) => (
+                {computedRows.map(({ r, livePct, liveGrade, mastery }, i) => (
                   <tr key={r.studentId} className={`border-b border-slate-100 ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
                     <td className="py-3 px-4 text-slate-500 text-xs">{r.rollNumber ?? '—'}</td>
                     <td className="py-3 px-4 font-medium text-slate-800">{r.studentName}</td>
@@ -553,18 +653,38 @@ export const ExamHub: React.FC = () => {
                         max={selectedExam.totalMarks}
                         step="0.5"
                         value={marksMap[r.studentId] ?? ''}
-                        onChange={e => setMarksMap(prev => ({ ...prev, [r.studentId]: e.target.value }))}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            setMarksMap(prev => ({ ...prev, [r.studentId]: '' }));
+                            return;
+                          }
+                          const num = parseFloat(val);
+                          if (Number.isNaN(num)) return;
+                          const bounded =
+                            num > selectedExam.totalMarks
+                              ? String(selectedExam.totalMarks)
+                              : num < 0
+                              ? '0'
+                              : val;
+                          setMarksMap(prev => ({ ...prev, [r.studentId]: bounded }));
+                        }}
                         placeholder="—"
                         className="w-24 px-3 py-1.5 rounded-lg border border-slate-200 text-center text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400"
                       />
                     </td>
-                    <td className={`py-3 px-4 text-center text-sm font-semibold ${pctColor(r.percentage)}`}>
-                      {r.percentage !== null ? `${r.percentage}%` : '—'}
+                    <td className={`py-3 px-4 text-center text-sm font-semibold ${pctColor(livePct)}`}>
+                      {livePct !== null ? `${livePct}%` : '—'}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      {r.grade ? (
-                        <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${gradeColor(r.grade)}`}>{r.grade}</span>
+                      {liveGrade ? (
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${gradeColor(liveGrade)}`}>{liveGrade}</span>
                       ) : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${mastery.badge}`}>
+                        {mastery.label}
+                      </span>
                     </td>
                   </tr>
                 ))}
