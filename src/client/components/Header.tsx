@@ -197,10 +197,11 @@ export const Header: React.FC<HeaderProps> = ({
     currentUser?.fullName ||
     (currentPortal === 'SUPERADMIN' ? 'Dr. V. Rajakumaran' : currentPortal === 'STUDENT' ? 'Aarav Sundaram' : '—');
   const displayInitial = displayName !== '—' ? displayName[0].toUpperCase() : 'U';
+  const cleanCampusName = currentUser?.campus?.name?.replace(/\s*\(Main Campus\)/i, '');
   const displaySubtitle =
     currentUser?.roleName
       ? `${currentUser.roleName} · ${
-          currentUser?.campus?.name ||
+          cleanCampusName ||
           (currentUser.scope === 'GLOBAL'
             ? 'Trust Umbrella (Global)'
             : currentUser.scope === 'REGIONAL'
@@ -211,7 +212,7 @@ export const Header: React.FC<HeaderProps> = ({
       ? 'Super Admin · Trust Umbrella (Global)'
       : currentPortal === 'STUDENT'
       ? 'Scholar · Grade 5A'
-      : `Staff · ${currentUser?.campus?.name || 'Achariya'}`;
+      : `Staff · ${cleanCampusName || 'Achariya'}`;
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -353,10 +354,10 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Student nav */}
           {currentPortal === 'STUDENT' && (
-            <nav className="hidden sm:flex items-center gap-1.5 flex-1 min-w-0 text-xs">
+            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1 text-xs">
               {[
-                { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
-                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
+                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'voice'    as StudentTabType, route: '/student/voice',    label: 'Read Aloud',          icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,  cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
                 { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio',      icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
@@ -364,7 +365,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.tab}
                   onClick={() => onNavigate(item.route)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold border transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-semibold border transition-all whitespace-nowrap ${
                     studentTab === item.tab
                       ? `${item.cls} shadow-xs font-bold`
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
@@ -377,7 +378,7 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Right: consolidated campus status + user profile + sign out + mobile menu toggle */}
-          <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-2 border-l border-slate-200">
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-3 border-l border-slate-200 bg-white relative z-10">
             <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
               {displayInitial}
             </div>
@@ -393,7 +394,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
               <div
-                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[220px]"
+                className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate max-w-[260px]"
                 title={
                   currentUser?.campus?.name ||
                   (currentUser?.scope === 'GLOBAL'
@@ -424,7 +425,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={() => setMobileNavOpen(o => !o)}
               aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              className={`${currentPortal === 'STUDENT' ? 'sm:hidden' : 'lg:hidden'} p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors`}
+              className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
             >
               {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -435,7 +436,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Collapsible Mobile / Tablet Navigation Drawer */}
       {mobileNavOpen && (
-        <div className={`${currentPortal === 'STUDENT' ? 'sm:hidden' : 'lg:hidden'} border-t border-slate-200/80 bg-white px-4 py-3 space-y-3 max-h-[75vh] overflow-y-auto shadow-lg`}>
+        <div className="lg:hidden border-t border-slate-200/80 bg-white px-4 py-3 space-y-3 max-h-[75vh] overflow-y-auto shadow-lg">
           {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
             currentUser?.roleKey !== 'role-ach-student' &&
             currentUser?.roleKey !== 'role-ach-parent' && (

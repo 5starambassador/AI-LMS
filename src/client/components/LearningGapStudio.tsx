@@ -806,6 +806,10 @@ export const LearningGapStudio: React.FC<{
     }
   };
 
+  const cleanPrerequisiteName = (currentGap?.identifiedPrerequisiteName || '')
+    .replace(/^Grade\s+\d+\s*:\s*/i, '')
+    .trim();
+
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Toast Notification */}
@@ -1569,7 +1573,7 @@ export const LearningGapStudio: React.FC<{
                     {/* Prerequisite Flow Chart Widget */}
                     <div className="pt-2 flex flex-wrap items-center gap-2 text-xs font-bold">
                       <div className="bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-400 text-amber-900 shadow-2xs">
-                        {currentGap.recommendedLowerGrade || 'Lower Grade'}: {currentGap.identifiedPrerequisiteName || 'Foundational Prerequisite'} (Root Gap)
+                        {currentGap.recommendedLowerGrade || 'Lower Grade'}: {cleanPrerequisiteName || 'Foundational Prerequisite'} (Root Gap)
                       </div>
                       <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
                       <div className="bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-300 text-purple-900 shadow-2xs">
@@ -1686,7 +1690,7 @@ export const LearningGapStudio: React.FC<{
                 {(currentGap?.studentName || 'Scholar').split(' ')[0]}&apos;s Foundation &amp; Mastery Expedition
               </h2>
               <p className="text-xs text-purple-100 mt-1 max-w-xl">
-                We are building your superpowers! Mastering {currentGap?.recommendedLowerGrade || 'Lower Grade'} {currentGap?.identifiedPrerequisiteName || 'foundations'} will make {currentGap?.grade || 'current-grade'} {currentGap?.conceptName || 'concepts'} simple, quick, and fun.
+                We are building your superpowers! Mastering {currentGap?.recommendedLowerGrade || 'Lower Grade'}: {cleanPrerequisiteName || 'foundations'} will make {currentGap?.grade || 'current-grade'} {currentGap?.conceptName || 'concepts'} simple, quick, and fun.
               </p>
             </div>
 
@@ -1706,7 +1710,7 @@ export const LearningGapStudio: React.FC<{
                     ? `${currentGap.grade}: ${currentGap.conceptName}`
                     : currentGap?.status === 'MASTERED'
                     ? 'Concept Mastered 🏆'
-                    : `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${currentGap?.identifiedPrerequisiteName || 'Prerequisite Bridge'}`}
+                    : `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${cleanPrerequisiteName || 'Prerequisite Bridge'}`}
                 </div>
               </div>
             </div>
@@ -1736,7 +1740,7 @@ export const LearningGapStudio: React.FC<{
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 </div>
                 <h4 className="text-xs font-extrabold text-slate-900 mt-2">
-                  {currentGap?.recommendedLowerGrade || 'Lower Grade'}: {currentGap?.identifiedPrerequisiteName || 'Prerequisite Bridge'}
+                  {currentGap?.recommendedLowerGrade || 'Lower Grade'}: {cleanPrerequisiteName || 'Prerequisite Bridge'}
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Build prerequisite mastery before tackling {currentGap?.grade || 'target'} topics.
@@ -1835,7 +1839,7 @@ export const LearningGapStudio: React.FC<{
                       </span>
                       <h3 className="text-sm font-black text-slate-900 mt-1">
                         {testMode === 'FOUNDATION'
-                          ? `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${currentGap?.identifiedPrerequisiteName || 'Verification Test'}`
+                          ? `${currentGap?.recommendedLowerGrade || 'Foundation'}: ${cleanPrerequisiteName || 'Verification Test'}`
                           : `${currentGap?.grade || 'Current'}: ${currentGap?.conceptName || 'Mastery Reassessment'}`}
                       </h3>
                     </div>
@@ -2004,7 +2008,7 @@ export const LearningGapStudio: React.FC<{
                           Lower Grade Foundation
                         </span>
                         <h3 className="text-sm font-black text-slate-900 mt-1">
-                          {currentGap?.recommendedLowerGrade || 'Grade 5'}: Master {currentGap?.identifiedPrerequisiteName || 'Equivalent Fractions & Base-100 Scaling'}
+                          {currentGap?.recommendedLowerGrade || 'Grade 5'}: Master {cleanPrerequisiteName || 'Equivalent Fractions & Base-100 Scaling'}
                         </h3>
                       </div>
 
