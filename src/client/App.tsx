@@ -19,6 +19,7 @@ import { ParentPortal } from './components/ParentPortal';
 import { ShieldAlert } from 'lucide-react';
 
 const CurriculumHub = React.lazy(() => import('./components/CurriculumHub').then(m => ({ default: m.CurriculumHub })));
+const LmsStudio = React.lazy(() => import('./components/LmsStudio').then(m => ({ default: m.LmsStudio })));
 const WorksheetCanvas = React.lazy(() => import('./components/WorksheetCanvas').then(m => ({ default: m.WorksheetCanvas })));
 const ScoreInsights = React.lazy(() => import('./components/ScoreInsights').then(m => ({ default: m.ScoreInsights })));
 const ExamHub = React.lazy(() => import('./components/ExamHub').then(m => ({ default: m.ExamHub })));
@@ -43,7 +44,9 @@ function AppShell() {
       setCurrentPortal('SUPERADMIN');
     } else if (cleanPath.startsWith('/student')) {
       setCurrentPortal('STUDENT');
-      if (cleanPath === '/student/homework') {
+      if (cleanPath === '/student/lms') {
+        setStudentTab('lms');
+      } else if (cleanPath === '/student/homework') {
         setStudentTab('homework');
       } else if (cleanPath === '/student/voice') {
         setStudentTab('voice');
@@ -56,7 +59,9 @@ function AppShell() {
       }
     } else {
       setCurrentPortal('STAFF');
-      if (cleanPath === '/staff/attendance' || cleanPath === '/attendance') {
+      if (cleanPath === '/staff/lms' || cleanPath === '/lms') {
+        setActiveTab('lms');
+      } else if (cleanPath === '/staff/attendance' || cleanPath === '/attendance') {
         setActiveTab('attendance');
       } else if (cleanPath === '/staff/homework' || cleanPath === '/homework') {
         setActiveTab('homework');
@@ -244,6 +249,12 @@ function AppShell() {
           {currentPortal === 'STAFF' && (
             <div>
               {activeTab === 'home' && <StaffDashboard onNavigate={navigateTo} />}
+              {activeTab === 'lms' && (
+                <LmsStudio
+                  onNavigateToGaps={() => navigateTo('/staff/learning-gaps')}
+                  onNavigateToIntelligence={() => navigateTo('/staff/student-intelligence')}
+                />
+              )}
               {activeTab === 'resources' && <CurriculumHub />}
               {activeTab === 'homework' && <HomeworkHub />}
               {activeTab === 'attendance' && <AttendanceHub />}
@@ -263,11 +274,13 @@ function AppShell() {
               {activeTab === 'learning-gaps' && (
                 <LearningGapStudio
                   onNavigateToIntelligence={() => navigateTo('/staff/student-intelligence')}
+                  onNavigateToLms={() => navigateTo('/staff/lms')}
                 />
               )}
               {activeTab === 'student-intelligence' && (
                 <StudentIntelligenceStudio
                   onNavigateToGaps={() => navigateTo('/staff/learning-gaps')}
+                  onNavigateToLms={() => navigateTo('/staff/lms')}
                 />
               )}
               {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
@@ -282,9 +295,16 @@ function AppShell() {
             </div>
           )}
 
-          {/* VIEW 2: STUDENT PORTAL (VoiceLab & Homework Studio) */}
+          {/* VIEW 2: STUDENT PORTAL (AI LMS, VoiceLab, Gaps & Portfolio) */}
           {currentPortal === 'STUDENT' && (
             <div>
+              {studentTab === 'lms' && (
+                <LmsStudio
+                  initialStudentMode={true}
+                  onNavigateToGaps={() => navigateTo('/student/gaps')}
+                  onNavigateToIntelligence={() => navigateTo('/student/intelligence')}
+                />
+              )}
               {studentTab === 'voicelab' && <LsrStudentPortal />}
               {studentTab === 'voice' && <VoiceActivity />}
               {studentTab === 'homework' && (
@@ -296,12 +316,14 @@ function AppShell() {
                 <LearningGapStudio
                   initialStudentMode={true}
                   onNavigateToIntelligence={() => navigateTo('/student/intelligence')}
+                  onNavigateToLms={() => navigateTo('/student/lms')}
                 />
               )}
               {studentTab === 'intelligence' && (
                 <StudentIntelligenceStudio
                   initialStudentMode={true}
                   onNavigateToGaps={() => navigateTo('/student/gaps')}
+                  onNavigateToLms={() => navigateTo('/student/lms')}
                 />
               )}
             </div>

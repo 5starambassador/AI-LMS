@@ -30,7 +30,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  PlayCircle,
+  Volume2
 } from 'lucide-react';
 import { apiGet, apiPost } from '../lib/api';
 
@@ -549,7 +551,8 @@ const FALLBACK_INSTITUTIONAL = {
 export const StudentIntelligenceStudio: React.FC<{
   initialStudentMode?: boolean;
   onNavigateToGaps?: () => void;
-}> = ({ initialStudentMode = false, onNavigateToGaps }) => {
+  onNavigateToLms?: () => void;
+}> = ({ initialStudentMode = false, onNavigateToGaps, onNavigateToLms }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('ach-stu-aarav-01');
   const [activeSubTab, setActiveSubTab] = useState<
     'master-bmit-vak' | 'holistic-iedp' | 'career-16' | 'portfolio-reports' | 'parent-portal' | 'counsellor-institutional' | 'connected-ecosystem'
@@ -677,10 +680,43 @@ export const StudentIntelligenceStudio: React.FC<{
   const [institutionalData, setInstitutionalData] = useState<any>(FALLBACK_INSTITUTIONAL);
   const [selectedAgeStage, setSelectedAgeStage] = useState<string>('MIDDLE_6_8');
 
-  // VAK Recalibration Modal State
+  // VAK Identification & 3-Layer Recalibration Modal State
   const [showVakModal, setShowVakModal] = useState(false);
+  const [vakModalTab, setVakModalTab] = useState<'QUIZ' | 'TELEMETRY' | 'MANUAL'>('QUIZ');
+  const [vakQuizBand, setVakQuizBand] = useState<'UPPER' | 'EARLY'>('UPPER');
+  const [vakQuizAnswers, setVakQuizAnswers] = useState<Record<number, 'V' | 'A' | 'K'>>({});
+  const [vakTelemetrySnapshot, setVakTelemetrySnapshot] = useState<{
+    visualActions: number;
+    auditoryActions: number;
+    kinaestheticActions: number;
+    lastMasteryScore: number | null;
+    computedVak: { visual: number; auditory: number; kinaesthetic: number };
+  }>({
+    visualActions: 6,
+    auditoryActions: 3,
+    kinaestheticActions: 4,
+    lastMasteryScore: 88,
+    computedVak: { visual: 46, auditory: 22, kinaesthetic: 32 }
+  });
   const [vakDraft, setVakDraft] = useState({ visual: 46, auditory: 22, kinaesthetic: 32 });
   const [savingVak, setSavingVak] = useState(false);
+
+  const openVakDiscoveryModal = () => {
+    try {
+      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.computedVak) {
+          setVakTelemetrySnapshot(parsed);
+        }
+      }
+    } catch {
+      // Ignore fallback storage errors
+    }
+    setVakQuizBand(profile?.student?.gradeBand === 'PRE_PRIMARY' || profile?.student?.gradeNumber <= 3 ? 'EARLY' : 'UPPER');
+    setVakModalTab('QUIZ');
+    setShowVakModal(true);
+  };
 
   // Portfolio Addition Modal State
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
@@ -755,19 +791,202 @@ export const StudentIntelligenceStudio: React.FC<{
       if (instRes.status === 'fulfilled' && instRes.value?.success && instRes.value.data) {
         setInstitutionalData(instRes.value.data);
       }
+
+      try {
+        const rawVak = localStorage.getItem('achariya_vak_telemetry_v1');
+        if (rawVak && selectedStudentId === 'ach-stu-aarav-01') {
+          const parsed = JSON.parse(rawVak);
+          if (parsed?.computedVak) {
+            setVakTelemetrySnapshot(parsed);
+            const { visual, auditory, kinaesthetic } = parsed.computedVak;
+            if (typeof visual === 'number' && typeof auditory === 'number' && typeof kinaesthetic === 'number') {
+              setVakDraft({ visual, auditory, kinaesthetic });
+              setProfile((prev: any) => ({
+                ...prev,
+                vakProfile: {
+                  ...prev.vakProfile,
+                  visualScore: visual,
+                  auditoryScore: auditory,
+                  kinaestheticScore: kinaesthetic
+                }
+              }));
+            }
+          }
+        }
+      } catch {
+        // Ignore storage read errors
+      }
     };
     load();
     return () => { active = false; };
   }, [selectedStudentId]);
 
-  const handleSaveVak = async () => {
+  const VAK_QUIZ_SCENARIOS: Record<'UPPER' | 'EARLY', Array<{ id: number; prompt: string; options: Array<{ mode: 'V' | 'A' | 'K'; label: string }> }>> = {
+    UPPER: [
+      {
+        id: 1,
+        prompt: 'When starting a tricky Mathematics chapter for the first time, what helps you click fastest?',
+        options: [
+          { mode: 'V', label: 'Watching a color-coded diagram or animated 4-scene storyboard' },
+          { mode: 'A', label: 'Listening to a clear voice walkthrough explaining the "why" step by step' },
+          { mode: 'K', label: 'Trying an interactive slider or drag-and-drop puzzle myself' }
+        ]
+      },
+      {
+        id: 2,
+        prompt: 'While revising before a test or mastery check, how do you remember rules longest?',
+        options: [
+          { mode: 'V', label: 'Picturing mind maps, shaded grids, and highlighted formulas' },
+          { mode: 'A', label: 'Explaining the rule out loud or hearing a quick audio recap' },
+          { mode: 'K', label: 'Testing numbers live in a simulation until the pattern feels obvious' }
+        ]
+      },
+      {
+        id: 3,
+        prompt: 'If you get a prerequisite question wrong, which relearning mode fixes the confusion best?',
+        options: [
+          { mode: 'V', label: 'Seeing a visual comparison showing where the steps diverged' },
+          { mode: 'A', label: 'Hearing an AI Voice Coach break down the misconception calmly' },
+          { mode: 'K', label: 'Manipulating virtual tiles, groups, or balance scales hands-on' }
+        ]
+      },
+      {
+        id: 4,
+        prompt: 'In Science or CS labs, how do you naturally explore a new concept?',
+        options: [
+          { mode: 'V', label: 'Tracing flowcharts, state diagrams, and labeled schematics first' },
+          { mode: 'A', label: 'Discussing predictions and listening to real-world analogies' },
+          { mode: 'K', label: 'Changing variables directly (heat, sliders, inputs) to watch what happens' }
+        ]
+      },
+      {
+        id: 5,
+        prompt: 'When reading a long comprehension passage, what keeps your focus sharpest?',
+        options: [
+          { mode: 'V', label: 'Color-highlighting clue words and mapping the paragraph structure' },
+          { mode: 'A', label: 'Hearing the passage read aloud with expressive pacing' },
+          { mode: 'K', label: 'Dragging clue cards into an Inference Builder board' }
+        ]
+      },
+      {
+        id: 6,
+        prompt: 'When you teach a concept back to a friend, what do you reach for first?',
+        options: [
+          { mode: 'V', label: 'Sketching a quick box model or chart on paper' },
+          { mode: 'A', label: 'Talking them through the story and rhythm of the steps' },
+          { mode: 'K', label: 'Showing them with real objects, gestures, or a live demo' }
+        ]
+      }
+    ],
+    EARLY: [
+      {
+        id: 1,
+        prompt: 'Observation 1 (Attention Cue): How does the child engage with a brand-new story or topic?',
+        options: [
+          { mode: 'V', label: 'Focuses closely on bright picture cards, animations, and illustrations' },
+          { mode: 'A', label: 'Responds eagerly to expressive narration, rhymes, and sound cues' },
+          { mode: 'K', label: 'Reaches out to touch props, trace shapes, or act out the story' }
+        ]
+      },
+      {
+        id: 2,
+        prompt: 'Observation 2 (Number & Pattern Play): How does the child solve early numeracy tasks?',
+        options: [
+          { mode: 'V', label: 'Matches dot cards, color patterns, and visual picture sequences' },
+          { mode: 'A', label: 'Counts aloud rhythmically or follows spoken step songs' },
+          { mode: 'K', label: 'Moves wooden blocks, beads, or virtual tiles with their hands' }
+        ]
+      },
+      {
+        id: 3,
+        prompt: 'Observation 3 (Relearning Support): When confused, what brings an immediate smile & clarity?',
+        options: [
+          { mode: 'V', label: 'Showing a big color-coded visual demonstration card' },
+          { mode: 'A', label: 'Gentle spoken re-explanation or playful audio clue' },
+          { mode: 'K', label: 'Letting the child physically move, tap, or build the answer' }
+        ]
+      },
+      {
+        id: 4,
+        prompt: 'Observation 4 (Phonics & Words): How does the scholar retain new vocabulary best?',
+        options: [
+          { mode: 'V', label: 'Picture-word flashcards and color-grouped word families' },
+          { mode: 'A', label: 'Listening & repeating phonemes aloud (Read Aloud & VoiceLab)' },
+          { mode: 'K', label: 'Air-writing, clay modeling, or interactive tap-to-sort games' }
+        ]
+      },
+      {
+        id: 5,
+        prompt: 'Observation 5 (Classroom Choice): During free learning time, which station is picked first?',
+        options: [
+          { mode: 'V', label: 'Animated video storybooks, drawing boards, and picture puzzles' },
+          { mode: 'A', label: 'Audio listening corner, storytelling circle, and sing-alongs' },
+          { mode: 'K', label: 'STEM building blocks, clay lab, and motion simulations' }
+        ]
+      },
+      {
+        id: 6,
+        prompt: 'Observation 6 (Recall Check): How does the child share what they just learned?',
+        options: [
+          { mode: 'V', label: 'Points to or draws the picture sequence accurately' },
+          { mode: 'A', label: 'Retells the idea verbally in their own words' },
+          { mode: 'K', label: 'Demonstrates the steps using actions or objects' }
+        ]
+      }
+    ]
+  };
+
+  const normalizeVakTriple = (raw: { visual: number; auditory: number; kinaesthetic: number }) => {
+    const total = Math.max(1, raw.visual + raw.auditory + raw.kinaesthetic);
+    const v = Math.round((raw.visual / total) * 100);
+    const a = Math.round((raw.auditory / total) * 100);
+    const k = Math.max(0, 100 - v - a);
+    const sorted = [
+      { name: 'Visual', score: v },
+      { name: 'Auditory', score: a },
+      { name: 'Kinaesthetic', score: k }
+    ].sort((x, y) => y.score - x.score);
+    return { visual: v, auditory: a, kinaesthetic: k, primaryBlend: `${sorted[0].name}-${sorted[1].name} Blend` };
+  };
+
+  const computeQuizTriple = () => {
+    const counts = { V: 1, A: 1, K: 1 };
+    Object.values(vakQuizAnswers).forEach(ans => {
+      counts[ans] += 3;
+    });
+    return normalizeVakTriple({ visual: counts.V, auditory: counts.A, kinaesthetic: counts.K });
+  };
+
+  const computeTriangulatedTriple = () => {
+    const quiz = Object.keys(vakQuizAnswers).length > 0
+      ? computeQuizTriple()
+      : normalizeVakTriple(vakDraft);
+    const totalTel = Math.max(
+      1,
+      vakTelemetrySnapshot.visualActions + vakTelemetrySnapshot.auditoryActions + vakTelemetrySnapshot.kinaestheticActions
+    );
+    const telV = Math.round((vakTelemetrySnapshot.visualActions / totalTel) * 100);
+    const telA = Math.round((vakTelemetrySnapshot.auditoryActions / totalTel) * 100);
+    const telK = Math.max(0, 100 - telV - telA);
+    const masteryBonus = vakTelemetrySnapshot.lastMasteryScore ?? 85;
+    // 40% Diagnostic/Baseline + 30% Live LMS/Gap Telemetry + 30% Mastery-Weighted Computed Signal
+    return normalizeVakTriple({
+      visual: Math.round(quiz.visual * 0.4 + telV * 0.3 + vakTelemetrySnapshot.computedVak.visual * (masteryBonus / 100) * 0.3),
+      auditory: Math.round(quiz.auditory * 0.4 + telA * 0.3 + vakTelemetrySnapshot.computedVak.auditory * (masteryBonus / 100) * 0.3),
+      kinaesthetic: Math.round(quiz.kinaesthetic * 0.4 + telK * 0.3 + vakTelemetrySnapshot.computedVak.kinaesthetic * (masteryBonus / 100) * 0.3)
+    });
+  };
+
+  const handleSaveVak = async (overrideTriple?: { visual: number; auditory: number; kinaesthetic: number }) => {
+    const source = overrideTriple ?? vakDraft;
+    const normalized = normalizeVakTriple(source);
     setSavingVak(true);
     try {
       const res = await apiPost<any>('/api/student-intelligence/vak/assess', {
         studentId: selectedStudentId,
-        visualScore: vakDraft.visual,
-        auditoryScore: vakDraft.auditory,
-        kinaestheticScore: vakDraft.kinaesthetic,
+        visualScore: normalized.visual,
+        auditoryScore: normalized.auditory,
+        kinaestheticScore: normalized.kinaesthetic,
         activeConcept: profile.student.activeConceptGap
       });
       if (res?.success && res.data) {
@@ -775,26 +994,54 @@ export const StudentIntelligenceStudio: React.FC<{
           ...prev,
           vakProfile: {
             ...prev.vakProfile,
+            primaryBlend: normalized.primaryBlend,
             visualScore: res.data.visualScore,
             auditoryScore: res.data.auditoryScore,
             kinaestheticScore: res.data.kinaestheticScore,
             conceptModalityRecommendations: res.data.conceptModalityRecommendations
           }
         }));
+      } else {
+        setProfile((prev: any) => ({
+          ...prev,
+          vakProfile: {
+            ...prev.vakProfile,
+            primaryBlend: normalized.primaryBlend,
+            visualScore: normalized.visual,
+            auditoryScore: normalized.auditory,
+            kinaestheticScore: normalized.kinaesthetic
+          }
+        }));
       }
     } catch {
-      const total = Math.max(1, vakDraft.visual + vakDraft.auditory + vakDraft.kinaesthetic);
-      const v = Math.round((vakDraft.visual / total) * 100);
-      const a = Math.round((vakDraft.auditory / total) * 100);
-      const k = Math.max(0, 100 - v - a);
       setProfile((prev: any) => ({
         ...prev,
-        vakProfile: { ...prev.vakProfile, visualScore: v, auditoryScore: a, kinaestheticScore: k }
+        vakProfile: {
+          ...prev.vakProfile,
+          primaryBlend: normalized.primaryBlend,
+          visualScore: normalized.visual,
+          auditoryScore: normalized.auditory,
+          kinaestheticScore: normalized.kinaesthetic
+        }
       }));
     } finally {
+      setVakDraft({ visual: normalized.visual, auditory: normalized.auditory, kinaesthetic: normalized.kinaesthetic });
+      try {
+        const raw = localStorage.getItem('achariya_vak_telemetry_v1');
+        const prev = raw ? JSON.parse(raw) : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [] };
+        const updated = {
+          ...prev,
+          computedVak: { visual: normalized.visual, auditory: normalized.auditory, kinaesthetic: normalized.kinaesthetic },
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('achariya_vak_telemetry_v1', JSON.stringify(updated));
+        setVakTelemetrySnapshot(updated);
+      } catch {
+        // Ignore storage write errors
+      }
       setSavingVak(false);
       setShowVakModal(false);
-      notify('VAK Multimodal Profile recalibrated and synced with Remedial Engine!');
+      notify(`VAK Profile updated (${normalized.visual}% V / ${normalized.auditory}% A / ${normalized.kinaesthetic}% K) and synced to AI LMS & Gap Studio!`);
     }
   };
 
@@ -1580,23 +1827,17 @@ export const StudentIntelligenceStudio: React.FC<{
             {/* VAK Multimodal Profile + Concept Prescriptions */}
             <div className="lg:col-span-5 space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <div>
                     <h2 className="text-sm font-black text-slate-900">VAK Multimodal Learning Preferences</h2>
-                    <p className="text-[11px] text-slate-500">{profile.vakProfile.primaryBlend} (Flexible Multimodal Guide)</p>
+                    <p className="text-[11px] text-slate-500">{profile.vakProfile.primaryBlend} • 3-Layer Dynamic Identification</p>
                   </div>
-                  {!initialStudentMode ? (
-                    <button
-                      onClick={() => setShowVakModal(true)}
-                      className="text-[11px] font-bold text-indigo-600 hover:underline"
-                    >
-                      Recalibrate →
-                    </button>
-                  ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
-                      Teacher / Counsellor Calibrated
-                    </span>
-                  )}
+                  <button
+                    onClick={openVakDiscoveryModal}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-extrabold transition-colors whitespace-nowrap"
+                  >
+                    {initialStudentMode ? 'Discover / Calibrate VAK →' : '3-Layer VAK Calibrate →'}
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5">
@@ -1634,6 +1875,33 @@ export const StudentIntelligenceStudio: React.FC<{
                       <span className="font-extrabold text-emerald-700">🖐️ Kinaesthetic: </span>
                       <span className="text-slate-600">{profile.vakProfile.conceptModalityRecommendations.kinaesthetic.join(' • ')}</span>
                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-slate-500">
+                      First-time learning & relearning served in all 3 modes
+                    </span>
+                    <button
+                      onClick={() => {
+                        try {
+                          const concept = (profile.vakProfile.conceptModalityRecommendations.conceptName || '').toLowerCase();
+                          const targetLesson = concept.includes('fraction') || concept.includes('equiv')
+                            ? 'lms-mth-g5-equiv'
+                            : 'lms-mth-g6-pct';
+                          localStorage.setItem('achariya_active_lms_lesson', targetLesson);
+                        } catch {
+                          // Ignore storage error
+                        }
+                        if (onNavigateToLms) {
+                          onNavigateToLms();
+                        } else {
+                          onNavigateToGaps?.();
+                        }
+                      }}
+                      className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-extrabold shadow-xs transition-all"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5" />
+                      <span>Launch Multimodal LMS Lesson →</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2441,7 +2709,7 @@ export const StudentIntelligenceStudio: React.FC<{
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {[
-                  { label: 'My Learning', tab: () => { setActiveStudentHubBanner('My Learning'); onNavigateToGaps?.(); } },
+                  { label: 'My Learning', tab: () => { setActiveStudentHubBanner('My Learning · Opened AI Multimodal LMS'); if (onNavigateToLms) onNavigateToLms(); else onNavigateToGaps?.(); } },
                   { label: 'My AI Learning Companion', tab: () => { setActiveStudentHubBanner('My AI Learning Companion'); onNavigateToGaps?.(); } },
                   { label: 'My Assessments', tab: () => { setActiveStudentHubBanner('My Assessments'); onNavigateToGaps?.(); } },
                   { label: 'My Remedial Lessons', tab: () => { setActiveStudentHubBanner('My Remedial Lessons'); onNavigateToGaps?.(); } },
@@ -2523,41 +2791,233 @@ export const StudentIntelligenceStudio: React.FC<{
         </div>
       )}
 
-      {/* VAK Calibration Modal */}
-      {!initialStudentMode && showVakModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-slate-200 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900">Quick VAK Multimodal Calibration</h3>
-              <button onClick={() => setShowVakModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
-            </div>
-            <p className="text-xs text-slate-500">Adjust observed engagement ratios (automatically normalized to 100%). Multimodal delivery remains active for every scholar.</p>
-            {[
-              { label: 'Visual (Diagrams, Mind Maps, 100-Grid)', key: 'visual' as const },
-              { label: 'Auditory (Discussions, Verbal Rules)', key: 'auditory' as const },
-              { label: 'Kinaesthetic (Hands-on Blocks, Experiments)', key: 'kinaesthetic' as const }
-            ].map(item => (
-              <div key={item.key} className="space-y-1">
-                <div className="flex justify-between text-xs font-bold text-slate-700">
-                  <span>{item.label}</span>
-                  <span>{vakDraft[item.key]}</span>
-                </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={80}
-                  value={vakDraft[item.key]}
-                  onChange={e => setVakDraft(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
-                  className="w-full accent-indigo-600"
-                />
+      {/* 3-Layer VAK Identification & Calibration Modal (Student Discovery + Staff Calibration) */}
+      {showVakModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-2xl border border-slate-200 shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">3-Layer VAK Learning Style Identification & Calibration</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Triangulates age-adapted self/teacher discovery, live AI LMS video/audio/simulation telemetry, and mastery outcomes. Every scholar still receives all 3 modes.
+                </p>
               </div>
-            ))}
-            <div className="flex justify-end space-x-2 pt-2">
-              <button onClick={() => setShowVakModal(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
-              <button onClick={handleSaveVak} disabled={savingVak} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
-                {savingVak ? 'Saving…' : 'Save & Sync Remedial Engine'}
+              <button onClick={() => setShowVakModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* 3 Modal Tabs */}
+            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-2xl">
+              <button
+                onClick={() => setVakModalTab('QUIZ')}
+                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                  vakModalTab === 'QUIZ' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                1. Age-Adapted Quiz
+              </button>
+              <button
+                onClick={() => setVakModalTab('TELEMETRY')}
+                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                  vakModalTab === 'TELEMETRY' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                2. Live LMS Telemetry
+              </button>
+              <button
+                onClick={() => setVakModalTab('MANUAL')}
+                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                  vakModalTab === 'MANUAL' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                3. Manual Sliders
+              </button>
+            </div>
+
+            {vakModalTab === 'QUIZ' && (() => {
+              const quizTri = computeQuizTriple();
+              const answeredCount = Object.keys(vakQuizAnswers).length;
+              return (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setVakQuizBand('UPPER')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
+                          vakQuizBand === 'UPPER' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                        }`}
+                      >
+                        Grades 4–12 Scenario Quiz
+                      </button>
+                      <button
+                        onClick={() => setVakQuizBand('EARLY')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
+                          vakQuizBand === 'EARLY' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                        }`}
+                      >
+                        KG–Grade 3 Observation Checklist
+                      </button>
+                    </div>
+                    <span className="text-xs font-black text-indigo-700">
+                      {answeredCount}/6 Answered
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 max-h-[42vh] overflow-y-auto pr-1">
+                    {VAK_QUIZ_SCENARIOS[vakQuizBand].map(q => {
+                      const picked = vakQuizAnswers[q.id];
+                      return (
+                        <div key={q.id} className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-2.5">
+                          <div className="text-xs font-extrabold text-slate-800">
+                            Q{q.id}. {q.prompt}
+                          </div>
+                          <div className="grid grid-cols-1 gap-1.5">
+                            {q.options.map(opt => {
+                              const active = picked === opt.mode;
+                              const badge = opt.mode === 'V'
+                                ? { tag: 'Visual', cls: active ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700' }
+                                : opt.mode === 'A'
+                                  ? { tag: 'Auditory', cls: active ? 'bg-sky-600 text-white' : 'bg-sky-100 text-sky-700' }
+                                  : { tag: 'Kinaesthetic', cls: active ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700' };
+                              return (
+                                <button
+                                  key={opt.mode}
+                                  onClick={() => setVakQuizAnswers(prev => ({ ...prev, [q.id]: opt.mode }))}
+                                  className={`flex items-center justify-between gap-2 text-left p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                                    active
+                                      ? 'bg-white border-indigo-400 ring-2 ring-indigo-100 text-slate-900'
+                                      : 'bg-white/80 border-slate-200 text-slate-600 hover:border-slate-300'
+                                  }`}
+                                >
+                                  <span>{opt.label}</span>
+                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black shrink-0 ${badge.cls}`}>
+                                    {badge.tag}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-xs space-y-0.5">
+                      <div className="text-[11px] font-bold text-slate-300 uppercase">Live Quiz Result ({quizTri.primaryBlend})</div>
+                      <div className="font-black">
+                        👁️ {quizTri.visual}% Visual • 🎧 {quizTri.auditory}% Auditory • 🖐️ {quizTri.kinaesthetic}% Kinaesthetic
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowVakModal(false)} className="px-3 py-2 text-xs font-bold text-slate-300 hover:text-white">
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleSaveVak(quizTri)}
+                        disabled={savingVak}
+                        className="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-black transition-colors"
+                      >
+                        {savingVak ? 'Syncing…' : 'Apply Quiz VAK Profile →'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {vakModalTab === 'TELEMETRY' && (() => {
+              const tri = computeTriangulatedTriple();
+              return (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-1.5">
+                    <div className="text-xs font-black text-indigo-900">Triangulation Engine (3-Layer Formula)</div>
+                    <p className="text-xs text-indigo-800/90 leading-relaxed">
+                      Combines <strong>40% Initial Quiz/Baseline</strong> + <strong>30% Live LMS & Learning Gap Studio Signals</strong> (video frames, audio listens, hands-on simulations) + <strong>30% Mastery Check Gains</strong> so VAK automatically evolves as the student learns.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="p-3 rounded-2xl bg-purple-50 border border-purple-200 text-center">
+                      <Eye className="w-4 h-4 text-purple-600 mx-auto mb-1" />
+                      <div className="text-base font-black text-purple-900">{vakTelemetrySnapshot.visualActions}</div>
+                      <div className="text-[11px] font-bold text-purple-700">Video / Diagrams</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-center">
+                      <Volume2 className="w-4 h-4 text-sky-600 mx-auto mb-1" />
+                      <div className="text-base font-black text-sky-900">{vakTelemetrySnapshot.auditoryActions}</div>
+                      <div className="text-[11px] font-bold text-sky-700">Audio Listens</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                      <Hand className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                      <div className="text-base font-black text-emerald-900">{vakTelemetrySnapshot.kinaestheticActions}</div>
+                      <div className="text-[11px] font-bold text-emerald-700">Simulations Run</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+                      <Sparkles className="w-4 h-4 text-amber-600 mx-auto mb-1" />
+                      <div className="text-base font-black text-amber-900">{vakTelemetrySnapshot.lastMasteryScore ?? 85}%</div>
+                      <div className="text-[11px] font-bold text-amber-700">Last Mastery Score</div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <div className="text-[11px] font-bold text-slate-300 uppercase">Recommended Triangulated Blend ({tri.primaryBlend})</div>
+                      <div className="text-sm font-black">
+                        👁️ {tri.visual}% Visual • 🎧 {tri.auditory}% Auditory • 🖐️ {tri.kinaesthetic}% Kinaesthetic
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowVakModal(false)} className="px-3 py-2 text-xs font-bold text-slate-300 hover:text-white">
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleSaveVak(tri)}
+                        disabled={savingVak}
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition-colors"
+                      >
+                        {savingVak ? 'Syncing…' : 'Apply Triangulated VAK & Sync →'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {vakModalTab === 'MANUAL' && (
+              <div className="space-y-4">
+                <p className="text-xs text-slate-500">
+                  Adjust observed engagement ratios manually (automatically normalized to 100%). Multimodal delivery remains active for every scholar.
+                </p>
+                {[
+                  { label: 'Visual (Animated Storyboards, Mind Maps, 100-Grid)', key: 'visual' as const },
+                  { label: 'Auditory (Voice Coach TTS, Discussions, Verbal Rules)', key: 'auditory' as const },
+                  { label: 'Kinaesthetic (Interactive Simulations, Sliders, Experiments)', key: 'kinaesthetic' as const }
+                ].map(item => (
+                  <div key={item.key} className="space-y-1">
+                    <div className="flex justify-between text-xs font-bold text-slate-700">
+                      <span>{item.label}</span>
+                      <span>{vakDraft[item.key]}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10}
+                      max={80}
+                      value={vakDraft[item.key]}
+                      onChange={e => setVakDraft(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
+                      className="w-full accent-indigo-600"
+                    />
+                  </div>
+                ))}
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button onClick={() => setShowVakModal(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+                  <button onClick={() => handleSaveVak()} disabled={savingVak} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                    {savingVak ? 'Saving…' : 'Save & Sync Remedial Engine'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

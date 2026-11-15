@@ -21,12 +21,14 @@ import {
   Target,
   Menu,
   X,
-  LogOut
+  LogOut,
+  PlayCircle
 } from 'lucide-react';
 import { User } from '../types';
 
 export type ActiveTabType =
   | 'home'
+  | 'lms'
   | 'resources'
   | 'homework'
   | 'attendance'
@@ -44,7 +46,7 @@ export type ActiveTabType =
   | 'leaves'
   | 'fees';
 
-export type StudentTabType = 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
+export type StudentTabType = 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
 
 interface HeaderProps {
   activeTab: ActiveTabType;
@@ -76,10 +78,11 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-teal-600',
     activeColor: 'bg-teal-50 text-teal-800 border-teal-200',
     items: [
-      { label: 'Attendance', tab: 'attendance',  route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
-      { label: 'Curriculum', tab: 'resources',   route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,     desc: 'Digital textbooks & flipbook reader' },
-      { label: 'Homework',   tab: 'homework',    route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,    desc: 'Assign and grade homework tasks' },
-      { label: 'Worksheet',  tab: 'worksheet',   route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,      desc: 'Build interactive worksheets' },
+      { label: 'AI LMS Studio', tab: 'lms',        route: '/staff/lms',         icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
+      { label: 'Attendance',    tab: 'attendance', route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
+      { label: 'Curriculum',    tab: 'resources',  route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,      desc: 'Digital textbooks & flipbook reader' },
+      { label: 'Homework',      tab: 'homework',   route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,     desc: 'Assign and grade homework tasks' },
+      { label: 'Worksheet',     tab: 'worksheet',  route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,       desc: 'Build interactive worksheets' },
     ]
   },
   {
@@ -356,11 +359,12 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1 text-xs">
               {[
-                { tab: 'gaps'     as StudentTabType, route: '/student/gaps',     label: 'Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
-                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
-                { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
-                { tab: 'voice'    as StudentTabType, route: '/student/voice',    label: 'Read Aloud',          icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,  cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
-                { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio',      icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'lms'          as StudentTabType, route: '/student/lms',          label: 'AI LMS',          icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'gaps'         as StudentTabType, route: '/student/gaps',         label: 'Gaps & Mastery',  icon: <Target className="w-3.5 h-3.5 text-purple-600" />,   cls: 'bg-purple-50 text-purple-800 border-purple-200' },
+                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT',       icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                { tab: 'voicelab'     as StudentTabType, route: '/student/voicelab',     label: 'VoiceLab',        icon: <Mic className="w-3.5 h-3.5 text-teal-600" />,        cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'voice'        as StudentTabType, route: '/student/voice',        label: 'Read Aloud',      icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,        cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
+                { tab: 'homework'     as StudentTabType, route: '/student/homework',     label: 'Homework',        icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />,  cls: 'bg-teal-50 text-teal-800 border-teal-200' },
               ].map(item => (
                 <button
                   key={item.tab}
@@ -559,6 +563,7 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <div className="grid grid-cols-1 gap-1.5">
               {[
+                { tab: 'lms' as StudentTabType, route: '/student/lms', label: 'AI LMS · Video, Audio & Simulations', icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'gaps' as StudentTabType, route: '/student/gaps', label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },

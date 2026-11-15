@@ -41,7 +41,12 @@ import {
   HelpCircle as HelpIcon,
   Copy,
   QrCode,
-  Users
+  Users,
+  Headphones,
+  Volume2,
+  Hand,
+  PauseCircle,
+  Square
 } from 'lucide-react';
 import { apiGet, apiPost } from '../lib/api';
 
@@ -388,14 +393,105 @@ const DEFAULT_SUMMARY = {
 export const LearningGapStudio: React.FC<{
   initialStudentMode?: boolean;
   onNavigateToIntelligence?: () => void;
+  onNavigateToLms?: () => void;
 }> = ({
   initialStudentMode = false,
   onNavigateToIntelligence,
+  onNavigateToLms,
 }) => {
   // Navigation tabs within the Learning Gap Studio
   const [activeTab, setActiveTab] = useState<
     'student-portal' | 'teacher-dashboard' | 'learning-academy' | 'student-report'
   >(initialStudentMode ? 'student-portal' : 'teacher-dashboard');
+
+  // Multimodal VAK Telemetry & Learning/Relearning Player State
+  const [liveVakProfile, setLiveVakProfile] = useState<{ visual: number; auditory: number; kinaesthetic: number }>(() => {
+    try {
+      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.computedVak) return parsed.computedVak;
+      }
+    } catch {
+      // Ignore storage fallback errors
+    }
+    return { visual: 46, auditory: 22, kinaesthetic: 32 };
+  });
+  const [phase1Mode, setPhase1Mode] = useState<'VISUAL' | 'AUDITORY' | 'KINAESTHETIC'>('KINAESTHETIC');
+  const [phase1VideoStep, setPhase1VideoStep] = useState<number>(0);
+  const [phase3Mode, setPhase3Mode] = useState<'VISUAL' | 'AUDITORY' | 'KINAESTHETIC'>('KINAESTHETIC');
+  const [phase3SimPct, setPhase3SimPct] = useState<number>(25);
+  const [phase3SimTotal, setPhase3SimTotal] = useState<number>(240);
+  const [speakingPhase, setSpeakingPhase] = useState<'NONE' | 'PHASE1' | 'PHASE3'>('NONE');
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  const recordGapVakInteraction = (modality: 'VISUAL' | 'AUDITORY' | 'KINAESTHETIC') => {
+    try {
+      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
+      const prev = raw
+        ? JSON.parse(raw)
+        : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], lastMasteryScore: 88 };
+      const vA = (prev.visualActions || 6) + (modality === 'VISUAL' ? 1 : 0);
+      const aA = (prev.auditoryActions || 3) + (modality === 'AUDITORY' ? 1 : 0);
+      const kA = (prev.kinaestheticActions || 4) + (modality === 'KINAESTHETIC' ? 1 : 0);
+      const sum = Math.max(1, vA + aA + kA);
+      const v = Math.round((vA / sum) * 100);
+      const a = Math.round((aA / sum) * 100);
+      const k = Math.max(0, 100 - v - a);
+      const updated = {
+        ...prev,
+        visualActions: vA,
+        auditoryActions: aA,
+        kinaestheticActions: kA,
+        lastModalityUsed: modality,
+        computedVak: { visual: v, auditory: a, kinaesthetic: k },
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem('achariya_vak_telemetry_v1', JSON.stringify(updated));
+      setLiveVakProfile({ visual: v, auditory: a, kinaesthetic: k });
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  const speakPhaseAudio = (phase: 'PHASE1' | 'PHASE3', script: string) => {
+    if (!('speechSynthesis' in window)) {
+      showToast('Browser speech synthesis unavailable.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    if (speakingPhase === phase) {
+      setSpeakingPhase('NONE');
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(script);
+    utter.lang = 'en-IN';
+    utter.rate = 0.96;
+    utter.onend = () => setSpeakingPhase('NONE');
+    utter.onerror = () => setSpeakingPhase('NONE');
+    setSpeakingPhase(phase);
+    recordGapVakInteraction('AUDITORY');
+    window.speechSynthesis.speak(utter);
+  };
+
+  const openLessonInLmsStudio = (lessonId: string) => {
+    try {
+      localStorage.setItem('achariya_active_lms_lesson', lessonId);
+    } catch {
+      // Ignore storage errors
+    }
+    if (onNavigateToLms) {
+      onNavigateToLms();
+    } else {
+      window.history.pushState(null, '', initialStudentMode ? '/student/lms' : '/staff/lms');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
 
   // Loading & Data States with resilient defaults
   const [loading, setLoading] = useState(false);
@@ -1522,28 +1618,41 @@ export const LearningGapStudio: React.FC<{
                         </span>
                       </div>
                       <p className="text-xs text-slate-700">
-                        <span className="font-semibold text-violet-800">VAK Multimodal Prescription:</span> Visual 100-Grid · Auditory Ratio Dialogue · Kinaesthetic Paper-Folding
+                        <span className="font-semibold text-violet-800">
+                          Live VAK Prescription (V:{liveVakProfile.visual}% · A:{liveVakProfile.auditory}% · K:{liveVakProfile.kinaesthetic}%):
+                        </span>{' '}
+                        Visual Animated Video &amp; 100-Grid · Audio Coach Dialogue · Interactive Discount &amp; Fraction Sim
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (onNavigateToIntelligence) {
-                          onNavigateToIntelligence();
-                        } else {
-                          window.history.pushState(
-                            null,
-                            '',
-                            initialStudentMode ? '/student/intelligence' : '/staff/student-intelligence'
-                          );
-                          window.dispatchEvent(new PopStateEvent('popstate'));
-                        }
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors shrink-0"
-                    >
-                      <span>Full 360° BMIT &amp; Career Profile</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openLessonInLmsStudio('lms-mth-g5-equiv')}
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition-colors"
+                      >
+                        <PlayCircle className="w-3.5 h-3.5" />
+                        <span>Open AI LMS Studio</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onNavigateToIntelligence) {
+                            onNavigateToIntelligence();
+                          } else {
+                            window.history.pushState(
+                              null,
+                              '',
+                              initialStudentMode ? '/student/intelligence' : '/staff/student-intelligence'
+                            );
+                            window.dispatchEvent(new PopStateEvent('popstate'));
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors"
+                      >
+                        <span>Full 360° BMIT &amp; Career Profile</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Multi-Grade Root Cause Diagnostic Blueprint */}
@@ -2000,26 +2109,155 @@ export const LearningGapStudio: React.FC<{
               ) : (
                 /* INTERACTIVE LESSON CARDS: FOUNDATION & CURRENT GRADE */
                 <div className="space-y-6">
-                  {/* Step 1 Foundation Interactive Explainer Card */}
+                  {/* Step 1 Foundation Interactive Explainer Card (Visual · Audio · Simulation) */}
                   <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span className="text-[10px] font-extrabold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full uppercase">
-                          Lower Grade Foundation
+                          Lower Grade Foundation · Multimodal Learn &amp; Relearn
                         </span>
                         <h3 className="text-sm font-black text-slate-900 mt-1">
                           {currentGap?.recommendedLowerGrade || 'Grade 5'}: Master {cleanPrerequisiteName || 'Equivalent Fractions & Base-100 Scaling'}
                         </h3>
                       </div>
 
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openLessonInLmsStudio('lms-mth-g5-equiv')}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1 shadow-2xs"
+                        >
+                          <PlayCircle className="w-3.5 h-3.5" />
+                          <span>Open Full AI LMS</span>
+                        </button>
+                        <button
+                          onClick={() => handleCompleteStep('item-f1', 1)}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center space-x-1"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Mark Understood</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* VAK Modality Switcher: Video · Audio · Interactive Simulation */}
+                    <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl">
                       <button
-                        onClick={() => handleCompleteStep('item-f1', 1)}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center space-x-1"
+                        type="button"
+                        onClick={() => {
+                          setPhase1Mode('VISUAL');
+                          recordGapVakInteraction('VISUAL');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase1Mode === 'VISUAL' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
                       >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Mark Understood</span>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Visual Video</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhase1Mode('AUDITORY');
+                          recordGapVakInteraction('AUDITORY');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase1Mode === 'AUDITORY' ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <Headphones className="w-3.5 h-3.5" />
+                        <span>Audio Coach</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhase1Mode('KINAESTHETIC');
+                          recordGapVakInteraction('KINAESTHETIC');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase1Mode === 'KINAESTHETIC' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <Hand className="w-3.5 h-3.5" />
+                        <span>100-Grid Simulation</span>
                       </button>
                     </div>
+
+                    {/* VISUAL ANIMATION MODE */}
+                    {phase1Mode === 'VISUAL' && (
+                      <div className="rounded-2xl bg-gradient-to-br from-purple-700 via-indigo-700 to-indigo-800 text-white p-5 space-y-4 shadow-sm">
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="px-2.5 py-0.5 rounded-full bg-white/20 uppercase">
+                            Animated Scene {phase1VideoStep + 1} / 4
+                          </span>
+                          <div className="flex gap-1.5">
+                            {[0, 1, 2, 3].map(idx => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setPhase1VideoStep(idx);
+                                  recordGapVakInteraction('VISUAL');
+                                }}
+                                className={`px-2 py-0.5 rounded-lg border ${
+                                  phase1VideoStep === idx ? 'bg-white text-indigo-900 border-white' : 'bg-white/10 text-white border-white/25'
+                                }`}
+                              >
+                                Step {idx + 1}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-center py-2 space-y-2">
+                          <div className="text-sm font-black text-amber-300">
+                            {[
+                              '1. Resize the Bottom Denominator to 100',
+                              '2. Discover the Scaling Multiplier (100 ÷ 5 = 20)',
+                              '3. Multiply Both Top & Bottom by ×20',
+                              '4. Any Fraction Over 100 Is Directly a %'
+                            ][phase1VideoStep]}
+                          </div>
+                          <div className="inline-block px-5 py-3 rounded-xl bg-slate-950/40 border border-white/20 font-mono text-base font-black">
+                            {[
+                              '3 / 5   ➔   ? / 100',
+                              '5 × 20 = 100   (Multiplier: ×20)',
+                              '(3 × 20) / (5 × 20) = 60 / 100',
+                              '60 / 100 = 60% Shaded Area'
+                            ][phase1VideoStep]}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AUDITORY VOICE COACH MODE */}
+                    {phase1Mode === 'AUDITORY' && (
+                      <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-3 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-black text-sky-950 flex items-center gap-1.5">
+                            <Volume2 className="w-4 h-4 text-sky-600" />
+                            <span>Listen to Audio Teacher: Base-100 Fraction Rule</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              speakPhaseAudio(
+                                'PHASE1',
+                                'Think of percent as out of one hundred. Whenever you see three over five, ask what times five equals one hundred. Since five times twenty is one hundred, multiply both top and bottom by twenty to get sixty over one hundred, which is sixty percent.'
+                              )
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-white shadow-2xs ${
+                              speakingPhase === 'PHASE1' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-sky-600 hover:bg-sky-700'
+                            }`}
+                          >
+                            {speakingPhase === 'PHASE1' ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            <span>{speakingPhase === 'PHASE1' ? 'Stop Audio' : 'Play Audio Explanation'}</span>
+                          </button>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-sky-100">
+                          &ldquo;Percent simply means <strong>out of 100</strong>. Whenever you see <strong>3/5</strong>, ask: what times 5 equals 100? Since <strong>5 × 20 = 100</strong>, multiply both numerator and denominator by 20 to get <strong>60/100 = 60%</strong>.&rdquo;
+                        </p>
+                      </div>
+                    )}
 
                     <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 text-xs text-slate-700 space-y-3">
                       <h4 className="font-extrabold text-amber-900 text-xs flex items-center space-x-1">
@@ -2060,7 +2298,7 @@ export const LearningGapStudio: React.FC<{
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <span className="w-5 h-5 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black">100</span>
-                            <span className="text-xs font-bold text-slate-800">Tactile 100-Grid Explorer</span>
+                            <span className="text-xs font-bold text-slate-800">Tactile 100-Grid Simulation Explorer</span>
                           </div>
                           <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
                             {gridHighlightedCount} / 100 Shaded = {gridHighlightedCount}%
@@ -2081,7 +2319,10 @@ export const LearningGapStudio: React.FC<{
                           ].map(item => (
                             <button
                               key={item.count}
-                              onClick={() => setGridHighlightedCount(item.count)}
+                              onClick={() => {
+                                setGridHighlightedCount(item.count);
+                                recordGapVakInteraction('KINAESTHETIC');
+                              }}
                               className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all ${
                                 gridHighlightedCount === item.count
                                   ? 'bg-purple-600 text-white shadow-xs'
@@ -2098,7 +2339,10 @@ export const LearningGapStudio: React.FC<{
                           {Array.from({ length: 100 }).map((_, i) => (
                             <div
                               key={i}
-                              onClick={() => setGridHighlightedCount(i + 1)}
+                              onClick={() => {
+                                setGridHighlightedCount(i + 1);
+                                recordGapVakInteraction('KINAESTHETIC');
+                              }}
                               className={`h-4 w-4 rounded-[2px] transition-colors cursor-pointer text-[7px] flex items-center justify-center font-mono select-none ${
                                 i < gridHighlightedCount
                                   ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
@@ -2140,26 +2384,166 @@ export const LearningGapStudio: React.FC<{
                     </div>
                   </div>
 
-                  {/* Step 3 Current Grade Relearning Card */}
+                  {/* Step 3 Current Grade Relearning Card (Visual · Audio · Interactive Simulation) */}
                   <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
                       <div>
                         <span className="text-[10px] font-extrabold text-purple-800 bg-purple-100 px-2.5 py-0.5 rounded-full uppercase">
-                          Current Grade Relearn
+                          Current Grade Relearn · Multimodal Player
                         </span>
                         <h3 className="text-sm font-black text-slate-900 mt-1">
                           {currentGap?.grade || 'Grade 6'}: Mastery Guide for {currentGap?.conceptName || 'Percentage of Quantities'}
                         </h3>
                       </div>
 
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openLessonInLmsStudio('lms-mth-g6-pct')}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1 shadow-2xs"
+                        >
+                          <PlayCircle className="w-3.5 h-3.5" />
+                          <span>Open Full AI LMS</span>
+                        </button>
+                        <button
+                          onClick={() => handleCompleteStep('item-c1', 3)}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 flex items-center space-x-1"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Mark Mastered</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* VAK Switcher Bar for Phase 3 Relearning */}
+                    <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl">
                       <button
-                        onClick={() => handleCompleteStep('item-c1', 3)}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 flex items-center space-x-1"
+                        type="button"
+                        onClick={() => {
+                          setPhase3Mode('VISUAL');
+                          recordGapVakInteraction('VISUAL');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase3Mode === 'VISUAL' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
                       >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Mark Mastered</span>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Visual Breakdown</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhase3Mode('AUDITORY');
+                          recordGapVakInteraction('AUDITORY');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase3Mode === 'AUDITORY' ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <Headphones className="w-3.5 h-3.5" />
+                        <span>Audio Coach</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhase3Mode('KINAESTHETIC');
+                          recordGapVakInteraction('KINAESTHETIC');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          phase3Mode === 'KINAESTHETIC' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <Hand className="w-3.5 h-3.5" />
+                        <span>Interactive Quantity Lab</span>
                       </button>
                     </div>
+
+                    {phase3Mode === 'AUDITORY' && (
+                      <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-3 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-black text-sky-950 flex items-center gap-1.5">
+                            <Volume2 className="w-4 h-4 text-sky-600" />
+                            <span>Listen to Audio Walkthrough: Percentage of Quantities</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              speakPhaseAudio(
+                                'PHASE3',
+                                'To find 25 percent of 240 students, remember two simple rules: percent means divide by 100, and of means multiply. Since 25 over 100 simplifies to 1 quarter, just divide 240 by 4, giving 60 students!'
+                              )
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-white shadow-2xs ${
+                              speakingPhase === 'PHASE3' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-sky-600 hover:bg-sky-700'
+                            }`}
+                          >
+                            {speakingPhase === 'PHASE3' ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            <span>{speakingPhase === 'PHASE3' ? 'Stop Audio' : 'Play Audio Guide'}</span>
+                          </button>
+                        </div>
+                        <p className="text-slate-700 bg-white p-3 rounded-xl border border-sky-100 leading-relaxed">
+                          &ldquo;<strong>Percent</strong> means divide by 100; <strong>of</strong> means multiply. Turn 25% into 1/4, then divide 240 by 4 = <strong>60 students</strong>.&rdquo;
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Live Interactive Percentage-of-Quantity Simulation */}
+                    {phase3Mode === 'KINAESTHETIC' && (
+                      <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-emerald-950">Interactive Percentage &amp; Discount Simulation</span>
+                          <span className="font-mono font-black text-purple-800 bg-white px-2.5 py-0.5 rounded-full border border-purple-200">
+                            {phase3SimPct}% of {phase3SimTotal} = {((phase3SimPct / 100) * phase3SimTotal).toFixed(1).replace(/\.0$/, '')}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="p-3 bg-white rounded-xl border border-emerald-200">
+                            <div className="flex justify-between font-bold mb-1">
+                              <span>Percentage (%)</span>
+                              <span className="font-mono text-purple-700">{phase3SimPct}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={5}
+                              max={95}
+                              step={5}
+                              value={phase3SimPct}
+                              onChange={e => {
+                                setPhase3SimPct(Number(e.target.value));
+                                recordGapVakInteraction('KINAESTHETIC');
+                              }}
+                              className="w-full accent-purple-600"
+                            />
+                          </div>
+                          <div className="p-3 bg-white rounded-xl border border-emerald-200">
+                            <div className="flex justify-between font-bold mb-1">
+                              <span>Total Quantity (Students / ₹)</span>
+                              <span className="font-mono text-indigo-700">{phase3SimTotal}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={40}
+                              max={1000}
+                              step={20}
+                              value={phase3SimTotal}
+                              onChange={e => {
+                                setPhase3SimTotal(Number(e.target.value));
+                                recordGapVakInteraction('KINAESTHETIC');
+                              }}
+                              className="w-full accent-indigo-600"
+                            />
+                          </div>
+                        </div>
+                        <div className="w-full h-6 bg-white rounded-xl overflow-hidden flex border border-emerald-200">
+                          <div
+                            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-[10px] flex items-center justify-center transition-all"
+                            style={{ width: `${phase3SimPct}%` }}
+                          >
+                            {phase3SimPct}% = {((phase3SimPct / 100) * phase3SimTotal).toFixed(1).replace(/\.0$/, '')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-200/70 text-xs text-slate-700 space-y-3">
                       <div className="p-3 rounded-xl bg-white border border-purple-200 font-mono text-center text-sm font-black text-purple-900">
