@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
 import { AIProviderService } from '../services/ai-provider.service.js';
+import { AuthenticatedUserPayload, isUmbrellaRole } from '../middleware/auth.js';
 
 export interface BmitDomainItem {
   domain: string;
@@ -22,6 +23,8 @@ export interface PortfolioEntryItem {
   date: string;
   evidenceType: string;
   author: string;
+  verificationStatus?: 'VERIFIED' | 'PENDING_REVIEW';
+  verifiedBy?: string;
 }
 
 const PORTFOLIO_SECTIONS_23 = [
@@ -504,7 +507,25 @@ const SEED_STUDENT_PROFILES: Record<string, SeedStudentProfile> = {
 const runtimeBmitOverrides = new Map<string, { approved: boolean; notes: string; updatedAt: string }>();
 const runtimeVakOverrides = new Map<string, { visual: number; auditory: number; kinaesthetic: number; updatedAt: string }>();
 const runtimePortfolioAdditions = new Map<string, PortfolioEntryItem[]>();
+const runtimeVerifiedEntryIds = new Set<string>();
 const runtimeJourneyLogs = new Map<string, { runId: string; completedAt: string; triggeredBy: string; steps: Array<{ step: number; module: string; action: string; outcome: string }> }>();
+
+function isOwnScopeUser(user?: AuthenticatedUserPayload | null): boolean {
+  if (!user) return false;
+  return (
+    user.roleKey === 'role-ach-student' ||
+    user.roleKey === 'role-ach-parent' ||
+    user.roleName === 'Student' ||
+    user.roleName === 'Parent'
+  );
+}
+
+function resolveScopedStudentId(request: FastifyRequest, requestedId: string): string {
+  if (isOwnScopeUser(request.currentUser)) {
+    return 'ach-stu-aarav-01';
+  }
+  return requestedId;
+}
 
 export const TOTAL_INSTITUTE_SCHOLARS = 10480;
 
@@ -850,8 +871,31 @@ export class StudentIntelligenceController {
       pageSize?: string;
     };
 
-    const q = (query.q || '').trim().toLowerCase();
+    const user = request.currentUser;
+    const ownOnly = isOwnScopeUser(user);
+    const umbrellaAccess = isUmbrellaRole(user);
     const campusFilter = (query.campus || 'ALL').trim();
+
+    let scopedCampusFilter = campusFilter;
+    if (!ownOnly && !umbrellaAccess) {
+      scopedCampusFilter = 'Achariya World Class Academy (Main)';
+      if (user?.campusId) {
+        try {
+          const dbCampus = await prisma.campus.findUnique({
+            where: { id: user.campusId },
+            select: { name: true }
+          });
+          const match = dbCampus?.name
+            ? DIRECTORY_CAMPUSES.find(c => dbCampus.name.toLowerCase().includes(c.split('(')[0].trim().toLowerCase()))
+            : undefined;
+          if (match) scopedCampusFilter = match;
+        } catch {
+          // Keep primary campus fallback
+        }
+      }
+    }
+
+    const q = (query.q || '').trim().toLowerCase();
     const gradeFilter = (query.grade || 'ALL').trim();
     const sectionFilter = (query.section || 'ALL').trim();
     const statusFilter = (query.statusFilter || 'ALL').trim();
@@ -859,7 +903,8 @@ export class StudentIntelligenceController {
     const requestedPage = Math.max(1, parseInt(query.page || '1', 10) || 1);
 
     const scoped = SCHOLAR_DIRECTORY_CACHE.filter(item => {
-      if (campusFilter !== 'ALL' && item.campus !== campusFilter) return false;
+      if (ownOnly && item.id !== 'ach-stu-aarav-01') return false;
+      if (!ownOnly && scopedCampusFilter !== 'ALL' && item.campus !== scopedCampusFilter) return false;
       if (gradeFilter !== 'ALL') {
         if (gradeFilter === item.gradeBand) {
           // matches band filter
@@ -899,6 +944,7 @@ export class StudentIntelligenceController {
     return reply.send({
       success: true,
       data: {
+        scopeApplied: ownOnly ? 'OWN' : umbrellaAccess ? 'GLOBAL' : 'CAMPUS',
         totalInstituteScholars: TOTAL_INSTITUTE_SCHOLARS,
         filteredCount,
         page,
@@ -915,7 +961,8 @@ export class StudentIntelligenceController {
    * Full 24-section Student Master Intelligence Profile (BMIT + VAK + 20 Dev + 16 Skills + IEDP + 23 Portfolio + Central AI 10-Point)
    */
   static async getMasterProfile(request: FastifyRequest, reply: FastifyReply) {
-    const { studentId } = request.params as { studentId: string };
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
     const seed = resolveSeedProfile(studentId);
 
     // Enrich with real DB user & learning gaps if matching record exists
@@ -1018,7 +1065,12 @@ export class StudentIntelligenceController {
     };
 
     const customPortfolio = runtimePortfolioAdditions.get(studentId) || [];
-    const allPortfolioItems = [...customPortfolio, ...seed.portfolioItems];
+    const allPortfolioItems = [...customPortfolio, ...seed.portfolioItems].map(item => ({
+      ...item,
+      verificationStatus: runtimeVerifiedEntryIds.has(item.id)
+        ? ('VERIFIED' as const)
+        : (item.verificationStatus || ('VERIFIED' as const))
+    }));
 
     const centralAiRecommendations = {
       whatToLearn: `Focus immediately on bridging "${seed.student.activeConceptGap}" via its verified lower-grade prerequisite node before advancing.`,
@@ -1117,7 +1169,7 @@ export class StudentIntelligenceController {
               { id: 4, name: 'VAK Learning Preferences', summary: `${topVak} (V:${vakData.visual}% A:${vakData.auditory}% K:${vakData.kinaesthetic}%)` },
               { id: 5, name: 'Learning Gap Closure', summary: `Targeted closure on "${seed.student.activeConceptGap}"` },
               { id: 6, name: 'English Language Development', summary: 'CEFR B1 Confident · 114 WCPM (+36 vs June)' },
-              { id: 7, name: 'Achariya Experiential Labs', summary: 'Hands-on robotics, rainwater & inquiry prototypes' },
+              { id: 7, name: 'MiWay Experiential Labs', summary: "MiWay's experiential teaching, robotics, rainwater & inquiry prototypes" },
               { id: 8, name: 'Five Arts', summary: 'Visual Art 92% · Music 88% · Dance 84% · Theatre 94% · Craft 90%' },
               { id: 9, name: 'Critical Thinking', summary: 'Strong hypothesis questioning' },
               { id: 10, name: 'Computational Thinking', summary: 'Pattern decomposition & logic flow' },
@@ -1185,7 +1237,8 @@ export class StudentIntelligenceController {
    * Executes & verifies the 11-step end-to-end connected student workflow
    */
   static async runConnectedJourney(request: FastifyRequest, reply: FastifyReply) {
-    const { studentId } = request.params as { studentId: string };
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
     const user = request.currentUser!;
     const seed = resolveSeedProfile(studentId);
     const now = new Date().toISOString();
@@ -1241,15 +1294,16 @@ export class StudentIntelligenceController {
    */
   static async updateBmitOrCounsellorReview(request: FastifyRequest, reply: FastifyReply) {
     const user = request.currentUser!;
-    if (user.roleName === 'Student') {
+    if (isOwnScopeUser(user)) {
       return reply.status(403).send({ success: false, error: 'Only counsellors or faculty can approve BMIT interpretations.' });
     }
 
-    const { studentId, counsellorNotes, approved = true } = request.body as {
+    const { studentId: rawStudentId, counsellorNotes, approved = true } = request.body as {
       studentId: string;
       counsellorNotes?: string;
       approved?: boolean;
     };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
 
     const seed = resolveSeedProfile(studentId);
     const updatedAt = new Date().toISOString();
@@ -1277,13 +1331,14 @@ export class StudentIntelligenceController {
    * Submit or recalibrate VAK multimodal learning preference scores & generate concept prescriptions
    */
   static async submitVakAssessment(request: FastifyRequest, reply: FastifyReply) {
-    const { studentId, visualScore = 40, auditoryScore = 30, kinaestheticScore = 30, activeConcept } = request.body as {
+    const { studentId: rawStudentId, visualScore = 40, auditoryScore = 30, kinaestheticScore = 30, activeConcept } = request.body as {
       studentId: string;
       visualScore?: number;
       auditoryScore?: number;
       kinaestheticScore?: number;
       activeConcept?: string;
     };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
 
     const sum = Math.max(1, Number(visualScore) + Number(auditoryScore) + Number(kinaestheticScore));
     const visual = Math.round((Number(visualScore) / sum) * 100);
@@ -1315,25 +1370,73 @@ export class StudentIntelligenceController {
   /**
    * GET /api/student-intelligence/career/:studentId
    * Age-wise Career Development (Pre-Primary to Grade 12) + 16-Cluster Exploratory Matching Engine
+   * Live Weighted Formula: 55% BMIT + 25% Future-Ready Skills + 20% Portfolio Evidence
    */
   static async getCareerIntelligence(request: FastifyRequest, reply: FastifyReply) {
-    const { studentId } = request.params as { studentId: string };
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
     const seed = resolveSeedProfile(studentId);
+
+    const bmitScoresList = Object.values(seed.bmitScores).map(d => d.score);
+    const bmitAvg = bmitScoresList.reduce((acc, s) => acc + s, 0) / Math.max(1, bmitScoresList.length);
+    const skillsList = FUTURE_SKILL_NAMES.map((_, idx) =>
+      Math.min(95, Math.max(64, Math.round(bmitAvg) - 4 + (idx % 6) * 3))
+    );
+    const skillsAvg = skillsList.reduce((acc, s) => acc + s, 0) / Math.max(1, skillsList.length);
+
+    const portfolioItems = [
+      ...(runtimePortfolioAdditions.get(studentId) || []),
+      ...seed.portfolioItems
+    ].map(item => ({
+      ...item,
+      verificationStatus: runtimeVerifiedEntryIds.has(item.id)
+        ? ('VERIFIED' as const)
+        : (item.verificationStatus || ('VERIFIED' as const))
+    }));
+    const verifiedCount = portfolioItems.filter(p => p.verificationStatus === 'VERIFIED').length;
 
     const matchedClusters = CAREER_CLUSTERS_16.map((cluster, index) => {
       const rankPos = seed.topClusterIndices.indexOf(index);
       const isPrimaryExplore = rankPos !== -1;
-      const alignmentScore = isPrimaryExplore
-        ? 92 - rankPos * 5
-        : Math.max(58, 76 - ((index * 3) % 16));
+
+      const bmitComponent = isPrimaryExplore
+        ? Math.min(99, Math.round(bmitAvg + (4 - rankPos) * 2.5))
+        : Math.max(54, Math.round(bmitAvg - 14 - ((index * 3) % 14)));
+
+      const skillsComponent = isPrimaryExplore
+        ? Math.min(98, Math.round(skillsAvg + (4 - rankPos) * 1.5))
+        : Math.max(58, Math.round(skillsAvg - 9 - ((index * 2) % 10)));
+
+      const clusterKeywords = [...cluster.cluster.split(/[\s,&/]+/), ...cluster.subjects]
+        .map(w => w.toLowerCase())
+        .filter(w => w.length >= 4);
+      const matchedItemsCount = portfolioItems.filter(p => {
+        const text = `${p.title} ${p.description} ${p.section}`.toLowerCase();
+        return clusterKeywords.some(kw => text.includes(kw));
+      }).length;
+
+      const portfolioComponent = Math.min(
+        98,
+        Math.round(58 + verifiedCount * 4 + portfolioItems.length * 3 + matchedItemsCount * 4 + (isPrimaryExplore ? 5 : 0))
+      );
+
+      const alignmentScore = Math.min(
+        98,
+        Math.max(54, Math.round(bmitComponent * 0.55 + skillsComponent * 0.25 + portfolioComponent * 0.20))
+      );
 
       return {
         ...cluster,
         alignmentScore,
+        formulaBreakdown: {
+          bmitComponent,
+          skillsComponent,
+          portfolioComponent
+        },
         recommendationTier: isPrimaryExplore ? 'STRONG_EXPLORATION_FIT' : 'OPEN_DISCOVERY_PATHWAY',
         supportingEvidence: isPrimaryExplore
-          ? `Supported by BMIT strengths, ${seed.student.grade} project achievements, and stated curiosity in ${seed.interests.slice(0, 2).join(' & ')}.`
-          : 'Open exploratory pathway available across Achariya electives — no restriction applies.',
+          ? `Live Formula (${bmitComponent}% BMIT × 55% + ${skillsComponent}% Skills × 25% + ${portfolioComponent}% Portfolio × 20%): Supported by ${seed.student.grade} projects & ${seed.interests.slice(0, 2).join(' & ')}.`
+          : `Live Formula (${bmitComponent}% BMIT × 55% + ${skillsComponent}% Skills × 25% + ${portfolioComponent}% Portfolio × 20%): Open exploratory pathway across Achariya electives.`,
         explanatoryNote: 'Exploratory only. Multiple pathways encouraged; BMIT never determines or excludes any future career.'
       };
     }).sort((a, b) => b.alignmentScore - a.alignmentScore);
@@ -1347,6 +1450,9 @@ export class StudentIntelligenceController {
         currentStageKey: seed.student.gradeBand,
         ageWiseStages: AGE_CAREER_STAGES,
         totalClusters: matchedClusters.length,
+        formulaWeights: { bmit: 55, futureSkills: 25, portfolioEvidence: 20 },
+        portfolioEvidenceCount: portfolioItems.length,
+        verifiedPortfolioCount: verifiedCount,
         clusters: matchedClusters
       }
     });
@@ -1358,7 +1464,8 @@ export class StudentIntelligenceController {
    */
   static async addPortfolioEntry(request: FastifyRequest, reply: FastifyReply) {
     const user = request.currentUser!;
-    const { studentId } = request.params as { studentId: string };
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
     const { section, category = 'PROJECT', title, description, evidenceType = 'Digital Artifact' } = request.body as {
       section?: string;
       category?: PortfolioEntryItem['category'];
@@ -1371,6 +1478,8 @@ export class StudentIntelligenceController {
       return reply.status(400).send({ success: false, error: 'Title and description are required for portfolio entries.' });
     }
 
+    const isStudentOrParent = isOwnScopeUser(user);
+    const verifierName = user.fullName || user.roleName || 'Faculty / Student';
     const entry: PortfolioEntryItem = {
       id: `pf-${Date.now()}`,
       section: section || '9. Projects and Innovations',
@@ -1379,7 +1488,9 @@ export class StudentIntelligenceController {
       description: description.trim(),
       date: new Date().toISOString().slice(0, 10),
       evidenceType,
-      author: user.fullName || user.roleName || 'Faculty / Student'
+      author: verifierName,
+      verificationStatus: isStudentOrParent ? 'PENDING_REVIEW' : 'VERIFIED',
+      ...(isStudentOrParent ? {} : { verifiedBy: verifierName })
     };
 
     const existing = runtimePortfolioAdditions.get(studentId) || [];
@@ -1387,8 +1498,58 @@ export class StudentIntelligenceController {
 
     return reply.status(201).send({
       success: true,
-      message: 'Portfolio evidence recorded in longitudinal student record.',
+      message: isStudentOrParent
+        ? 'Portfolio evidence saved and queued for faculty verification.'
+        : 'Portfolio evidence recorded and faculty-verified in longitudinal student record.',
       data: entry
+    });
+  }
+
+  /**
+   * POST /api/student-intelligence/portfolio/:studentId/verify
+   * Endorse & verify a student-submitted or automated portfolio entry (Faculty / Staff only)
+   */
+  static async verifyPortfolioEntry(request: FastifyRequest, reply: FastifyReply) {
+    const user = request.currentUser!;
+    if (isOwnScopeUser(user)) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Only faculty, counsellors, or campus leaders can endorse and verify portfolio evidence.'
+      });
+    }
+
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
+    const { entryId } = (request.body || {}) as { entryId?: string };
+
+    if (!entryId?.trim()) {
+      return reply.status(400).send({ success: false, error: 'entryId is required to verify portfolio evidence.' });
+    }
+
+    const verifiedBy = user.fullName || user.roleName || 'Faculty Mentor';
+    runtimeVerifiedEntryIds.add(entryId);
+
+    const existing = runtimePortfolioAdditions.get(studentId) || [];
+    if (existing.length > 0) {
+      runtimePortfolioAdditions.set(
+        studentId,
+        existing.map(item =>
+          item.id === entryId
+            ? { ...item, verificationStatus: 'VERIFIED', verifiedBy }
+            : item
+        )
+      );
+    }
+
+    return reply.send({
+      success: true,
+      message: 'Portfolio evidence endorsed and marked Faculty Verified.',
+      data: {
+        studentId,
+        entryId,
+        verificationStatus: 'VERIFIED' as const,
+        verifiedBy
+      }
     });
   }
 

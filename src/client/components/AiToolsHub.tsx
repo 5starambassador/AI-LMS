@@ -532,7 +532,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Grade scanned scripts with AI reasoning — 90% reduction in teacher correction time.
+                Grade scanned scripts with AI reasoning — 90% reduction in teacher correction time, giving hours back to MiWay&apos;s experiential teaching.
               </p>
             </div>
           </div>
@@ -669,7 +669,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
             <span>03 · Holistic Progress Card (NEP 2020 &amp; PARAKH · Grades KG–12)</span>
           </div>
           <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-800 border border-pink-200">
-            40,000+ Progress Cards Scale · BMIT + Experiential Labs + 5 Arts
+            40,000+ Progress Cards Scale · BMIT + MiWay Experiential Labs + 5 Arts
           </span>
         </div>
 
@@ -687,11 +687,11 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   Holistic Progress Card (NEP 2020 &amp; PARAKH 360° Builder)
                 </h3>
                 <span className="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2.5 py-0.5 rounded-full">
-                  BMIT · Experiential Labs · 5 Arts
+                  BMIT · MiWay Experiential Labs · 5 Arts
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Beyond marks: competency-level growth aligned with NEP 2020 &amp; PARAKH with personalised recommendations — making BMIT, Achariya Experiential Labs, and the 5 Arts visible beside academics.
+                Beyond marks: competency-level growth aligned with NEP 2020 &amp; PARAKH with personalised recommendations — making BMIT, MiWay Experiential Labs, and the 5 Arts visible beside academics.
               </p>
             </div>
           </div>
@@ -724,7 +724,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                 Personalised Adaptive Learning (PAL)
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Level-matched adaptive exercises meeting every child at their exact readiness tier + portfolio sync.
+                Every child learns at the right level — reflecting the MiWay belief in individual intelligence + continuous term-to-term portfolio sync.
               </p>
             </div>
           </div>
@@ -1060,11 +1060,11 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
               <p className="text-slate-700 leading-relaxed">{hpcNarrative}</p>
             </div>
 
-            {/* BMIT, Achariya Experiential Labs & The 5 Arts Beside Academics */}
+            {/* BMIT, MiWay Experiential Labs & The 5 Arts Beside Academics */}
             <div className="p-4 bg-pink-50/50 border border-pink-200 rounded-2xl text-xs space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-extrabold text-pink-950 uppercase tracking-wider text-[11px]">
-                  The Whole Child Made Visible · BMIT, Experiential Labs &amp; The 5 Arts
+                  The Whole Child Made Visible · BMIT, MiWay Experiential Labs &amp; The 5 Arts
                 </span>
                 <span className="px-2.5 py-0.5 bg-pink-700 text-white rounded-full text-[10px] font-bold">
                   40,000+ HPC Scale · NEP 2020 &amp; PARAKH
@@ -1076,7 +1076,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
                   { label: 'Music', key: 'performingMusic' as const },
                   { label: 'Dance', key: 'classicalDance' as const },
                   { label: 'Theatre/Oratory', key: 'theatreOratory' as const },
-                  { label: 'Experiential Labs', key: 'experientialLab' as const }
+                  { label: 'MiWay Labs', key: 'experientialLab' as const }
                 ].map(item => (
                   <div key={item.key} className="p-2.5 bg-white rounded-xl border border-pink-100 text-center space-y-1">
                     <span className="text-[10px] font-bold text-slate-600 block">{item.label}</span>

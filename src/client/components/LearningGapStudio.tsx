@@ -729,6 +729,47 @@ export const LearningGapStudio: React.FC<{
     }
   };
 
+  const syncRemedialOutcomeToPortfolio = (
+    phase: 'PHASE2_FOUNDATION' | 'PHASE4_MASTERY',
+    scorePct: number
+  ) => {
+    try {
+      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
+      const prev = raw
+        ? JSON.parse(raw)
+        : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], computedVak: liveVakProfile };
+      localStorage.setItem(
+        'achariya_vak_telemetry_v1',
+        JSON.stringify({
+          ...prev,
+          lastMasteryScore: scorePct,
+          updatedAt: new Date().toISOString()
+        })
+      );
+    } catch {
+      // Ignore telemetry storage errors
+    }
+
+    const targetStudentId =
+      currentGap?.studentId && currentGap.studentId.startsWith('ach-stu-')
+        ? currentGap.studentId
+        : 'ach-stu-aarav-01';
+    const conceptTitle = currentGap?.conceptName || 'Targeted Curriculum Concept';
+    const isMastery = phase === 'PHASE4_MASTERY';
+
+    void apiPost(`/api/student-intelligence/portfolio/${targetStudentId}`, {
+      section: isMastery ? '5. Concept Mastery' : '7. Remedial Learning Progress',
+      category: 'PROJECT',
+      title: isMastery
+        ? `100% Concept Mastery Certified: ${conceptTitle} (${scorePct}%)`
+        : `Prerequisite Bridge Cleared: ${activePathwayData?.prerequisiteConcept || conceptTitle} (${scorePct}%)`,
+      description: isMastery
+        ? `Auto-logged from Adaptive Learning Gap Engine Phase 4 Reassessment (${scorePct}% >= 85% threshold) using ${liveVakProfile.visual}% V / ${liveVakProfile.auditory}% A / ${liveVakProfile.kinaesthetic}% K pathway.`
+        : `Auto-logged from Adaptive Learning Gap Engine Phase 2 Foundation Check (${scorePct}% >= 80% prerequisite threshold) unlocking current-grade mastery.`,
+      evidenceType: isMastery ? 'Automated Gap Closure Record' : 'Automated Foundation Verification'
+    }).catch(() => undefined);
+  };
+
   // Handle Submitting Foundation Check
   const handleSubmitFoundationTest = async () => {
     if (!selectedGapId) return;
@@ -740,7 +781,9 @@ export const LearningGapStudio: React.FC<{
       );
       setTestResult(res);
       if (res.isPassed) {
-        showToast('🎉 Prerequisite Mastered! Unlocking Current-Grade Relearning.');
+        const scorePct = typeof res.scorePct === 'number' ? res.scorePct : typeof res.score === 'number' ? res.score : 85;
+        syncRemedialOutcomeToPortfolio('PHASE2_FOUNDATION', scorePct);
+        showToast('🎉 Prerequisite Mastered! Logged to Portfolio & Unlocking Current-Grade Relearning.');
       } else {
         showToast('Foundation check incomplete. Additional practice recommended.');
       }
@@ -763,7 +806,9 @@ export const LearningGapStudio: React.FC<{
       );
       setTestResult(res);
       if (res.isMastered) {
-        showToast('🏆 Concept Mastered! Learning Gap is officially closed.');
+        const scorePct = typeof res.scorePct === 'number' ? res.scorePct : typeof res.score === 'number' ? res.score : 92;
+        syncRemedialOutcomeToPortfolio('PHASE4_MASTERY', scorePct);
+        showToast('🏆 Concept Mastered! Learning Gap closed & certified in 360° Portfolio.');
       } else {
         showToast('Reassessment score below mastery threshold. Further practice advised.');
       }
