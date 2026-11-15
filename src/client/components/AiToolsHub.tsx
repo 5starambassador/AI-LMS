@@ -246,9 +246,10 @@ const INSIGHT_GRANULARITY_DATA: Record<
 
 interface AiToolsHubProps {
   onNavigateToExamBuilder?: () => void;
+  onNavigate?: (route: string) => void;
 }
 
-export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder }) => {
+export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder, onNavigate }) => {
   // Dedicated modals powering the 4 Connected Achariya AI Pillars
   const [activeModal, setActiveModal] = useState<
     | 'autograde'
@@ -472,6 +473,8 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
             onClick={() => {
               if (onNavigateToExamBuilder) {
                 onNavigateToExamBuilder();
+              } else if (onNavigate) {
+                onNavigate('/staff/exam-builder');
               } else {
                 setActiveModal('examBuilder');
               }
@@ -693,6 +696,20 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Beyond marks: competency-level growth aligned with NEP 2020 &amp; PARAKH with personalised recommendations — making BMIT, MiWay Experiential Labs, and the 5 Arts visible beside academics.
               </p>
+              {onNavigate && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate('/staff/student-intelligence');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold hover:bg-teal-100 transition-colors"
+                  >
+                    <span>Open Full 360° BMIT, VAK &amp; Career Studio →</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -765,6 +782,26 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder 
             </div>
           </div>
         </div>
+
+        {onNavigate && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-100">
+            <span className="text-xs font-bold text-amber-900">Explore Connected Studios:</span>
+            <button
+              type="button"
+              onClick={() => onNavigate('/staff/learning-gaps')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-200 text-violet-800 text-xs font-bold hover:bg-violet-100 transition-colors"
+            >
+              <span>AI Learning Gap Studio →</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('/staff/lms')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold hover:bg-teal-100 transition-colors"
+            >
+              <span>AI LMS Studio →</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ========================================================================= */}

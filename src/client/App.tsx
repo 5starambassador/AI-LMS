@@ -45,7 +45,9 @@ function AppShell() {
       setCurrentPortal('SUPERADMIN');
     } else if (cleanPath.startsWith('/student')) {
       setCurrentPortal('STUDENT');
-      if (cleanPath === '/student/lms') {
+      if (cleanPath === '/student/aitools') {
+        setStudentTab('aitools');
+      } else if (cleanPath === '/student/lms') {
         setStudentTab('lms');
       } else if (cleanPath === '/student/homework') {
         setStudentTab('homework');
@@ -288,7 +290,12 @@ function AppShell() {
                   onNavigateToLms={() => navigateTo('/staff/lms')}
                 />
               )}
-              {activeTab === 'aitools' && <AiToolsHub onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')} />}
+              {activeTab === 'aitools' && (
+                <AiToolsHub
+                  onNavigate={navigateTo}
+                  onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')}
+                />
+              )}
               {activeTab === 'myspace' && <MySpaceHub />}
               {activeTab === 'insights' && <ScoreInsights />}
               {activeTab === 'exams' && <ExamHub />}
@@ -303,6 +310,12 @@ function AppShell() {
           {/* VIEW 2: STUDENT PORTAL (AI LMS, VoiceLab, Gaps & Portfolio) */}
           {currentPortal === 'STUDENT' && (
             <div>
+              {studentTab === 'aitools' && (
+                <AiToolsHub
+                  onNavigate={navigateTo}
+                  onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')}
+                />
+              )}
               {studentTab === 'lms' && (
                 <LmsStudio
                   initialStudentMode={true}

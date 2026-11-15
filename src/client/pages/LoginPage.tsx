@@ -98,8 +98,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
-              {error}
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium space-y-1">
+              <div>{error}</div>
+              {error.toLowerCase().includes('internal server error') && (
+                <div className="text-[11px] text-rose-500 pt-1 border-t border-rose-200/60 font-normal">
+                  Database service may be reconnecting or offline. Ensure Docker PostgreSQL (port 5432) is running and retry.
+                </div>
+              )}
             </div>
           )}
 

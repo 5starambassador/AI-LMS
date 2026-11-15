@@ -280,8 +280,57 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
         </div>
       </div>
 
-      {/* 1B. Flagship AI Academic & Student Intelligence Command Center */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* 1B. Flagship AI Academic & Student Intelligence Command Center - 3 Connected AI Engines */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Flagship Pillar 1: AI Tools Suite */}
+        <div
+          onClick={() => navigateToRoute('/staff/aitools')}
+          className="cursor-pointer group rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-teal-50 via-white to-emerald-50/70 border border-teal-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all flex flex-col justify-between gap-4"
+        >
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full">
+                    AI-FIRST Flagship Suite
+                  </span>
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
+                    Achariya AI Tools Suite · 4 Connected Pillars
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Four interconnected AI engines: AI Exam Builder &amp; Grader (Sets A/B/C), VoiceLab Speech AI with 125+ skills, Holistic Progress Card (HPC 360° PARAKH), and Personalised Adaptive Learning (PAL KG-12).
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {['Exam Grader Sets A/B/C', 'VoiceLab Speech AI', 'HPC 360° PARAKH', 'PAL KG-12 Adaptive'].map(tag => (
+                <span key={tag} className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white border border-teal-200 text-teal-800">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-teal-100">
+            <span className="text-[11px] font-semibold text-teal-700">Unified Data Layer · 10,480+ Scholars</span>
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                navigateToRoute('/staff/aitools');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 group-hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <span>Open AI Tools Suite</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Flagship Pillar 2: AI Learning Gap & Mastery Studio */}
         <div
           onClick={() => navigateToRoute('/staff/learning-gaps')}
           className="cursor-pointer group rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-violet-50 via-white to-purple-50/70 border border-violet-200/80 shadow-xs hover:shadow-md hover:border-violet-300 transition-all flex flex-col justify-between gap-4"
@@ -294,19 +343,19 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                 </div>
                 <div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
-                    AI-FIRST Flagship Module
+                    AI Remediation Engine
                   </span>
                   <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
-                    AI Learning Gap, Remediation &amp; 100% Mastery Studio
+                    AI Learning Gap &amp; 100% Mastery Studio
                   </h2>
                 </div>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Traces exam errors across grades via the prerequisite DAG, auto-clusters students into shared-cause AI Remedial Circles, generates 1-page QR bridge worksheets, and enforces Dual-Threshold (80% / 85%) + Gold 100% Mastery with Zero-Code AI Concept Graph Builder.
+              Traces exam errors across grades via the prerequisite DAG, auto-clusters students into shared-cause AI Remedial Circles, generates 1-page QR bridge worksheets, and enforces Dual-Threshold + Gold 100% Mastery.
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {['Cross-Grade DAG', 'AI Remedial Circles', 'Dual-Threshold + Gold 100%', 'Zero-Code Concept Builder'].map(tag => (
+              {['Cross-Grade DAG', 'AI Remedial Circles', 'Dual-Threshold + Gold 100%', 'Zero-Code DAG Builder'].map(tag => (
                 <span key={tag} className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white border border-violet-200 text-violet-800">
                   {tag}
                 </span>
@@ -314,7 +363,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
             </div>
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-violet-100">
-            <span className="text-[11px] font-semibold text-violet-700">Pre-Primary to Grade 12 · Adaptive Cycle</span>
+            <span className="text-[11px] font-semibold text-violet-700">Pre-Primary to Grade 12 · Adaptive</span>
             <button
               type="button"
               onClick={e => {
@@ -329,6 +378,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
           </div>
         </div>
 
+        {/* Flagship Pillar 3: 360° Student Intelligence & BMIT */}
         <div
           onClick={() => navigateToRoute('/staff/student-intelligence')}
           className="cursor-pointer group rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-sky-50/70 border border-indigo-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between gap-4"
@@ -344,13 +394,13 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
                     Whole-Child 360° Ecosystem
                   </span>
                   <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">
-                    360° Student Intelligence, BMIT, VAK, E-Portfolio &amp; Career AI
+                    360° Student Intelligence &amp; BMIT
                   </h2>
                 </div>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Longitudinal 24-section Student Master Profile uniting official BMIT 8-domain brain mapping (enrichment guide only), multimodal VAK prescriptions, 20 development dimensions, 16 future-ready skills, 23-section E-Portfolio, Parent AI Companion &amp; Career AI.
+              Longitudinal 24-section Student Master Profile uniting official BMIT 8-domain brain mapping (enrichment guide only), multimodal VAK prescriptions, 20 development dimensions, and 16 future-ready career pathways.
             </p>
             <div className="flex flex-wrap gap-1.5">
               {['24-Section 360° Profile', '8-Domain BMIT', 'VAK Multimodal', '23-Section E-Portfolio', '16 Career Pathways'].map(tag => (
@@ -361,7 +411,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
             </div>
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
-            <span className="text-[11px] font-semibold text-indigo-700">14 Exportable Reports · Counsellor &amp; Parent Portal</span>
+            <span className="text-[11px] font-semibold text-indigo-700">14 Exportable Reports · Parent Companion</span>
             <button
               type="button"
               onClick={e => {
@@ -370,7 +420,7 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
               }}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 group-hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors"
             >
-              <span>Open 360° BMIT &amp; Career Studio</span>
+              <span>Open 360° BMIT Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

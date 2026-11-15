@@ -19,6 +19,7 @@ import {
   BarChart2,
   LayoutGrid,
   Target,
+  BrainCircuit,
   Menu,
   X,
   LogOut,
@@ -46,7 +47,7 @@ export type ActiveTabType =
   | 'leaves'
   | 'fees';
 
-export type StudentTabType = 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
+export type StudentTabType = 'aitools' | 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
 
 interface HeaderProps {
   activeTab: ActiveTabType;
@@ -91,10 +92,11 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
     items: [
-      { label: 'Exam Builder', tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />, desc: 'Curriculum outcomes & blueprint builder' },
-      { label: 'Exams',        tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
-      { label: 'Insights',     tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
-      { label: 'Reports',      tab: 'reportcard',   route: '/staff/reportcard',   icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
+      { label: 'AI Tools Suite', tab: 'aitools',      route: '/staff/aitools',      icon: <Sparkles className="w-4 h-4 text-violet-600" />,     desc: 'Exam Grader, VoiceLab, HPC 360° & PAL' },
+      { label: 'Exam Builder',   tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Curriculum outcomes & blueprint builder' },
+      { label: 'Exams',          tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
+      { label: 'Insights',       tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
+      { label: 'Reports',        tab: 'reportcard',   route: '/staff/reportcard',   icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
     ]
   },
   {
@@ -267,7 +269,20 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               ))}
 
-              {/* Direct Flagship AI Studio Pills */}
+              {/* Direct Flagship AI Studio Pills - 3 Flagship Powerhouses */}
+              <button
+                onClick={() => onNavigate('/staff/aitools')}
+                title="Achariya AI Tools Suite · 4 Connected AI Pillars"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+                  currentPortal === 'STAFF' && activeTab === 'aitools'
+                    ? 'bg-teal-50 text-teal-800 border-teal-200 shadow-xs font-bold'
+                    : 'text-slate-700 hover:text-teal-800 hover:bg-teal-50/70 border-transparent'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                <span>AI Tools</span>
+              </button>
+
               <button
                 onClick={() => onNavigate('/staff/learning-gaps')}
                 title="AI Learning Gap & Remediation Studio"
@@ -290,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-slate-700 hover:text-indigo-800 hover:bg-indigo-50/70 border-transparent'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />
                 <span>360° BMIT</span>
               </button>
 
@@ -311,19 +326,6 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>Leave</span>
                 </button>
               )}
-
-              {/* AI Tools */}
-              <button
-                onClick={() => onNavigate('/staff/aitools')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  currentPortal === 'STAFF' && activeTab === 'aitools'
-                    ? 'bg-teal-50 text-teal-800 border-teal-200 shadow-xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>AI Tools</span>
-              </button>
 
               {/* My Space */}
               <button
@@ -359,9 +361,10 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1 text-xs">
               {[
+                { tab: 'aitools'      as StudentTabType, route: '/student/aitools',      label: 'AI Tools',        icon: <Sparkles className="w-3.5 h-3.5 text-teal-600" />,   cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'lms'          as StudentTabType, route: '/student/lms',          label: 'AI LMS',          icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'gaps'         as StudentTabType, route: '/student/gaps',         label: 'Gaps & Mastery',  icon: <Target className="w-3.5 h-3.5 text-purple-600" />,   cls: 'bg-purple-50 text-purple-800 border-purple-200' },
-                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT',       icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT',       icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab'     as StudentTabType, route: '/student/voicelab',     label: 'VoiceLab',        icon: <Mic className="w-3.5 h-3.5 text-teal-600" />,        cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'voice'        as StudentTabType, route: '/student/voice',        label: 'Read Aloud',      icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,        cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
                 { tab: 'homework'     as StudentTabType, route: '/student/homework',     label: 'Homework',        icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />,  cls: 'bg-teal-50 text-teal-800 border-teal-200' },
@@ -563,9 +566,10 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <div className="grid grid-cols-1 gap-1.5">
               {[
+                { tab: 'aitools' as StudentTabType, route: '/student/aitools', label: 'AI Tools Suite · 4 Connected Pillars', icon: <Sparkles className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'lms' as StudentTabType, route: '/student/lms', label: 'AI LMS · Video, Audio & Simulations', icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'gaps' as StudentTabType, route: '/student/gaps', label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
-                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <Sparkles className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'voice' as StudentTabType, route: '/student/voice', label: 'Read Aloud', icon: <Mic className="w-3.5 h-3.5 text-rose-500" />, cls: 'bg-rose-50 text-rose-800 border-rose-200' },
                 { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio', icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
