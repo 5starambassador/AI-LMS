@@ -1127,7 +1127,7 @@ export class StudentIntelligenceController {
         connectedModules: {
           unifiedIdentityKey: `${studentId}::${seed.student.rollNumber}`,
           assessmentEvaluation: {
-            masteryCategory: seed.bmitScore >= 90 ? 'Proficient' : seed.bmitScore >= 82 ? 'Progressing' : 'Beginner',
+            masteryCategory: baseAvg >= 90 ? 'Proficient' : baseAvg >= 82 ? 'Progressing' : 'Beginner',
             recentExam: 'Term 1 Competency Summative (Set B Parallel)',
             overallScorePct: Math.min(98, Math.max(58, baseAvg + 2)),
             alternativeMethodProtected: true,

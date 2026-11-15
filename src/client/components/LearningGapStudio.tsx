@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Compass,
   Target,
@@ -404,17 +404,37 @@ export const LearningGapStudio: React.FC<{
     'student-portal' | 'teacher-dashboard' | 'learning-academy' | 'student-report'
   >(initialStudentMode ? 'student-portal' : 'teacher-dashboard');
 
-  // Multimodal VAK Telemetry & Learning/Relearning Player State
-  const [liveVakProfile, setLiveVakProfile] = useState<{ visual: number; auditory: number; kinaesthetic: number }>(() => {
+  const gapDetailRef = useRef<HTMLDivElement>(null);
+  const activeGapStudentIdRef = useRef<string>('ach-stu-aarav-01');
+
+  const readScopedGapTelemetry = (studentId = activeGapStudentIdRef.current) => {
     try {
-      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.computedVak) return parsed.computedVak;
+      const scopedRaw = localStorage.getItem(`achariya_vak_telemetry_v1:${studentId}`);
+      const raw =
+        scopedRaw ||
+        (studentId === 'ach-stu-aarav-01' ? localStorage.getItem('achariya_vak_telemetry_v1') : null);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeScopedGapTelemetry = (studentId: string, nextData: any) => {
+    try {
+      const serialized = JSON.stringify(nextData);
+      localStorage.setItem(`achariya_vak_telemetry_v1:${studentId}`, serialized);
+      if (studentId === 'ach-stu-aarav-01') {
+        localStorage.setItem('achariya_vak_telemetry_v1', serialized);
       }
     } catch {
-      // Ignore storage fallback errors
+      // Ignore storage errors
     }
+  };
+
+  // Multimodal VAK Telemetry & Learning/Relearning Player State
+  const [liveVakProfile, setLiveVakProfile] = useState<{ visual: number; auditory: number; kinaesthetic: number }>(() => {
+    const parsed = readScopedGapTelemetry('ach-stu-aarav-01');
+    if (parsed?.computedVak) return parsed.computedVak;
     return { visual: 46, auditory: 22, kinaesthetic: 32 };
   });
   const [phase1Mode, setPhase1Mode] = useState<'VISUAL' | 'AUDITORY' | 'KINAESTHETIC'>('KINAESTHETIC');
@@ -431,32 +451,28 @@ export const LearningGapStudio: React.FC<{
   }, []);
 
   const recordGapVakInteraction = (modality: 'VISUAL' | 'AUDITORY' | 'KINAESTHETIC') => {
-    try {
-      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
-      const prev = raw
-        ? JSON.parse(raw)
-        : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], lastMasteryScore: 88 };
-      const vA = (prev.visualActions || 6) + (modality === 'VISUAL' ? 1 : 0);
-      const aA = (prev.auditoryActions || 3) + (modality === 'AUDITORY' ? 1 : 0);
-      const kA = (prev.kinaestheticActions || 4) + (modality === 'KINAESTHETIC' ? 1 : 0);
-      const sum = Math.max(1, vA + aA + kA);
-      const v = Math.round((vA / sum) * 100);
-      const a = Math.round((aA / sum) * 100);
-      const k = Math.max(0, 100 - v - a);
-      const updated = {
-        ...prev,
-        visualActions: vA,
-        auditoryActions: aA,
-        kinaestheticActions: kA,
-        lastModalityUsed: modality,
-        computedVak: { visual: v, auditory: a, kinaesthetic: k },
-        updatedAt: new Date().toISOString()
-      };
-      localStorage.setItem('achariya_vak_telemetry_v1', JSON.stringify(updated));
-      setLiveVakProfile({ visual: v, auditory: a, kinaesthetic: k });
-    } catch {
-      // Ignore storage errors
-    }
+    const targetStudentId = activeGapStudentIdRef.current || 'ach-stu-aarav-01';
+    const prev =
+      readScopedGapTelemetry(targetStudentId) ||
+      { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], lastMasteryScore: 88 };
+    const vA = (prev.visualActions || 6) + (modality === 'VISUAL' ? 1 : 0);
+    const aA = (prev.auditoryActions || 3) + (modality === 'AUDITORY' ? 1 : 0);
+    const kA = (prev.kinaestheticActions || 4) + (modality === 'KINAESTHETIC' ? 1 : 0);
+    const sum = Math.max(1, vA + aA + kA);
+    const v = Math.round((vA / sum) * 100);
+    const a = Math.round((aA / sum) * 100);
+    const k = Math.max(0, 100 - v - a);
+    const updated = {
+      ...prev,
+      visualActions: vA,
+      auditoryActions: aA,
+      kinaestheticActions: kA,
+      lastModalityUsed: modality,
+      computedVak: { visual: v, auditory: a, kinaesthetic: k },
+      updatedAt: new Date().toISOString()
+    };
+    writeScopedGapTelemetry(targetStudentId, updated);
+    setLiveVakProfile({ visual: v, auditory: a, kinaesthetic: k });
   };
 
   const speakPhaseAudio = (phase: 'PHASE1' | 'PHASE3', script: string) => {
@@ -692,6 +708,10 @@ export const LearningGapStudio: React.FC<{
 
   // Selected Gap Object (100% resilient fallback)
   const currentGap = gaps.find(g => g.id === selectedGapId) || gaps[0] || DEFAULT_GAPS[0];
+  activeGapStudentIdRef.current =
+    currentGap?.studentId && currentGap.studentId.startsWith('ach-stu-')
+      ? currentGap.studentId
+      : 'ach-stu-aarav-01';
 
   // Filtered Gaps List
   const effectiveGaps = gaps.length > 0 ? gaps : DEFAULT_GAPS;
@@ -733,27 +753,15 @@ export const LearningGapStudio: React.FC<{
     phase: 'PHASE2_FOUNDATION' | 'PHASE4_MASTERY',
     scorePct: number
   ) => {
-    try {
-      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
-      const prev = raw
-        ? JSON.parse(raw)
-        : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], computedVak: liveVakProfile };
-      localStorage.setItem(
-        'achariya_vak_telemetry_v1',
-        JSON.stringify({
-          ...prev,
-          lastMasteryScore: scorePct,
-          updatedAt: new Date().toISOString()
-        })
-      );
-    } catch {
-      // Ignore telemetry storage errors
-    }
-
-    const targetStudentId =
-      currentGap?.studentId && currentGap.studentId.startsWith('ach-stu-')
-        ? currentGap.studentId
-        : 'ach-stu-aarav-01';
+    const targetStudentId = activeGapStudentIdRef.current || 'ach-stu-aarav-01';
+    const prev =
+      readScopedGapTelemetry(targetStudentId) ||
+      { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [], computedVak: liveVakProfile };
+    writeScopedGapTelemetry(targetStudentId, {
+      ...prev,
+      lastMasteryScore: scorePct,
+      updatedAt: new Date().toISOString()
+    });
     const conceptTitle = currentGap?.conceptName || 'Targeted Curriculum Concept';
     const isMastery = phase === 'PHASE4_MASTERY';
 
@@ -990,7 +998,7 @@ export const LearningGapStudio: React.FC<{
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-nowrap items-center gap-2.5 w-full sm:w-auto shrink-0">
             <div className="bg-gradient-to-tr from-amber-50 to-amber-100/70 border border-amber-300 rounded-2xl px-3.5 py-2 text-center shadow-2xs">
               <div className="text-lg font-black text-amber-800">
                 100%
@@ -1070,11 +1078,11 @@ export const LearningGapStudio: React.FC<{
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex flex-wrap items-center space-x-2 border-b border-slate-200/80 pt-1">
+        <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-2 border-b border-slate-200/80 pt-1 -mx-2 px-2">
           {!initialStudentMode && (
             <button
               onClick={() => setActiveTab('teacher-dashboard')}
-              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'teacher-dashboard'
                   ? 'border-purple-600 text-purple-700'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -1087,7 +1095,7 @@ export const LearningGapStudio: React.FC<{
 
           <button
             onClick={() => setActiveTab('student-portal')}
-            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'student-portal'
                 ? 'border-purple-600 text-purple-700'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -1100,7 +1108,7 @@ export const LearningGapStudio: React.FC<{
           {!initialStudentMode && (
             <button
               onClick={() => setActiveTab('learning-academy')}
-              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+              className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'learning-academy'
                   ? 'border-purple-600 text-purple-700'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -1113,7 +1121,7 @@ export const LearningGapStudio: React.FC<{
 
           <button
             onClick={() => setActiveTab('student-report')}
-            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all ${
+            className={`pb-3 px-4 text-xs font-extrabold flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'student-report'
                 ? 'border-purple-600 text-purple-700'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -1521,7 +1529,14 @@ export const LearningGapStudio: React.FC<{
                   return (
                     <div
                       key={gap.id}
-                      onClick={() => setSelectedGapId(gap.id)}
+                      onClick={() => {
+                        setSelectedGapId(gap.id);
+                        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                          setTimeout(() => {
+                            gapDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 60);
+                        }
+                      }}
                       className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-purple-50/60 border-purple-400 shadow-sm ring-2 ring-purple-500/20'
@@ -1591,7 +1606,7 @@ export const LearningGapStudio: React.FC<{
             </div>
 
             {/* Right Column: In-Depth Diagnostic Evidence & Teacher Action Center */}
-            <div className="lg:col-span-7 space-y-5">
+            <div ref={gapDetailRef} className="lg:col-span-7 space-y-5 scroll-mt-20">
               {currentGap ? (
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
                   {/* Student & Gap Summary Header */}

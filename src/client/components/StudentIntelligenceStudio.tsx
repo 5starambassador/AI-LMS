@@ -701,17 +701,34 @@ export const StudentIntelligenceStudio: React.FC<{
   const [vakDraft, setVakDraft] = useState({ visual: 46, auditory: 22, kinaesthetic: 32 });
   const [savingVak, setSavingVak] = useState(false);
 
-  const openVakDiscoveryModal = () => {
+  const readScopedVakTelemetry = (studentId: string) => {
     try {
-      const raw = localStorage.getItem('achariya_vak_telemetry_v1');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.computedVak) {
-          setVakTelemetrySnapshot(parsed);
-        }
+      const scopedRaw = localStorage.getItem(`achariya_vak_telemetry_v1:${studentId}`);
+      const raw =
+        scopedRaw ||
+        (studentId === 'ach-stu-aarav-01' ? localStorage.getItem('achariya_vak_telemetry_v1') : null);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeScopedVakTelemetry = (studentId: string, nextData: any) => {
+    try {
+      const serialized = JSON.stringify(nextData);
+      localStorage.setItem(`achariya_vak_telemetry_v1:${studentId}`, serialized);
+      if (studentId === 'ach-stu-aarav-01') {
+        localStorage.setItem('achariya_vak_telemetry_v1', serialized);
       }
     } catch {
-      // Ignore fallback storage errors
+      // Ignore storage write errors
+    }
+  };
+
+  const openVakDiscoveryModal = () => {
+    const parsed = readScopedVakTelemetry(selectedStudentId);
+    if (parsed?.computedVak) {
+      setVakTelemetrySnapshot(parsed);
     }
     setVakQuizBand(profile?.student?.gradeBand === 'PRE_PRIMARY' || profile?.student?.gradeNumber <= 3 ? 'EARLY' : 'UPPER');
     setVakModalTab('QUIZ');
@@ -792,29 +809,22 @@ export const StudentIntelligenceStudio: React.FC<{
         setInstitutionalData(instRes.value.data);
       }
 
-      try {
-        const rawVak = localStorage.getItem('achariya_vak_telemetry_v1');
-        if (rawVak && selectedStudentId === 'ach-stu-aarav-01') {
-          const parsed = JSON.parse(rawVak);
-          if (parsed?.computedVak) {
-            setVakTelemetrySnapshot(parsed);
-            const { visual, auditory, kinaesthetic } = parsed.computedVak;
-            if (typeof visual === 'number' && typeof auditory === 'number' && typeof kinaesthetic === 'number') {
-              setVakDraft({ visual, auditory, kinaesthetic });
-              setProfile((prev: any) => ({
-                ...prev,
-                vakProfile: {
-                  ...prev.vakProfile,
-                  visualScore: visual,
-                  auditoryScore: auditory,
-                  kinaestheticScore: kinaesthetic
-                }
-              }));
+      const parsedVak = readScopedVakTelemetry(selectedStudentId);
+      if (parsedVak?.computedVak) {
+        setVakTelemetrySnapshot(parsedVak);
+        const { visual, auditory, kinaesthetic } = parsedVak.computedVak;
+        if (typeof visual === 'number' && typeof auditory === 'number' && typeof kinaesthetic === 'number') {
+          setVakDraft({ visual, auditory, kinaesthetic });
+          setProfile((prev: any) => ({
+            ...prev,
+            vakProfile: {
+              ...prev.vakProfile,
+              visualScore: visual,
+              auditoryScore: auditory,
+              kinaestheticScore: kinaesthetic
             }
-          }
+          }));
         }
-      } catch {
-        // Ignore storage read errors
       }
     };
     load();
@@ -1026,19 +1036,19 @@ export const StudentIntelligenceStudio: React.FC<{
       }));
     } finally {
       setVakDraft({ visual: normalized.visual, auditory: normalized.auditory, kinaesthetic: normalized.kinaesthetic });
-      try {
-        const raw = localStorage.getItem('achariya_vak_telemetry_v1');
-        const prev = raw ? JSON.parse(raw) : { visualActions: 6, auditoryActions: 3, kinaestheticActions: 4, completedLessons: [] };
-        const updated = {
-          ...prev,
-          computedVak: { visual: normalized.visual, auditory: normalized.auditory, kinaesthetic: normalized.kinaesthetic },
-          updatedAt: new Date().toISOString()
-        };
-        localStorage.setItem('achariya_vak_telemetry_v1', JSON.stringify(updated));
-        setVakTelemetrySnapshot(updated);
-      } catch {
-        // Ignore storage write errors
-      }
+      const prev = readScopedVakTelemetry(selectedStudentId) || {
+        visualActions: 6,
+        auditoryActions: 3,
+        kinaestheticActions: 4,
+        completedLessons: []
+      };
+      const updated = {
+        ...prev,
+        computedVak: { visual: normalized.visual, auditory: normalized.auditory, kinaesthetic: normalized.kinaesthetic },
+        updatedAt: new Date().toISOString()
+      };
+      writeScopedVakTelemetry(selectedStudentId, updated);
+      setVakTelemetrySnapshot(updated);
       setSavingVak(false);
       setShowVakModal(false);
       notify(`VAK Profile updated (${normalized.visual}% V / ${normalized.auditory}% A / ${normalized.kinaesthetic}% K) and synced to AI LMS & Gap Studio!`);
@@ -1383,7 +1393,7 @@ export const StudentIntelligenceStudio: React.FC<{
   return (
     <div className="space-y-6 pb-14">
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-xs font-bold flex items-center space-x-2">
+        <div className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-md z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-xs font-bold flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toast}</span>
         </div>
@@ -1474,19 +1484,19 @@ export const StudentIntelligenceStudio: React.FC<{
             </div>
 
             {!initialStudentMode && (
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <div className="flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs text-xs">
+              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto shrink-0">
+                <div className="flex items-center justify-between sm:justify-start bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs text-xs w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => stepCohortScholar(-1)}
                     disabled={activeDirectoryView.filteredCount === 0}
-                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40 shrink-0"
                     title="Previous scholar in current filtered cohort"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span>Prev</span>
                   </button>
-                  <span className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 whitespace-nowrap border-x border-slate-100">
+                  <span className="px-2 py-1 text-[11px] font-semibold text-slate-600 whitespace-normal sm:whitespace-nowrap text-center border-x border-slate-100">
                     {currentCohortPosition > 0 ? `Scholar ${currentCohortPosition.toLocaleString()} of ` : ''}
                     <strong className="text-slate-900">{activeDirectoryView.filteredCount.toLocaleString()}</strong> filtered ·{' '}
                     <span className="text-indigo-700 font-bold">{TOTAL_INSTITUTE_SCHOLARS.toLocaleString()} Total</span>
@@ -1495,7 +1505,7 @@ export const StudentIntelligenceStudio: React.FC<{
                     type="button"
                     onClick={() => stepCohortScholar(1)}
                     disabled={activeDirectoryView.filteredCount === 0}
-                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40"
+                    className="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold flex items-center gap-1 disabled:opacity-40 shrink-0"
                     title="Next scholar in current filtered cohort"
                   >
                     <span>Next</span>
@@ -1771,7 +1781,7 @@ export const StudentIntelligenceStudio: React.FC<{
         </div>
 
         {/* 6 Sub-Navigation Tabs */}
-        <div className="flex flex-wrap items-center gap-1 border-b border-slate-200/80 pt-1">
+        <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1 border-b border-slate-200/80 pt-1 -mx-2 px-2">
           {[
             { key: 'master-bmit-vak', label: '360° Master Profile, BMIT & VAK', icon: <BrainCircuit className="w-3.5 h-3.5" /> },
             { key: 'holistic-iedp', label: '20 Dev Dimensions, 16 Skills & IEDP', icon: <Layers className="w-3.5 h-3.5" /> },
@@ -1784,7 +1794,7 @@ export const StudentIntelligenceStudio: React.FC<{
             <button
               key={tab.key}
               onClick={() => setActiveSubTab(tab.key)}
-              className={`pb-3 px-3.5 text-xs font-extrabold flex items-center space-x-1.5 border-b-2 transition-all ${
+              className={`pb-3 px-3.5 text-xs font-extrabold flex items-center space-x-1.5 border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 activeSubTab === tab.key
                   ? 'border-indigo-600 text-indigo-700'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -2984,7 +2994,7 @@ export const StudentIntelligenceStudio: React.FC<{
             </div>
 
             {/* 3 Modal Tabs */}
-            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 p-1 bg-slate-100 rounded-2xl">
               <button
                 onClick={() => setVakModalTab('QUIZ')}
                 className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-all ${

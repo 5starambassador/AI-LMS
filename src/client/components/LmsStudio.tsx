@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   PlayCircle,
   PauseCircle,
@@ -94,9 +94,16 @@ const DEFAULT_TELEMETRY: VakTelemetryRecord = {
   updatedAt: new Date().toISOString()
 };
 
-function loadVakTelemetry(): VakTelemetryRecord {
+function getVakTelemetryStorageKey(studentId = 'ach-stu-aarav-01') {
+  return `${VAK_TELEMETRY_STORAGE_KEY}:${studentId}`;
+}
+
+function loadVakTelemetry(studentId = 'ach-stu-aarav-01'): VakTelemetryRecord {
   try {
-    const raw = localStorage.getItem(VAK_TELEMETRY_STORAGE_KEY);
+    const scopedRaw = localStorage.getItem(getVakTelemetryStorageKey(studentId));
+    const raw =
+      scopedRaw ||
+      (studentId === 'ach-stu-aarav-01' ? localStorage.getItem(VAK_TELEMETRY_STORAGE_KEY) : null);
     if (!raw) return DEFAULT_TELEMETRY;
     const parsed = JSON.parse(raw);
     return {
@@ -113,10 +120,14 @@ function loadVakTelemetry(): VakTelemetryRecord {
   }
 }
 
-function saveVakTelemetry(next: VakTelemetryRecord) {
+function saveVakTelemetry(next: VakTelemetryRecord, studentId = 'ach-stu-aarav-01') {
   try {
-    localStorage.setItem(VAK_TELEMETRY_STORAGE_KEY, JSON.stringify(next));
-    window.dispatchEvent(new CustomEvent('achariya:vak-updated', { detail: next }));
+    const serialized = JSON.stringify(next);
+    localStorage.setItem(getVakTelemetryStorageKey(studentId), serialized);
+    if (studentId === 'ach-stu-aarav-01') {
+      localStorage.setItem(VAK_TELEMETRY_STORAGE_KEY, serialized);
+    }
+    window.dispatchEvent(new CustomEvent('achariya:vak-updated', { detail: { studentId, ...next } }));
   } catch {
     // Ignore storage quota errors in restricted frames
   }
@@ -580,16 +591,18 @@ const INITIAL_LMS_LESSONS: LmsLesson[] = [
 
 export const LmsStudio: React.FC<{
   initialStudentMode?: boolean;
+  studentId?: string;
   onNavigateToGaps?: () => void;
   onNavigateToIntelligence?: () => void;
-}> = ({ initialStudentMode = false, onNavigateToGaps, onNavigateToIntelligence }) => {
+}> = ({ initialStudentMode = false, studentId = 'ach-stu-aarav-01', onNavigateToGaps, onNavigateToIntelligence }) => {
   const [lessons, setLessons] = useState<LmsLesson[]>(INITIAL_LMS_LESSONS);
   const [filterTrack, setFilterTrack] = useState<'ALL' | 'FOUNDATION_BRIDGE' | 'CURRENT_GRADE'>('ALL');
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [selectedLessonId, setSelectedLessonId] = useState<string>(INITIAL_LMS_LESSONS[0].id);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
 
   // Live VAK Telemetry & Modality Player State
-  const [telemetry, setTelemetry] = useState<VakTelemetryRecord>(() => loadVakTelemetry());
+  const [telemetry, setTelemetry] = useState<VakTelemetryRecord>(() => loadVakTelemetry(studentId));
   const [activeModality, setActiveModality] = useState<VakModality>('VISUAL');
   const [sceneIndex, setSceneIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -639,13 +652,13 @@ export const LmsStudio: React.FC<{
       if (exists) setSelectedLessonId(exists.id);
       localStorage.removeItem(ACTIVE_LMS_LESSON_STORAGE_KEY);
     }
-    const t = loadVakTelemetry();
+    const t = loadVakTelemetry(studentId);
     setTelemetry(t);
     const { visual, auditory, kinaesthetic } = t.computedVak;
     if (visual >= auditory && visual >= kinaesthetic) setActiveModality('VISUAL');
     else if (kinaesthetic >= auditory) setActiveModality('KINAESTHETIC');
     else setActiveModality('AUDITORY');
-  }, []);
+  }, [studentId]);
 
   // Auto-advance Visual Storyboard scenes when Play Video Animation is active
   const currentLesson = useMemo(
@@ -684,7 +697,7 @@ export const LmsStudio: React.FC<{
         computedVak,
         updatedAt: new Date().toISOString()
       };
-      saveVakTelemetry(next);
+      saveVakTelemetry(next, studentId);
       return next;
     });
   };
@@ -697,6 +710,11 @@ export const LmsStudio: React.FC<{
     setQuizAnswers({});
     setQuizResult(null);
     setSelectedLessonId(lessonId);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setTimeout(() => {
+        playerContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
   };
 
   const speakText = (text: string) => {
@@ -752,20 +770,20 @@ export const LmsStudio: React.FC<{
       computedVak,
       updatedAt: new Date().toISOString()
     };
-    saveVakTelemetry(nextTelemetry);
+    saveVakTelemetry(nextTelemetry, studentId);
     setTelemetry(nextTelemetry);
 
     // Sync live VAK telemetry & portfolio mastery record to backend API when available
     try {
       await apiPost('/api/student-intelligence/vak/assess', {
-        studentId: 'ach-stu-aarav-01',
+        studentId,
         visualScore: computedVak.visual,
         auditoryScore: computedVak.auditory,
         kinaestheticScore: computedVak.kinaesthetic,
         activeConcept: currentLesson.title
       });
       if (passed) {
-        await apiPost('/api/student-intelligence/portfolio/ach-stu-aarav-01', {
+        await apiPost(`/api/student-intelligence/portfolio/${studentId}`, {
           section: currentLesson.track === 'FOUNDATION_BRIDGE' ? '7. Remedial Learning Progress' : '5. Concept Mastery',
           category: 'CERTIFICATE',
           title: `LMS Multimodal Mastery: ${currentLesson.title}`,
@@ -908,24 +926,43 @@ export const LmsStudio: React.FC<{
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div className="grid grid-cols-10 gap-1 p-3 bg-slate-50 rounded-2xl border border-slate-200 max-w-[280px] mx-auto w-full">
-                {Array.from({ length: 100 }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setGridCount(idx + 1);
+              <div className="space-y-2.5 max-w-[330px] mx-auto w-full">
+                <div className="grid grid-cols-10 gap-1 p-3 bg-slate-50 rounded-2xl border border-slate-200 w-full">
+                  {Array.from({ length: 100 }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setGridCount(idx + 1);
+                        recordVakInteraction('KINAESTHETIC');
+                      }}
+                      className={`h-6 sm:h-7 w-full rounded-[4px] text-[9px] font-mono transition-colors ${
+                        idx < gridCount
+                          ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold'
+                          : 'bg-white border border-slate-200 text-slate-300 hover:bg-purple-100'
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                    <span>Touch Slider (1–100)</span>
+                    <span className="font-mono text-purple-700">{gridCount}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    value={gridCount}
+                    onChange={e => {
+                      setGridCount(Number(e.target.value));
                       recordVakInteraction('KINAESTHETIC');
                     }}
-                    className={`h-5 w-full rounded-[3px] text-[9px] font-mono transition-colors ${
-                      idx < gridCount
-                        ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold'
-                        : 'bg-white border border-slate-200 text-slate-300 hover:bg-purple-100'
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                ))}
+                    className="w-full accent-purple-600"
+                  />
+                </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2 text-xs">
@@ -1239,7 +1276,7 @@ export const LmsStudio: React.FC<{
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-200">
       {toast && (
-        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 border border-slate-700">
+        <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 border border-slate-700">
           <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />
           <span className="font-semibold">{toast}</span>
         </div>
@@ -1407,7 +1444,7 @@ export const LmsStudio: React.FC<{
         </div>
 
         {/* Right: Multimodal VAK Learning & Simulation Player */}
-        <div className="lg:col-span-8 space-y-5">
+        <div ref={playerContainerRef} className="lg:col-span-8 space-y-5 scroll-mt-20">
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
               <div>
@@ -1422,7 +1459,7 @@ export const LmsStudio: React.FC<{
             </div>
 
             {/* 3 VAK Modality Selector Tabs */}
-            <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl">
               <button
                 type="button"
                 onClick={() => {

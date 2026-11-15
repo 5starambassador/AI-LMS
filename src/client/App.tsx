@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuthContext } from './context/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { Header, ActiveTabType, StudentTabType } from './components/Header';
-import { StaffDashboard } from './components/StaffDashboard';
-import { AiToolsHub } from './components/AiToolsHub';
-import { MySpaceHub } from './components/MySpaceHub';
-import { LsrStudentPortal } from './components/LsrStudentPortal';
-import { StudentHomeworkPortal } from './components/StudentHomeworkPortal';
-import { AttendanceHub } from './components/AttendanceHub';
-import { HomeworkHub } from './components/HomeworkHub';
 import { QrStudentPicker } from './components/QrStudentPicker';
-import { VoiceActivity } from './components/VoiceActivity';
-import { TimetableHub } from './components/TimetableHub';
-import { NoticeboardHub } from './components/NoticeboardHub';
-import { LeaveHub } from './components/LeaveHub';
-import { FeeHub } from './components/FeeHub';
-import { ParentPortal } from './components/ParentPortal';
 import { ShieldAlert } from 'lucide-react';
+
+const StaffDashboard = React.lazy(() => import('./components/StaffDashboard').then(m => ({ default: m.StaffDashboard })));
+const AiToolsHub = React.lazy(() => import('./components/AiToolsHub').then(m => ({ default: m.AiToolsHub })));
+const MySpaceHub = React.lazy(() => import('./components/MySpaceHub').then(m => ({ default: m.MySpaceHub })));
+const LsrStudentPortal = React.lazy(() => import('./components/LsrStudentPortal').then(m => ({ default: m.LsrStudentPortal })));
+const StudentHomeworkPortal = React.lazy(() => import('./components/StudentHomeworkPortal').then(m => ({ default: m.StudentHomeworkPortal })));
+const AttendanceHub = React.lazy(() => import('./components/AttendanceHub').then(m => ({ default: m.AttendanceHub })));
+const HomeworkHub = React.lazy(() => import('./components/HomeworkHub').then(m => ({ default: m.HomeworkHub })));
+const VoiceActivity = React.lazy(() => import('./components/VoiceActivity').then(m => ({ default: m.VoiceActivity })));
+const TimetableHub = React.lazy(() => import('./components/TimetableHub').then(m => ({ default: m.TimetableHub })));
+const NoticeboardHub = React.lazy(() => import('./components/NoticeboardHub').then(m => ({ default: m.NoticeboardHub })));
+const LeaveHub = React.lazy(() => import('./components/LeaveHub').then(m => ({ default: m.LeaveHub })));
+const FeeHub = React.lazy(() => import('./components/FeeHub').then(m => ({ default: m.FeeHub })));
+const ParentPortal = React.lazy(() => import('./components/ParentPortal').then(m => ({ default: m.ParentPortal })));
 
 const CurriculumHub = React.lazy(() => import('./components/CurriculumHub').then(m => ({ default: m.CurriculumHub })));
 const LmsStudio = React.lazy(() => import('./components/LmsStudio').then(m => ({ default: m.LmsStudio })));
@@ -151,7 +152,11 @@ function AppShell() {
   // Parent portal: public route — no auth needed
   const parentMatch = window.location.pathname.match(/^\/parent\/([^/]+)/);
   if (parentMatch) {
-    return <ParentPortal token={parentMatch[1]} />;
+    return (
+      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50 text-xs font-semibold text-slate-400">Loading Parent Portal…</div>}>
+        <ParentPortal token={parentMatch[1]} />
+      </React.Suspense>
+    );
   }
 
   // QR login: students land on /qr/<token> without prior auth
