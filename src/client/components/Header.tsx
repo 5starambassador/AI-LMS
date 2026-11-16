@@ -47,7 +47,7 @@ export type ActiveTabType =
   | 'leaves'
   | 'fees';
 
-export type StudentTabType = 'aitools' | 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
+export type StudentTabType = 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
 
 interface HeaderProps {
   activeTab: ActiveTabType;
@@ -361,7 +361,6 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1 text-xs">
               {[
-                { tab: 'aitools'      as StudentTabType, route: '/student/aitools',      label: 'AI Tools',        icon: <Sparkles className="w-3.5 h-3.5 text-teal-600" />,   cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'lms'          as StudentTabType, route: '/student/lms',          label: 'AI LMS',          icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'gaps'         as StudentTabType, route: '/student/gaps',         label: 'Gaps & Mastery',  icon: <Target className="w-3.5 h-3.5 text-purple-600" />,   cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT',       icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
@@ -566,7 +565,6 @@ export const Header: React.FC<HeaderProps> = ({
           {currentPortal === 'STUDENT' && (
             <div className="grid grid-cols-1 gap-1.5">
               {[
-                { tab: 'aitools' as StudentTabType, route: '/student/aitools', label: 'AI Tools Suite · 4 Connected Pillars', icon: <Sparkles className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'lms' as StudentTabType, route: '/student/lms', label: 'AI LMS · Video, Audio & Simulations', icon: <PlayCircle className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
                 { tab: 'gaps' as StudentTabType, route: '/student/gaps', label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },

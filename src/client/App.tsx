@@ -46,7 +46,9 @@ function AppShell() {
     } else if (cleanPath.startsWith('/student')) {
       setCurrentPortal('STUDENT');
       if (cleanPath === '/student/aitools') {
-        setStudentTab('aitools');
+        // AI Tools Suite is an educator/faculty module; redirect scholars to AI LMS
+        window.history.replaceState(null, '', '/student/lms');
+        setStudentTab('lms');
       } else if (cleanPath === '/student/lms') {
         setStudentTab('lms');
       } else if (cleanPath === '/student/homework') {
@@ -311,12 +313,6 @@ function AppShell() {
           {/* VIEW 2: STUDENT PORTAL (AI LMS, VoiceLab, Gaps & Portfolio) */}
           {currentPortal === 'STUDENT' && (
             <div>
-              {studentTab === 'aitools' && (
-                <AiToolsHub
-                  isStudentView={true}
-                  onNavigate={navigateTo}
-                />
-              )}
               {studentTab === 'lms' && (
                 <LmsStudio
                   initialStudentMode={true}
