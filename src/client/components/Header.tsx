@@ -79,11 +79,11 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-teal-600',
     activeColor: 'bg-teal-50 text-teal-800 border-teal-200',
     items: [
-      { label: 'AI LMS Studio', tab: 'lms',        route: '/staff/lms',         icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
-      { label: 'Attendance',    tab: 'attendance', route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
-      { label: 'Curriculum',    tab: 'resources',  route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,      desc: 'Digital textbooks & flipbook reader' },
-      { label: 'Homework',      tab: 'homework',   route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,     desc: 'Assign and grade homework tasks' },
-      { label: 'Worksheet',     tab: 'worksheet',  route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,       desc: 'Build interactive worksheets' },
+      { label: 'AI LMS Studio',   tab: 'lms',        route: '/staff/lms',         icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
+      { label: 'Attendance',      tab: 'attendance', route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
+      { label: 'Curriculum',      tab: 'resources',  route: '/staff/resources',   icon: <BookOpen className="w-4 h-4 text-teal-600" />,      desc: 'Digital textbooks & flipbook reader' },
+      { label: 'Homework Studio', tab: 'homework',   route: '/staff/homework',    icon: <FileCheck className="w-4 h-4 text-teal-600" />,     desc: 'Assign and grade homework tasks' },
+      { label: 'Worksheet Canvas',tab: 'worksheet',  route: '/staff/worksheet',   icon: <PenTool className="w-4 h-4 text-teal-600" />,       desc: 'Build interactive worksheets' },
     ]
   },
   {
@@ -92,11 +92,23 @@ const NAV_GROUPS: NavGroup[] = [
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
     items: [
-      { label: 'AI Tools Suite', tab: 'aitools',      route: '/staff/aitools',      icon: <Sparkles className="w-4 h-4 text-violet-600" />,     desc: 'Exam Grader, VoiceLab, HPC 360° & PAL' },
-      { label: 'Exam Builder',   tab: 'exam-builder', route: '/staff/exam-builder', icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Curriculum outcomes & blueprint builder' },
-      { label: 'Exams',          tab: 'exams',        route: '/staff/exams',        icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
-      { label: 'Insights',       tab: 'insights',     route: '/staff/insights',     icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
-      { label: 'Reports',        tab: 'reportcard',   route: '/staff/reportcard',   icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
+      { label: 'Exam Builder',      tab: 'exam-builder',  route: '/staff/exam-builder',  icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Curriculum outcomes & blueprint builder' },
+      { label: 'Summative Exams',   tab: 'exams',         route: '/staff/exams',         icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
+      { label: 'Score Insights',    tab: 'insights',      route: '/staff/insights',      icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
+      { label: 'Report Cards',      tab: 'reportcard',    route: '/staff/reportcard',    icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
+      { label: 'Learning Gap Studio',tab: 'learning-gaps',route: '/staff/learning-gaps', icon: <Target className="w-4 h-4 text-violet-600" />,       desc: 'Cross-grade error tracing & DAG' },
+    ]
+  },
+  {
+    label: 'AI Studios',
+    icon: <Sparkles className="w-3.5 h-3.5" />,
+    color: 'text-teal-600',
+    activeColor: 'bg-teal-50 text-teal-800 border-teal-200 font-bold',
+    items: [
+      { label: 'Achariya AI Tools Suite', tab: 'aitools',              route: '/staff/aitools',              icon: <Sparkles className="w-4 h-4 text-teal-600" />,     desc: 'Exam Grader, VoiceLab, HPC 360° & PAL' },
+      { label: 'AI Learning Gap Studio',  tab: 'learning-gaps',        route: '/staff/learning-gaps',        icon: <Target className="w-4 h-4 text-violet-600" />,     desc: 'Prerequisite DAG & 100% Mastery' },
+      { label: '360° Student Intelligence',tab: 'student-intelligence', route: '/staff/student-intelligence', icon: <BrainCircuit className="w-4 h-4 text-indigo-600" />, desc: 'BMIT, VAK, E-Portfolio & Career AI' },
+      { label: 'AI LMS Studio',          tab: 'lms',                  route: '/staff/lms',                  icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
     ]
   },
   {
@@ -125,52 +137,80 @@ function DropdownMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isGroupActive = group.items.some(i => i.tab === activeTab);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 180);
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
+        type="button"
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
           isGroupActive
-            ? `${group.activeColor} border shadow-xs`
+            ? `${group.activeColor} border shadow-xs font-bold`
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
         }`}
       >
         <span className={isGroupActive ? '' : group.color}>{group.icon}</span>
         <span>{group.label}</span>
         {isGroupActive && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-        <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-slate-200/80 py-1.5 z-50">
-          <div className="px-3 py-1.5 mb-1 border-b border-slate-100">
+        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+          <div className="px-3 py-1.5 mb-1 border-b border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.label}</p>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
+              {group.items.length} Modules
+            </span>
           </div>
           {group.items.map(item => (
             <button
               key={item.tab}
-              onClick={() => { onNavigate(item.route); setOpen(false); }}
-              className={`w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors ${
-                activeTab === item.tab ? 'bg-slate-50' : ''
+              type="button"
+              onClick={() => {
+                onNavigate(item.route);
+                setOpen(false);
+              }}
+              className={`w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
+                activeTab === item.tab ? 'bg-slate-50 text-slate-900 font-bold' : ''
               }`}
             >
               <div className="mt-0.5 flex-shrink-0">{item.icon}</div>
-              <div>
-                <div className={`text-xs font-bold ${activeTab === item.tab ? 'text-slate-900' : 'text-slate-700'}`}>
+              <div className="min-w-0">
+                <div className={`text-xs font-bold leading-tight ${activeTab === item.tab ? 'text-slate-900' : 'text-slate-700'}`}>
                   {item.label}
                   {activeTab === item.tab && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-teal-500 align-middle" />}
                 </div>
-                <div className="text-[10px] text-slate-400 font-medium mt-0.5 leading-tight">{item.desc}</div>
+                <div className="text-[10px] text-slate-400 font-medium mt-0.5 leading-snug truncate">{item.desc}</div>
               </div>
             </button>
           ))}
@@ -243,7 +283,7 @@ export const Header: React.FC<HeaderProps> = ({
           {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
             currentUser?.roleKey !== 'role-ach-student' &&
             currentUser?.roleKey !== 'role-ach-parent' && (
-            <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar py-1">
+            <nav className="hidden lg:flex items-center gap-1.5 flex-1 min-w-0 py-1">
               {/* Home — always direct */}
               <button
                 onClick={() => onNavigate('/staff/home')}
@@ -257,7 +297,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Home</span>
               </button>
 
-              {/* Grouped dropdowns — filtered by role */}
+              {/* Grouped dropdowns: Teaching, Assessment, AI Studios, Operations */}
               {NAV_GROUPS.filter(group =>
                 !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
               ).map(group => (
@@ -268,46 +308,6 @@ export const Header: React.FC<HeaderProps> = ({
                   onNavigate={onNavigate}
                 />
               ))}
-
-              {/* Direct Flagship AI Studio Pills - 3 Flagship Powerhouses */}
-              <button
-                onClick={() => onNavigate('/staff/aitools')}
-                title="Achariya AI Tools Suite · 4 Connected AI Pillars"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  currentPortal === 'STAFF' && activeTab === 'aitools'
-                    ? 'bg-teal-50 text-teal-800 border-teal-200 shadow-xs font-bold'
-                    : 'text-slate-700 hover:text-teal-800 hover:bg-teal-50/70 border-transparent'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>AI Tools</span>
-              </button>
-
-              <button
-                onClick={() => onNavigate('/staff/learning-gaps')}
-                title="AI Learning Gap & Remediation Studio"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  currentPortal === 'STAFF' && activeTab === 'learning-gaps'
-                    ? 'bg-violet-50 text-violet-800 border-violet-200 shadow-xs font-bold'
-                    : 'text-slate-700 hover:text-violet-800 hover:bg-violet-50/70 border-transparent'
-                }`}
-              >
-                <Target className="w-3.5 h-3.5 text-violet-600" />
-                <span>Gap Studio</span>
-              </button>
-
-              <button
-                onClick={() => onNavigate('/staff/student-intelligence')}
-                title="Student 360°, BMIT, VAK, E-Portfolio & Career AI"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                  currentPortal === 'STAFF' && activeTab === 'student-intelligence'
-                    ? 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-xs font-bold'
-                    : 'text-slate-700 hover:text-indigo-800 hover:bg-indigo-50/70 border-transparent'
-                }`}
-              >
-                <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />
-                <span>360° BMIT</span>
-              </button>
 
               {/* ── Divider: academic / utility ── */}
               <span className="w-px h-5 bg-slate-200 mx-0.5 flex-shrink-0" />
