@@ -292,6 +292,7 @@ function AppShell() {
               )}
               {activeTab === 'aitools' && (
                 <AiToolsHub
+                  isStudentView={false}
                   onNavigate={navigateTo}
                   onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')}
                 />
@@ -312,8 +313,8 @@ function AppShell() {
             <div>
               {studentTab === 'aitools' && (
                 <AiToolsHub
+                  isStudentView={true}
                   onNavigate={navigateTo}
-                  onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')}
                 />
               )}
               {studentTab === 'lms' && (
