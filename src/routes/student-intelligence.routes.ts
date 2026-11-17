@@ -9,6 +9,7 @@ export async function studentIntelligenceRoutes(fastify: FastifyInstance) {
   fastify.get('/api/student-intelligence/profile/:studentId', StudentIntelligenceController.getMasterProfile);
   fastify.post('/api/student-intelligence/bmit/assess', StudentIntelligenceController.updateBmitOrCounsellorReview);
   fastify.post('/api/student-intelligence/vak/assess', StudentIntelligenceController.submitVakAssessment);
+  fastify.get('/api/student-intelligence/hpc/pdf/:studentId', StudentIntelligenceController.exportHpcPdf);
   fastify.get('/api/student-intelligence/career/:studentId', StudentIntelligenceController.getCareerIntelligence);
   fastify.post('/api/student-intelligence/portfolio/:studentId', StudentIntelligenceController.addPortfolioEntry);
   fastify.post('/api/student-intelligence/portfolio/:studentId/verify', StudentIntelligenceController.verifyPortfolioEntry);

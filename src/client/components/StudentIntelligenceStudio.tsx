@@ -34,7 +34,7 @@ import {
   PlayCircle,
   Volume2
 } from 'lucide-react';
-import { apiGet, apiPost } from '../lib/api';
+import { apiGet, apiPost, apiFetch } from '../lib/api';
 
 type GradeBandType = 'PRE_PRIMARY' | 'PRIMARY_1_5' | 'MIDDLE_6_8' | 'SECONDARY_9_10' | 'SENIOR_SECONDARY_11_12';
 type TriageStatusType = 'ACTIVE_GAP' | 'BMIT_PENDING' | 'CAREER_DUE' | 'GOLD_MASTERY';
@@ -1228,6 +1228,32 @@ export const StudentIntelligenceStudio: React.FC<{
       }));
       setSavingCounsellor(false);
       notify('Counsellor BMIT Interpretation & Development Notes Approved!');
+    }
+  };
+
+  const [downloadingHpcPdf, setDownloadingHpcPdf] = useState(false);
+
+  const handleDownloadHpcPdf = async () => {
+    try {
+      setDownloadingHpcPdf(true);
+      notify('Generating official vector NEP 2020 Holistic Progress Card (HPC 360°)...');
+      const res = await apiFetch(`/api/student-intelligence/hpc/pdf/${activeStudentId}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const safeName = (profile?.student?.name || 'Aarav_Sundaram').replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `HPC-360-${safeName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+      notify('Official NEP 2020 Holistic Progress Card (HPC 360°) PDF downloaded.');
+    } catch {
+      notify('Failed to generate HPC PDF. Please try again.');
+    } finally {
+      setDownloadingHpcPdf(false);
     }
   };
 
@@ -2481,8 +2507,14 @@ export const StudentIntelligenceStudio: React.FC<{
                       <span>Excel/CSV</span>
                     </button>
                     <button
-                      onClick={() => window.print()}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold"
+                      onClick={() => {
+                        if (rep.toLowerCase().includes('holistic progress card')) {
+                          handleDownloadHpcPdf();
+                        } else {
+                          window.print();
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-[10px] font-bold"
                     >
                       PDF
                     </button>
@@ -2778,11 +2810,20 @@ export const StudentIntelligenceStudio: React.FC<{
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <button
                   type="button"
+                  onClick={handleDownloadHpcPdf}
+                  disabled={downloadingHpcPdf}
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-[11px] font-extrabold flex items-center space-x-1.5 shadow-sm transition-all"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{downloadingHpcPdf ? 'Generating PDF...' : 'Download Official 360° HPC PDF'}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleDownloadCsvReport(selectedHpcReport)}
                   className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1 shadow-xs"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Export Selected Report CSV</span>
+                  <span>Export CSV</span>
                 </button>
                 <button
                   type="button"
@@ -2790,7 +2831,7 @@ export const StudentIntelligenceStudio: React.FC<{
                   className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-bold flex items-center space-x-1"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Print Report PDF</span>
+                  <span>Print View</span>
                 </button>
               </div>
             </div>

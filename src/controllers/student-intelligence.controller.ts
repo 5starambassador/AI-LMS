@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma.js';
 import { AIProviderService } from '../services/ai-provider.service.js';
 import { AuthenticatedUserPayload, isUmbrellaRole } from '../middleware/auth.js';
+import { HpcPdfService } from '../services/hpc-pdf.service.js';
 
 export interface BmitDomainItem {
   domain: string;
@@ -1365,6 +1366,44 @@ export class StudentIntelligenceController {
         conceptModalityRecommendations: buildMultimodalPrescriptions(concept)
       }
     });
+  }
+
+  /**
+   * GET /api/student-intelligence/hpc/pdf/:studentId
+   * Generates a board-compliant, vector-grade NEP 2020 Holistic Progress Card (HPC 360°) PDF
+   */
+  static async exportHpcPdf(request: FastifyRequest, reply: FastifyReply) {
+    const { studentId: rawStudentId } = request.params as { studentId: string };
+    const studentId = resolveScopedStudentId(request, rawStudentId);
+    const seed = resolveSeedProfile(studentId);
+    const vak = runtimeVakOverrides.get(studentId) || seed.vak;
+
+    const bmitScores: Record<string, number> = {};
+    Object.entries(seed.bmitScores).forEach(([k, v]) => {
+      bmitScores[v.name] = v.score;
+    });
+
+    const pdfBuffer = await HpcPdfService.generateHpcPdf({
+      id: studentId,
+      fullName: seed.student.name,
+      rollNumber: seed.student.rollNumber,
+      gradeLabel: seed.student.grade,
+      section: seed.student.section,
+      campusName: seed.student.campus,
+      dominantBmit: seed.student.dominantBmit,
+      bmitScores,
+      vakProfile: {
+        visual: vak.visual,
+        auditory: vak.auditory,
+        kinaesthetic: vak.kinaesthetic
+      }
+    });
+
+    const sanitizedName = seed.student.name.replace(/[^a-zA-Z0-9]/g, '_');
+    return reply
+      .header('Content-Type', 'application/pdf')
+      .header('Content-Disposition', `attachment; filename="HPC-360-${sanitizedName}.pdf"`)
+      .send(pdfBuffer);
   }
 
   /**

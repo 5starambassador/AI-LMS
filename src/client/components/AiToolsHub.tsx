@@ -38,6 +38,7 @@ import {
   Target,
   ShieldCheck
 } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 interface AutogradeScriptProfile {
   roll: string;
@@ -1235,9 +1236,25 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
               <span className="text-xs text-slate-400">NEP 2020 &amp; PARAKH Standard · Achariya Trust 40,000+ Progress Cards</span>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => {
-                    showToast('Holistic Progress Card PDF exported for Aarav Sundaram.');
-                    setActiveModal(null);
+                  onClick={async () => {
+                    try {
+                      showToast('Generating official vector NEP 2020 Holistic Progress Card (HPC 360°)...');
+                      const res = await apiFetch('/api/student-intelligence/hpc/pdf/ach-stu-aarav-01');
+                      if (!res.ok) throw new Error('PDF export failed');
+                      const blob = await res.blob();
+                      const blobUrl = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = blobUrl;
+                      a.download = 'HPC-360-Aarav_Sundaram.pdf';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(blobUrl);
+                      showToast('Holistic Progress Card PDF exported for Aarav Sundaram.');
+                      setActiveModal(null);
+                    } catch {
+                      showToast('Could not generate PDF. Please retry.');
+                    }
                   }}
                   className="px-4 py-2 bg-teal-700 text-white rounded-xl text-xs font-bold hover:bg-teal-800 transition-colors flex items-center space-x-1.5 shadow-xs"
                 >
