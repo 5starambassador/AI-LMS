@@ -1,0 +1,26 @@
+{
+  "name": "Achariya One Scholar · AI Learning Platform",
+  "short_name": "Achariya One",
+  "description": "Achariya World Class Academy - Multi-sensory VAK lessons, VoiceLab speech AI, and adaptive learning gap mastery.",
+  "start_url": "/student/lms",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8FAFC",
+  "theme_color": "#0D9488",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

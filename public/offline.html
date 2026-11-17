@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Mode · Achariya AI ONE Scholar</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #F8FAFC; color: #0F172A; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: white; border: 1px solid #E2E8F0; border-radius: 24px; max-width: 480px; width: 100%; padding: 36px 28px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; background: #F0FDFA; color: #0F766E; border: 1px solid #99F6E4; padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
+    .icon { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, #0D9488, #10B981); display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25); }
+    h1 { font-size: 22px; font-weight: 800; color: #0F172A; margin-bottom: 8px; }
+    p { font-size: 14px; color: #64748B; line-height: 1.5; margin-bottom: 24px; }
+    .btn { display: inline-block; width: 100%; padding: 12px 20px; background: #0D9488; color: white; border: none; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; transition: background 0.15s ease; }
+    .btn:hover { background: #0F766E; }
+    .status { margin-top: 18px; font-size: 12px; font-weight: 600; color: #94A3B8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">⚡</div>
+    <br>
+    <span class="badge">Offline Learning Mode</span>
+    <h1>You are currently offline</h1>
+    <p>No internet connection was detected. You can still navigate back to read your previously cached AI LMS lessons and offline worksheets.</p>
+    <button class="btn" onclick="window.history.back()">Return to Cached Lesson</button>
+    <div class="status" id="netStatus">Checking connection status...</div>
+  </div>
+
+  <script>
+    function updateStatus() {
+      const el = document.getElementById('netStatus');
+      if (navigator.onLine) {
+        el.innerText = '⚡ Connection restored! Reloading...';
+        el.style.color = '#10B981';
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        el.innerText = '● Offline · Will automatically reconnect when Wi-Fi or data returns';
+        el.style.color = '#F59E0B';
+      }
+    }
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+  </script>
+</body>
+</html>

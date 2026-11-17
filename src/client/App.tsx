@@ -36,6 +36,18 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState<ActiveTabType>('home');
   const [studentTab, setStudentTab] = useState<StudentTabType>('voicelab');
   const [accessDeniedAlert, setAccessDeniedAlert] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // URL Routing Engine: Maps path string to State
   const applyRoute = (pathname: string) => {
@@ -203,6 +215,13 @@ function AppShell() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-800">
+      {/* Offline Status Banner */}
+      {!isOnline && (
+        <div className="bg-amber-400 text-slate-950 px-4 py-1.5 text-xs font-black text-center flex items-center justify-center gap-2 shadow-xs sticky top-0 z-[60]">
+          <span>⚡ Offline Mode Active: Working with cached lessons. Real-time cloud sync will resume when connection returns.</span>
+        </div>
+      )}
+
       {/* Light & Modern Navigation Header with Deep-Routing */}
       <Header
         activeTab={activeTab}

@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { AIProviderService } from '../services/ai-provider.service.js';
 import { AuthenticatedUserPayload, isUmbrellaRole } from '../middleware/auth.js';
 import { HpcPdfService } from '../services/hpc-pdf.service.js';
+import { CacheService } from '../services/cache.service.js';
 
 export interface BmitDomainItem {
   domain: string;
@@ -1640,39 +1641,38 @@ Guidelines:
    * Consolidated School, Learning Academy & Management Intelligence + 14 Report Catalog
    */
   static async getInstitutionalOverview(_request: FastifyRequest, reply: FastifyReply) {
-    let campuses: Array<{ id: string; name: string; code: string }> = [];
-    let totalGaps = 5;
-    let masteredGaps = 1;
-    let totalUsers = 480;
+    const data = await CacheService.getOrCompute('institutional_overview:all', async () => {
+      let campuses: Array<{ id: string; name: string; code: string }> = [];
+      let totalGaps = 5;
+      let masteredGaps = 1;
+      let totalUsers = 480;
 
-    try {
-      const [dbCampuses, gapsCount, masteredCount, usersCount] = await Promise.all([
-        prisma.campus.findMany({ select: { id: true, name: true, code: true } }),
-        prisma.learningGap.count(),
-        prisma.learningGap.count({ where: { status: { in: ['MASTERED', 'CLOSED'] } } }),
-        prisma.user.count({ where: { isDeleted: false } })
-      ]);
-      if (dbCampuses.length > 0) campuses = dbCampuses;
-      if (gapsCount > 0) {
-        totalGaps = gapsCount;
-        masteredGaps = masteredCount;
+      try {
+        const [dbCampuses, gapsCount, masteredCount, usersCount] = await Promise.all([
+          prisma.campus.findMany({ select: { id: true, name: true, code: true } }),
+          prisma.learningGap.count(),
+          prisma.learningGap.count({ where: { status: { in: ['MASTERED', 'CLOSED'] } } }),
+          prisma.user.count({ where: { isDeleted: false } })
+        ]);
+        if (dbCampuses.length > 0) campuses = dbCampuses;
+        if (gapsCount > 0) {
+          totalGaps = gapsCount;
+          masteredGaps = masteredCount;
+        }
+        if (usersCount > 0) totalUsers = usersCount;
+      } catch {
+        // Safe fallback metrics
       }
-      if (usersCount > 0) totalUsers = usersCount;
-    } catch {
-      // Safe fallback metrics
-    }
 
-    if (campuses.length === 0) {
-      campuses = [
-        { id: 'camp-1', name: 'Achariya World Class Academy (Main Campus)', code: 'AWCA-MAIN' },
-        { id: 'camp-2', name: 'Achariya Bala Siksha Mandir (Lawspet)', code: 'ABSM-LAW' },
-        { id: 'camp-3', name: 'Achariya World Class Academy (Villianur)', code: 'AWCA-VIL' }
-      ];
-    }
+      if (campuses.length === 0) {
+        campuses = [
+          { id: 'camp-1', name: 'Achariya World Class Academy (Main Campus)', code: 'AWCA-MAIN' },
+          { id: 'camp-2', name: 'Achariya Bala Siksha Mandir (Lawspet)', code: 'ABSM-LAW' },
+          { id: 'camp-3', name: 'Achariya World Class Academy (Villianur)', code: 'AWCA-VIL' }
+        ];
+      }
 
-    return reply.send({
-      success: true,
-      data: {
+      return {
         summary: {
           totalStudentProfiles: Math.max(totalUsers, TOTAL_INSTITUTE_SCHOLARS),
           bmitCompletionRate: 94.2,
@@ -1711,8 +1711,14 @@ Guidelines:
           '12. Curriculum Gap Report',
           '13. AI Academic Intelligence Report',
           '14. Student Learning History & BMIT Annual Report'
-        ]
-      }
+        ],
+        cacheTelemetry: CacheService.getStats()
+      };
+    }, 300); // 5-minute TTL
+
+    return reply.send({
+      success: true,
+      data
     });
   }
 }
