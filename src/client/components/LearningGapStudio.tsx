@@ -443,12 +443,31 @@ export const LearningGapStudio: React.FC<{
   const [phase3SimPct, setPhase3SimPct] = useState<number>(25);
   const [phase3SimTotal, setPhase3SimTotal] = useState<number>(240);
   const [speakingPhase, setSpeakingPhase] = useState<'NONE' | 'PHASE1' | 'PHASE3'>('NONE');
+  const vakSyncTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (vakSyncTimerRef.current) clearTimeout(vakSyncTimerRef.current);
     };
   }, []);
+
+  const debouncedSyncVakToServer = (studentId: string, visual: number, auditory: number, kinaesthetic: number, concept?: string) => {
+    if (vakSyncTimerRef.current) clearTimeout(vakSyncTimerRef.current);
+    vakSyncTimerRef.current = setTimeout(async () => {
+      try {
+        await apiPost('/api/student-intelligence/vak/assess', {
+          studentId,
+          visualScore: visual,
+          auditoryScore: auditory,
+          kinaestheticScore: kinaesthetic,
+          activeConcept: concept
+        });
+      } catch {
+        // Silently tolerate transient offline/network state; localStorage preserves local telemetry
+      }
+    }, 800);
+  };
 
   const recordGapVakInteraction = (modality: 'VISUAL' | 'AUDITORY' | 'KINAESTHETIC') => {
     const targetStudentId = activeGapStudentIdRef.current || 'ach-stu-aarav-01';
@@ -473,6 +492,8 @@ export const LearningGapStudio: React.FC<{
     };
     writeScopedGapTelemetry(targetStudentId, updated);
     setLiveVakProfile({ visual: v, auditory: a, kinaesthetic: k });
+
+    debouncedSyncVakToServer(targetStudentId, v, a, k, selectedGap?.conceptName);
   };
 
   const speakPhaseAudio = (phase: 'PHASE1' | 'PHASE3', script: string) => {

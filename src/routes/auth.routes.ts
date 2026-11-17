@@ -9,6 +9,33 @@ import { checkRateLimit } from '../lib/rate-limit.js';
 
 const QR_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Human-engineered transient retry wrapper with exponential backoff
+ * Protects auth workflows during Docker Desktop warm-up or connection spikes.
+ */
+async function withDbRetry<T>(operation: () => Promise<T>, retries = 3, delayMs = 300): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation();
+    } catch (err: any) {
+      lastError = err;
+      const isConnectionIssue =
+        err?.code === 'P1001' || // Can't reach database server
+        err?.code === 'P1002' || // Database server was reached but timed out
+        err?.code === 'P1008' || // Operations timed out
+        err?.message?.includes('connect') ||
+        err?.message?.includes('timeout');
+
+      if (!isConnectionIssue || attempt === retries) {
+        throw err;
+      }
+      await new Promise(resolve => setTimeout(resolve, delayMs * Math.pow(2, attempt - 1)));
+    }
+  }
+  throw lastError;
+}
+
 export async function authRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/auth/login
@@ -37,17 +64,28 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ success: false, error: 'Email and password are required.' });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      include: {
-        role: {
+    let user;
+    try {
+      user = await withDbRetry(() =>
+        prisma.user.findUnique({
+          where: { email: email.toLowerCase().trim() },
           include: {
-            permissions: { include: { permission: true } }
+            role: {
+              include: {
+                permissions: { include: { permission: true } }
+              }
+            },
+            campus: { include: { license: true } }
           }
-        },
-        campus: { include: { license: true } }
-      }
-    });
+        })
+      );
+    } catch (dbErr: any) {
+      fastify.log.error(`[Auth] Database transient error during login for ${email}: ${dbErr?.message}`);
+      return reply.status(503).send({
+        success: false,
+        error: 'Database service is currently warming up or synchronizing. Please retry in a few moments.'
+      });
+    }
 
     if (!user) {
       return reply.status(401).send({ success: false, error: 'Invalid credentials.' });

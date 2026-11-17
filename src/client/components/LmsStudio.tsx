@@ -674,12 +674,32 @@ export const LmsStudio: React.FC<{
     return () => clearInterval(id);
   }, [videoPlaying, currentLesson.visualScenes.length]);
 
-  // Cancel TTS when switching lesson or unmounting
+  const vakServerSyncTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cancel TTS & sync timers when switching lesson or unmounting
   useEffect(() => {
     return () => {
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (vakServerSyncTimerRef.current) clearTimeout(vakServerSyncTimerRef.current);
     };
   }, [selectedLessonId]);
+
+  const debouncedSyncVakToServer = (targetStudentId: string, visual: number, auditory: number, kinaesthetic: number, concept?: string) => {
+    if (vakServerSyncTimerRef.current) clearTimeout(vakServerSyncTimerRef.current);
+    vakServerSyncTimerRef.current = setTimeout(async () => {
+      try {
+        await apiPost('/api/student-intelligence/vak/assess', {
+          studentId: targetStudentId,
+          visualScore: visual,
+          auditoryScore: auditory,
+          kinaestheticScore: kinaesthetic,
+          activeConcept: concept
+        });
+      } catch {
+        // Silently tolerate network state; localStorage preserves local telemetry
+      }
+    }, 800);
+  };
 
   const recordVakInteraction = (modality: VakModality) => {
     setActiveModality(modality);
@@ -698,6 +718,7 @@ export const LmsStudio: React.FC<{
         updatedAt: new Date().toISOString()
       };
       saveVakTelemetry(next, studentId);
+      debouncedSyncVakToServer(studentId, computedVak.visual, computedVak.auditory, computedVak.kinaesthetic, currentLesson.title);
       return next;
     });
   };
