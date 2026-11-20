@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   GraduationCap, 
   Calendar, 
@@ -25,6 +26,11 @@ export const MySpaceHub: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'pd' | 'ppg' | 'walkthrough' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [verifiedCert, setVerifiedCert] = useState<{ title: string; code: string; date: string } | null>(null);
+
+  const renderPortal = (children: React.ReactNode) => {
+    if (typeof document === 'undefined') return <>{children}</>;
+    return createPortal(children, document.body);
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -280,7 +286,7 @@ export const MySpaceHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 1: PROFESSIONAL DEVELOPMENT (PD) PORTAL                             */}
       {/* ========================================================================= */}
-      {activeModal === 'pd' && (
+      {activeModal === 'pd' && renderPortal(
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Light Clean Modal Header */}
@@ -484,7 +490,7 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
               <span className="flex items-center space-x-1.5">
                 <CheckCircle className="w-4 h-4 text-teal-600" />
                 <span>Total CPD Hours Completed: <strong>38 / 50 Hours</strong> (76%)</span>
@@ -503,7 +509,7 @@ export const MySpaceHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 2: PLANNER (PPG - PEDAGOGICAL PACING GUIDE)                         */}
       {/* ========================================================================= */}
-      {activeModal === 'ppg' && (
+      {activeModal === 'ppg' && renderPortal(
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
@@ -621,7 +627,7 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
               <span>Achariya Centralized Curriculum Pacing Engine v2.0</span>
               <button
                 onClick={() => setActiveModal(null)}
@@ -637,7 +643,7 @@ export const MySpaceHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 3: WALKTHROUGH (CLASSROOM QUALITY OBSERVATION AUDIT)                 */}
       {/* ========================================================================= */}
-      {activeModal === 'walkthrough' && (
+      {activeModal === 'walkthrough' && renderPortal(
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
@@ -862,7 +868,7 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
               <span>Achariya Academic Quality Assurance Framework</span>
               <button
                 onClick={() => setActiveModal(null)}
@@ -876,10 +882,10 @@ export const MySpaceHub: React.FC = () => {
       )}
 
       {/* Verified Credential Modal */}
-      {verifiedCert && (
+      {verifiedCert && renderPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150 text-center">
-            <div className="flex items-center justify-between border-b pb-3">
+            <div className="flex items-center justify-between border-b pb-3 shrink-0">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5 text-teal-700" />
                 <h3 className="text-sm font-extrabold text-slate-900">Verified Credential</h3>
@@ -918,8 +924,8 @@ export const MySpaceHub: React.FC = () => {
       )}
 
       {/* In-app Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2">
+      {toastMessage && renderPortal(
+        <div className="fixed bottom-6 right-6 z-[110] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2">
           <Sparkles className="w-4 h-4 text-teal-400" />
           <span>{toastMessage}</span>
         </div>
