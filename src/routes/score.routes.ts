@@ -34,6 +34,10 @@ export async function scoreRoutes(fastify: FastifyInstance) {
   );
 
   // Grading pipeline
+  fastify.get('/api/score/grader/runs', ScoreController.listGradingRuns);
+  fastify.get('/api/score/grader/runs/:id', ScoreController.getGradingRunDetails);
+  fastify.post('/api/score/grader/runs/:id/override', ScoreController.submitTeacherOverride);
+  fastify.post('/api/score/grader/batch-scan', ScoreController.triggerBatchScan);
   fastify.post('/api/score/grader/runs',
     { preHandler: [requirePermission('score:grade:run')] },
     ScoreController.createGradingRun
