@@ -201,7 +201,9 @@ export async function authRoutes(fastify: FastifyInstance) {
    * Clears the session cookie (token invalidation requires a token blacklist in production).
    */
   fastify.post('/api/auth/logout', { preHandler: [authenticateToken] }, async (_request: FastifyRequest, reply: FastifyReply) => {
-    reply.clearCookie('achariya_token');
+    if (typeof (reply as any).clearCookie === 'function') {
+      (reply as any).clearCookie('achariya_token');
+    }
     return reply.send({ success: true, message: 'Signed out successfully.' });
   });
 
