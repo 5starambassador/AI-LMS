@@ -11,10 +11,10 @@
     <link rel="apple-touch-icon" href="/icon-192.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Achariya AI ONE · Enterprise Learning, Speech AI & Assessment Ecosystem</title>
-    <!-- Google Fonts: Plus Jakarta Sans for clean modern aesthetic -->
+    <!-- Fonts: Inter (UI body) · Plus Jakarta Sans (display/brand) · JetBrains Mono (code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=Plus+Jakarta+Sans:wght@400..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,88 +41,166 @@
               }
             },
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-              mono: ['"JetBrains Mono"', 'monospace']
+              sans: ['Inter', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+              display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+              mono: ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace']
             },
             fontSize: {
-              xs: ['0.875rem', { lineHeight: '1.375rem' }],     // 14px (up from 12px)
-              sm: ['0.9375rem', { lineHeight: '1.45rem' }],     // 15px (up from 14px)
-              base: ['1.03125rem', { lineHeight: '1.6rem' }],   // 16.5px (up from 16px)
-              lg: ['1.1875rem', { lineHeight: '1.75rem' }],     // 19px (up from 18px)
-              xl: ['1.3125rem', { lineHeight: '1.85rem' }],     // 21px (up from 20px)
-              '2xl': ['1.5625rem', { lineHeight: '2.05rem' }]   // 25px (up from 24px)
+              xs: ['0.875rem', { lineHeight: '1.375rem' }],
+              sm: ['0.9375rem', { lineHeight: '1.45rem' }],
+              base: ['1.03125rem', { lineHeight: '1.6rem' }],
+              lg: ['1.1875rem', { lineHeight: '1.75rem' }],
+              xl: ['1.3125rem', { lineHeight: '1.85rem' }],
+              '2xl': ['1.5625rem', { lineHeight: '2.05rem' }]
+            },
+            boxShadow: {
+              'xs': '0 1px 2px 0 rgb(0 0 0 / 0.04)',
+              'popup': '0 10px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.04), 0 0 0 1px rgb(0 0 0 / 0.05)'
             }
           }
         }
       }
     </script>
     <style>
+      /* ═══════════════════════════════════════════════════════
+         DESIGN TOKENS — Achariya AI ONE Design System v2
+      ═══════════════════════════════════════════════════════ */
+      :root {
+        --brand:        #0D9488;
+        --brand-light:  #CCFBF1;
+        --brand-dark:   #0F766E;
+        --bg:           #F8FAFC;
+        --surface:      #FFFFFF;
+        --text-1:       #0F172A;
+        --text-2:       #334155;
+        --text-3:       #64748B;
+        --text-4:       #94A3B8;
+        --border:       #E2E8F0;
+        --border-hover: #CBD5E1;
+        --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.04);
+        --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+        --shadow-md:    0 4px 8px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+        --shadow-lg:    0 10px 24px -4px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+        --shadow-popup: 0 10px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.04), 0 0 0 1px rgb(0 0 0 / 0.05);
+        --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+        --ease:         cubic-bezier(0.37, 0, 0.63, 1);
+        --t-fast:       100ms;
+        --t-base:       160ms;
+        --t-slow:       240ms;
+      }
+
+      /* ═══════════════════════════════════════════════════════
+         BASE
+      ═══════════════════════════════════════════════════════ */
+      *, *::before, *::after { box-sizing: border-box; }
+
       html {
         font-size: 16px;
-        -webkit-font-smoothing: antialiased;
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        height: 100%;
       }
+
       body {
-        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-        background-color: #F8FAFC;
-        color: #0F172A;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background-color: var(--bg);
+        color: var(--text-1);
         font-size: 0.9375rem;
-        line-height: 1.5;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-optical-sizing: auto;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+        text-rendering: optimizeLegibility;
+        margin: 0;
+        min-height: 100%;
       }
-      /* Enterprise Readability Floor for arbitrary micro-pixel utility classes */
-      .text-\[9px\] {
-        font-size: 0.75rem !important;      /* 12px (was 9px) */
-        line-height: 1.1rem !important;
+
+      /* ═══════════════════════════════════════════════════════
+         TYPOGRAPHY — dual-face system
+         Plus Jakarta Sans: headings, brand, display (character)
+         Inter: body, tables, data, labels (legibility at scale)
+      ═══════════════════════════════════════════════════════ */
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+        letter-spacing: -0.02em;
+        font-optical-sizing: auto;
+        line-height: 1.25;
+        color: var(--text-1);
       }
-      .text-\[10px\] {
-        font-size: 0.78125rem !important;   /* 12.5px (was 10px) */
-        line-height: 1.15rem !important;
+
+      code, pre, kbd {
+        font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
       }
-      .text-\[11px\] {
-        font-size: 0.84375rem !important;   /* 13.5px (was 11px) */
-        line-height: 1.25rem !important;
+
+      /* Readability floor — prevents illegibly tiny utility sizes */
+      .text-\[9px\]  { font-size: 0.75rem    !important; line-height: 1.1rem   !important; }
+      .text-\[10px\] { font-size: 0.78125rem !important; line-height: 1.15rem  !important; }
+      .text-\[11px\] { font-size: 0.84375rem !important; line-height: 1.25rem  !important; }
+      .text-xs   { font-size: 0.875rem   !important; line-height: 1.375rem !important; }
+      .text-sm   { font-size: 0.9375rem  !important; line-height: 1.45rem  !important; }
+      .text-base { font-size: 1.03125rem !important; line-height: 1.6rem   !important; }
+      .text-lg   { font-size: 1.1875rem  !important; line-height: 1.75rem  !important; }
+      .text-xl   { font-size: 1.3125rem  !important; line-height: 1.85rem  !important; }
+      .text-2xl  { font-size: 1.5625rem  !important; line-height: 2.05rem  !important; }
+
+      /* ═══════════════════════════════════════════════════════
+         FOCUS / ACCESSIBILITY
+      ═══════════════════════════════════════════════════════ */
+      *:focus             { outline: none; }
+      *:focus-visible     { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 0.375rem; }
+      button:focus-visible,
+      a:focus-visible     { border-radius: 0.625rem; }
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible { outline-offset: 0; border-radius: 0.75rem; }
+
+      /* ═══════════════════════════════════════════════════════
+         SELECTION
+      ═══════════════════════════════════════════════════════ */
+      ::selection      { background: #0D9488; color: white; }
+      ::-moz-selection { background: #0D9488; color: white; }
+
+      /* ═══════════════════════════════════════════════════════
+         SCROLLBAR
+      ═══════════════════════════════════════════════════════ */
+      ::-webkit-scrollbar             { width: 7px; height: 7px; }
+      ::-webkit-scrollbar-track       { background: transparent; }
+      ::-webkit-scrollbar-thumb       { background: #CBD5E1; border-radius: 100px; border: 2px solid transparent; background-clip: content-box; }
+      ::-webkit-scrollbar-thumb:hover { background: #94A3B8; background-clip: content-box; }
+      *                               { scrollbar-width: thin; scrollbar-color: #CBD5E1 transparent; }
+
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* ═══════════════════════════════════════════════════════
+         ANIMATIONS
+      ═══════════════════════════════════════════════════════ */
+      @keyframes ach-fade-up {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
-      .text-xs {
-        font-size: 0.875rem !important;     /* 14px */
-        line-height: 1.375rem !important;
+      @keyframes ach-scale-in {
+        from { opacity: 0; transform: scale(0.95); }
+        to   { opacity: 1; transform: scale(1); }
       }
-      .text-sm {
-        font-size: 0.9375rem !important;    /* 15px */
-        line-height: 1.45rem !important;
+      @keyframes ach-ping-soft {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        60%      { opacity: 0;   transform: scale(1.6); }
       }
-      .text-base {
-        font-size: 1.03125rem !important;   /* 16.5px */
-        line-height: 1.6rem !important;
-      }
-      .text-lg {
-        font-size: 1.1875rem !important;    /* 19px */
-        line-height: 1.75rem !important;
-      }
-      .text-xl {
-        font-size: 1.3125rem !important;    /* 21px */
-        line-height: 1.85rem !important;
-      }
-      .text-2xl {
-        font-size: 1.5625rem !important;    /* 25px */
-        line-height: 2.05rem !important;
-      }
-      table th, table td {
-        vertical-align: middle;
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #CBD5E1;
-        border-radius: 9999px;
-      }
+
+      /* Entrance animation for every top-level page view */
+      main > div > * { animation: ach-fade-up 220ms var(--ease-out) both; }
+
+      /* ═══════════════════════════════════════════════════════
+         TABLE DEFAULTS
+      ═══════════════════════════════════════════════════════ */
+      table th, table td { vertical-align: middle; }
+
+      /* ═══════════════════════════════════════════════════════
+         PRINT
+      ═══════════════════════════════════════════════════════ */
       @media print {
         body > * { display: none !important; }
         body > #root > * { display: none !important; }
@@ -133,7 +211,7 @@
       }
     </style>
   </head>
-  <body class="antialiased selection:bg-teal-500 selection:text-white">
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>

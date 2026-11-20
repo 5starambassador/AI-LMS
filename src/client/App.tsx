@@ -169,7 +169,7 @@ function AppShell() {
   const parentMatch = window.location.pathname.match(/^\/parent\/([^/]+)/);
   if (parentMatch) {
     return (
-      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50 text-xs font-semibold text-slate-400">Loading Parent Portal…</div>}>
+      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-xs font-medium text-slate-400">Loading Parent Portal…</div>}>
         <ParentPortal token={parentMatch[1]} />
       </React.Suspense>
     );
@@ -192,10 +192,18 @@ function AppShell() {
   // Show loading spinner while session is being restored
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="inline-block w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Loading Achariya AI ONE…</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="text-center space-y-5">
+          <div className="relative mx-auto w-14 h-14">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white text-2xl shadow-lg">
+              ⚡
+            </div>
+            <div className="absolute -inset-1.5 rounded-[1.25rem] border-2 border-teal-400/40 animate-ping" style={{ animationDuration: '1.4s' }} />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-slate-700" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.01em' }}>Achariya AI ONE</p>
+            <p className="text-xs text-slate-400 font-medium">Starting enterprise workspace…</p>
+          </div>
         </div>
       </div>
     );
@@ -272,7 +280,12 @@ function AppShell() {
 
       {/* Main Workspace Body: Routed Standalone Pages */}
       <main className="flex-1 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
-        <React.Suspense fallback={<div className="py-16 text-center text-xs font-semibold text-slate-400">Loading studio workspace…</div>}>
+        <React.Suspense fallback={
+          <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
+            <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-medium">Loading workspace…</span>
+          </div>
+        }>
           {/* VIEW 1: EDUCATOR & FACULTY PORTAL (Comprehensive Standalone Workspaces) */}
           {currentPortal === 'STAFF' && (
             <div>
@@ -368,31 +381,28 @@ function AppShell() {
         </React.Suspense>
       </main>
 
-      {/* Footer Demonstration Helper Bar - Ultra Light & Minimalist */}
-      <footer className="bg-white/80 border-t border-slate-200/80 py-4 mt-auto">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-800">Achariya AI ONE · Enterprise Learning Ecosystem</span>
-            <span>·</span>
+      {/* Footer — ultra-minimal, brand-anchored */}
+      <footer className="border-t border-slate-100 py-3.5 mt-auto bg-white/60 backdrop-blur-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span className="font-semibold text-slate-600" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.01em' }}>Achariya AI ONE</span>
+            <span className="text-slate-200">·</span>
             <span>
               {currentUser.scope === 'GLOBAL'
-                ? 'Trust Umbrella HQ · All Campuses'
+                ? 'Trust Umbrella · All Campuses'
                 : currentUser.scope === 'REGIONAL'
-                ? 'Regional Cluster Umbrella · Multi-Campus'
+                ? 'Regional Umbrella · Multi-Campus'
                 : currentUser.campus?.name || 'Achariya World Class Academy'}
             </span>
+            <span className="hidden sm:inline text-slate-200">·</span>
+            <span className="hidden sm:inline text-emerald-600 font-medium">Phase A LMS Live</span>
           </div>
-
-          <div className="flex items-center space-x-3">
-            <span className="text-emerald-700 font-medium">Phase A Deep LMS Engine Live</span>
-            <span>•</span>
-            <button
-              onClick={handleLogout}
-              className="text-rose-600 hover:text-rose-800 font-semibold"
-            >
-              Sign Out
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="text-xs text-rose-500 hover:text-rose-700 font-medium transition-colors"
+          >
+            Sign out
+          </button>
         </div>
       </footer>
     </div>

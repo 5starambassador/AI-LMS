@@ -185,7 +185,7 @@ function DropdownMenu({
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100" style={{ boxShadow: 'var(--shadow-popup)' }}>
           <div className="px-3 py-1.5 mb-1 border-b border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.label}</p>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
@@ -268,7 +268,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onNavigate(currentUser?.roleKey === 'role-ach-student' ? '/student/gaps' : '/staff/home')}
             className="flex items-center gap-2 flex-shrink-0"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-xs font-bold text-base">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-sm font-bold text-base">
               ⚡
             </div>
             <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -384,8 +384,8 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Right: consolidated campus status + user profile + sign out + mobile menu toggle */}
-          <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-3 border-l border-slate-200 bg-white relative z-10">
-            <div className="w-8 h-8 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 font-bold text-sm shrink-0">
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0 pl-3 border-l border-slate-100">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
               {displayInitial}
             </div>
             <div className="hidden md:block text-left min-w-0">

@@ -34,14 +34,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50/70 via-white to-indigo-50/60 flex items-center justify-center p-4" style={{ backgroundImage: 'radial-gradient(ellipse 80% 60% at 50% -20%, #ccfbf1 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 90% 110%, #e0e7ff 0%, transparent 50%)' }}>
       <div className="w-full max-w-lg">
         {/* Logo & Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-600 rounded-2xl shadow-lg mb-4">
-            <span className="text-white font-bold text-2xl">A</span>
+          <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-teal-600 to-emerald-500 rounded-2xl shadow-lg mb-4">
+            <span className="text-white text-3xl leading-none">⚡</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Achariya AI ONE</h1>
+          <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Achariya AI ONE</h1>
           <p className="text-sm text-slate-500 mt-1">Enterprise Learning &amp; Assessment Ecosystem</p>
         </div>
 
@@ -64,7 +64,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 space-y-4" style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04), 0 0 0 1px rgb(0 0 0 / 0.05)' }}>
           <div>
             <label htmlFor="email" className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
               Email Address
@@ -77,7 +77,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@school.edu.in"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-400 focus:bg-white transition-all placeholder:text-slate-300"
             />
           </div>
 
@@ -93,7 +93,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-400 focus:bg-white transition-all placeholder:text-slate-300"
             />
           </div>
 
@@ -111,7 +111,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ defaultPortal = 'STAFF', o
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm text-sm"
+            className="w-full py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm text-sm tracking-wide"
           >
             {isSubmitting ? 'Signing in…' : `Sign in to ${portal === 'STAFF' ? 'Educator' : 'Student'} Portal`}
           </button>
