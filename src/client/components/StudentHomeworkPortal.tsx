@@ -195,30 +195,34 @@ export const StudentHomeworkPortal: React.FC<StudentHomeworkPortalProps> = ({ on
   return (
     <div className="space-y-6 pb-16">
       {/* 1. Header Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center space-x-2 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/60 mb-1">
-            <span>Scholar Portal</span>
-            <span>·</span>
-            <span>Aarav Sundaram (Grade 5A)</span>
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)' }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-md shrink-0">
+              <span className="text-white text-xl">📝</span>
+            </div>
+            <div>
+              <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Scholar Portal · Aarav Sundaram · Grade 5A</div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                Homework &amp; Submission Studio
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Submit assignments, attach worksheet drawings, and receive teacher evaluations.
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Homework & Submission Studio
-          </h1>
-          <p className="text-xs text-slate-500">
-            Submit assignments, attach interactive worksheet drawings, and receive teacher evaluations.
-          </p>
-        </div>
 
-        {/* Quick Metrics */}
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200/80 text-center min-w-[90px]">
-            <div className="text-xl font-extrabold text-amber-700">{pendingCount}</div>
-            <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Due Soon</div>
-          </div>
-          <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200/80 text-center min-w-[90px]">
-            <div className="text-xl font-extrabold text-emerald-700">9.5/10</div>
-            <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Avg Score</div>
+          {/* Quick Metrics */}
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="p-3 bg-white/80 rounded-2xl border border-amber-200/80 text-center min-w-[80px] shadow-xs">
+              <div className="text-xl font-extrabold text-amber-700">{pendingCount}</div>
+              <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Due Soon</div>
+            </div>
+            <div className="p-3 bg-white/80 rounded-2xl border border-emerald-200/80 text-center min-w-[80px] shadow-xs">
+              <div className="text-xl font-extrabold text-emerald-700">9.5/10</div>
+              <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Avg Score</div>
+            </div>
           </div>
         </div>
       </div>

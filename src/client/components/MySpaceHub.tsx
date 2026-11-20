@@ -169,13 +169,25 @@ export const MySpaceHub: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-indigo-600" />
-        </div>
-        <div>
-          <h2 className="text-xl font-black text-slate-900">My Space</h2>
-          <p className="text-xs text-slate-500">Professional Development · Pacing Guides · Quality Observation Audits</p>
+      {/* PAGE HERO */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-7 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)' }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center shadow-lg shrink-0">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>My Space</h1>
+              <p className="text-sm text-slate-500 mt-0.5">Professional Development · Pacing Planner · Observation Quality Audits</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px] font-bold">
+            <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 border border-teal-200/60">PD · 50-Hr CPD</span>
+            <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 border border-sky-200/60">PPG Planner</span>
+            <span className="px-3 py-1 rounded-full bg-violet-500/10 text-violet-700 border border-violet-200/60">Walkthrough Audit</span>
+          </div>
         </div>
       </div>
 
@@ -186,67 +198,70 @@ export const MySpaceHub: React.FC = () => {
           - Explicit high-visibility launch buttons on every card
       */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: Professional Development */}
+        {/* Card 1: Professional Development — Teal/Emerald */}
         <div
           onClick={() => setActiveModal('pd')}
-          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-teal-600 shadow-xs hover:shadow-lg hover:border-teal-300 transition-all duration-200 cursor-pointer p-8 text-center flex flex-col items-center justify-between group transform hover:-translate-y-1"
+          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-teal-500 shadow-xs hover:shadow-lg hover:border-teal-300 hover:-translate-y-1 transition-all duration-200 cursor-pointer p-7 flex flex-col items-center justify-between group"
         >
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full border-2 border-teal-500 bg-teal-50/60 flex items-center justify-center text-teal-700 mb-5 group-hover:scale-105 transition-transform shadow-xs">
-              <GraduationCap className="w-10 h-10 text-teal-700" />
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform shadow-md">
+              <GraduationCap className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+            <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">CPD · 50-Hr Mandate</div>
+            <h3 className="text-base font-extrabold text-slate-900 group-hover:text-teal-700 transition-colors">
               Professional Development
             </h3>
             <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed">
-              Access your 50-hour mandatory teacher development modules, masterclasses and verified CPD credentials.
+              Access mandatory teacher development modules, masterclasses and verified CPD micro-credentials.
             </p>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); setActiveModal('pd'); }}
-            className="mt-6 w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+            className="mt-6 w-full py-2.5 px-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-1.5"
           >
             <span>Launch PD Portal</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Card 2: Planner (PPG) */}
+        {/* Card 2: Planner (PPG) — Sky/Blue */}
         <div
           onClick={() => setActiveModal('ppg')}
-          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-teal-600 shadow-xs hover:shadow-lg hover:border-teal-300 transition-all duration-200 cursor-pointer p-8 text-center flex flex-col items-center justify-between group transform hover:-translate-y-1"
+          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-sky-500 shadow-xs hover:shadow-lg hover:border-sky-300 hover:-translate-y-1 transition-all duration-200 cursor-pointer p-7 flex flex-col items-center justify-between group"
         >
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full border-2 border-teal-500 bg-teal-50/60 flex items-center justify-center text-teal-700 mb-5 group-hover:scale-105 transition-transform shadow-xs">
-              <Calendar className="w-10 h-10 text-teal-700" />
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-500 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform shadow-md">
+              <Calendar className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+            <div className="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-1">Period Pacing Guide</div>
+            <h3 className="text-base font-extrabold text-slate-900 group-hover:text-sky-700 transition-colors">
               Planner (PPG)
             </h3>
             <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed">
-              Create and manage your period plans efficiently with automated state holiday rebalancing and buffer control.
+              Create and manage period plans with automated state holiday rebalancing and buffer control.
             </p>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); setActiveModal('ppg'); }}
-            className="mt-6 w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+            className="mt-6 w-full py-2.5 px-4 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-1.5"
           >
             <span>Launch PPG Planner</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Card 3: Walkthrough */}
+        {/* Card 3: Walkthrough — Violet/Purple */}
         <div
           onClick={() => setActiveModal('walkthrough')}
-          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-teal-600 shadow-xs hover:shadow-lg hover:border-teal-300 transition-all duration-200 cursor-pointer p-8 text-center flex flex-col items-center justify-between group transform hover:-translate-y-1"
+          className="bg-white rounded-3xl border border-slate-200/90 border-t-4 border-t-violet-500 shadow-xs hover:shadow-lg hover:border-violet-300 hover:-translate-y-1 transition-all duration-200 cursor-pointer p-7 flex flex-col items-center justify-between group"
         >
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full border-2 border-teal-500 bg-teal-50/60 flex items-center justify-center text-teal-700 mb-5 group-hover:scale-105 transition-transform shadow-xs">
-              <Video className="w-10 h-10 text-teal-700" />
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-500 to-purple-600 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform shadow-md">
+              <Video className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
-              Walkthrough
+            <div className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-1">Quality Observation</div>
+            <h3 className="text-base font-extrabold text-slate-900 group-hover:text-violet-700 transition-colors">
+              Walkthrough Audit
             </h3>
             <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed">
               View walkthrough quality analytics and fill classroom observation audit rubrics.
@@ -254,7 +269,7 @@ export const MySpaceHub: React.FC = () => {
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); setActiveModal('walkthrough'); }}
-            className="mt-6 w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+            className="mt-6 w-full py-2.5 px-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-1.5"
           >
             <span>Open Walkthrough Audit</span>
             <ChevronRight className="w-4 h-4" />
@@ -266,10 +281,10 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 1: PROFESSIONAL DEVELOPMENT (PD) PORTAL                             */}
       {/* ========================================================================= */}
       {activeModal === 'pd' && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Light Clean Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between">
+            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <GraduationCap className="w-6 h-6" />
@@ -489,10 +504,10 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 2: PLANNER (PPG - PEDAGOGICAL PACING GUIDE)                         */}
       {/* ========================================================================= */}
       {activeModal === 'ppg' && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between">
+            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <Calendar className="w-6 h-6" />
@@ -623,10 +638,10 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 3: WALKTHROUGH (CLASSROOM QUALITY OBSERVATION AUDIT)                 */}
       {/* ========================================================================= */}
       {activeModal === 'walkthrough' && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between">
+            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <Video className="w-6 h-6" />
@@ -862,8 +877,8 @@ export const MySpaceHub: React.FC = () => {
 
       {/* Verified Credential Modal */}
       {verifiedCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150 text-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150 text-center">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5 text-teal-700" />

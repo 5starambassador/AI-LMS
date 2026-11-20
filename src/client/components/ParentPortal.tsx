@@ -165,19 +165,20 @@ export const ParentPortal: React.FC<Props> = ({ token }) => {
       <div className="max-w-2xl mx-auto space-y-5">
 
         {/* Header */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-          <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0">
-              <User className="w-7 h-7 text-indigo-700" />
+        <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 shadow-sm" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #ede9fe 100%)' }}>
+          <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
+          <div className="relative p-5 flex items-center space-x-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-md shrink-0">
+              <User className="w-7 h-7 text-white" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-lg">
+              <div className="flex items-center space-x-2 mb-0.5">
+                <span className="text-[10px] font-black bg-teal-500/10 text-teal-700 border border-teal-200/60 px-2 py-0.5 rounded-lg uppercase tracking-widest">
                   Achariya AI ONE
                 </span>
                 <span className="text-xs text-slate-400">Parent Report</span>
               </div>
-              <h1 className="text-xl font-black text-slate-900 mt-1">{student.name}</h1>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>{student.name}</h1>
               <div className="text-sm text-slate-500 flex items-center space-x-2 mt-0.5">
                 <School className="w-3.5 h-3.5" />
                 <span>{student.class ?? 'Class not assigned'}</span>

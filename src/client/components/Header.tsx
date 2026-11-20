@@ -259,7 +259,7 @@ export const Header: React.FC<HeaderProps> = ({
       ? 'Scholar · Grade 5A'
       : `Staff · ${cleanCampusName || 'Achariya'}`;
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16 gap-2.5">
 

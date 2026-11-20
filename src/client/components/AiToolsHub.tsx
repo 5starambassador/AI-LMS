@@ -527,24 +527,55 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
         </div>
       )}
 
+      {/* PAGE HERO */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-7 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)' }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center shadow-lg shrink-0">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                {isStudentView ? 'AI Learning Hub' : 'AI Tools Hub'}
+              </h1>
+              <p className="text-sm text-slate-500 mt-0.5">
+                {isStudentView
+                  ? '4 AI-powered pillars to accelerate your learning journey'
+                  : '4 flagship AI engines powering every dimension of school excellence'}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px] font-bold">
+            <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 border border-teal-200/60">01 Assessment</span>
+            <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 border border-cyan-200/60">02 VoiceLab</span>
+            <span className="px-3 py-1 rounded-full bg-violet-500/10 text-violet-700 border border-violet-200/60">03 HPC</span>
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-200/60">04 PAL</span>
+          </div>
+        </div>
+      </div>
+
       {/* PILLAR 01: AI ASSESSMENT (STUDENT SELF-ASSESSMENT VS TEACHER EVALUATION) */}
       {isStudentView ? (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-              <span>01 · AI Practice, Self-Assessment &amp; Exam Readiness (Grades 1–12)</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Sets A / B / C Practice
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Instant AI Answer Feedback
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200">
-                CBSE &amp; Outcome Tagged
-              </span>
+          <div className="rounded-2xl p-4 border border-teal-100/80" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 55%, #f0fdf4 100%)' }}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-sm shrink-0">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Section 01 · AI Assessment</div>
+                  <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI Practice, Self-Assessment &amp; Exam Readiness</h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · Sets A/B/C · Bloom's Tagged · CBSE Outcome Aligned</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-teal-800 border border-teal-200">Sets A / B / C Practice</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-emerald-800 border border-emerald-200">Instant AI Answer Feedback</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-indigo-800 border border-indigo-200">CBSE &amp; Outcome Tagged</span>
+              </div>
             </div>
           </div>
 
@@ -622,21 +653,23 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
       ) : (
         /* TEACHER / ADMIN PILLAR 01: AI-POWERED ASSESSMENT & EVALUATION */
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-              <span>01 · AI-Powered Assessment &amp; Evaluation (Grades 1–12)</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Parallel Paper Sets (A / B / C)
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                90% Less Correction Time
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200">
-                CBSE Competency Ready
-              </span>
+          <div className="rounded-2xl p-4 border border-teal-100/80" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 55%, #f0fdf4 100%)' }}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-sm shrink-0">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Section 01 · Assessment Engine</div>
+                  <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI-Powered Assessment &amp; Evaluation</h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · Sets A/B/C · Bloom's Taxonomy · CBSE Competency Ready</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-teal-800 border border-teal-200">Parallel Paper Sets (A / B / C)</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-emerald-800 border border-emerald-200">90% Less Correction Time</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-indigo-800 border border-indigo-200">CBSE Competency Ready</span>
+              </div>
             </div>
           </div>
 
@@ -762,18 +795,22 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
 
       {/* PILLAR 02: AI ENGLISH LANGUAGE LAB (GRADES 1-12) */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
-            <span>02 · AI English Language Lab: Listening, Speaking &amp; Reading (Grades 1–12)</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-            <span className="px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200">
-              125+ Skill Checks
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200">
-              Achariya Cloud Servers (India)
-            </span>
+        <div className="rounded-2xl p-4 border border-cyan-100/80" style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #e0f7fe 55%, #f0f9ff 100%)' }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-sky-500 flex items-center justify-center shadow-sm shrink-0">
+                <Mic className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-0.5">Section 02 · VoiceLab</div>
+                <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI English Language Lab: Listening, Speaking &amp; Reading</h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · 125+ Skill Checks · Achariya Cloud Servers (India)</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-cyan-800 border border-cyan-200">125+ Skill Checks</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-sky-800 border border-sky-200">Achariya Cloud Servers (India)</span>
+            </div>
           </div>
         </div>
 
@@ -825,14 +862,23 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
 
       {/* PILLAR 03: HOLISTIC PROGRESS CARD (NEP 2020 & PARAKH) */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-            <span className="w-2.5 h-2.5 rounded-full bg-pink-600"></span>
-            <span>03 · Holistic Progress Card (NEP 2020 &amp; PARAKH · Grades KG–12)</span>
+        <div className="rounded-2xl p-4 border border-violet-100/80" style={{ background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 55%, #f5f3ff 100%)' }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shrink-0">
+                <Compass className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-0.5">Section 03 · HPC · NEP 2020 &amp; PARAKH</div>
+                <h2 className="text-sm font-extrabold text-slate-900 leading-tight">Holistic Progress Card</h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">Grades KG–12 · 40,000+ Cards · BMIT · MiWay Experiential Labs · 5 Arts</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-violet-800 border border-violet-200">40,000+ Progress Cards Scale</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-purple-800 border border-purple-200">BMIT + MiWay Labs + 5 Arts</span>
+            </div>
           </div>
-          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-800 border border-pink-200">
-            40,000+ Progress Cards Scale · BMIT + MiWay Experiential Labs + 5 Arts
-          </span>
         </div>
 
         <div className="grid grid-cols-1 gap-5">
@@ -876,14 +922,23 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
 
       {/* PILLAR 04: PERSONALISED LEARNING & STUDENT INSIGHTS (PAL KG-12) */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span>04 · Personalised Learning &amp; Student Insights (PAL · Grades KG–12)</span>
+        <div className="rounded-2xl p-4 border border-amber-100/80" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 55%, #fff7ed 100%)' }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center shadow-sm shrink-0">
+                <Target className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">Section 04 · PAL · Personalised Learning</div>
+                <h2 className="text-sm font-extrabold text-slate-900 leading-tight">Personalised Learning &amp; Student Insights</h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">Grades KG–12 · Right-Level Adaptive Path · Continuous Term-to-Term Portfolio</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-amber-800 border border-amber-200">Right-Level Adaptive Path</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-orange-800 border border-orange-200">Continuous Term-to-Term Portfolio</span>
+            </div>
           </div>
-          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
-            Right-Level Adaptive Path + Continuous Term-to-Term Portfolio
-          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

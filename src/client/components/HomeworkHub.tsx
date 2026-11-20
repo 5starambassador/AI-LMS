@@ -216,40 +216,43 @@ export const HomeworkHub: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      {/* 1. Header with Subject Selector & Create Task Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/60 mb-1.5">
-            <FileCheck className="w-3.5 h-3.5" />
-            <span>Curriculum Assignments Hub</span>
-          </div>
-          <h1 className="text-xl font-extrabold text-slate-900">Homework & Task Management</h1>
-          <p className="text-xs text-slate-500">Author, publish, review and grade experiential homework tasks across Grade 5A</p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {/* Subject Pills */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold">
-            {(['All', 'English', 'Mathematics', 'Science'] as const).map(sub => (
-              <button
-                key={sub}
-                onClick={() => setActiveSubject(sub)}
-                className={`px-3 py-1.5 rounded-xl transition-all ${
-                  activeSubject === sub ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {sub}
-              </button>
-            ))}
+      {/* 1. Header */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 40%, #fef3c7 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-md shrink-0">
+              <FileCheck className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Homework &amp; Task Management</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Author, publish, review and grade experiential tasks · Grade 5A</p>
+            </div>
           </div>
 
-          <button
-            onClick={() => setShowAuthorModal(true)}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-bold shadow-xs transition-colors flex items-center space-x-1.5"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Publish Task</span>
-          </button>
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="flex items-center bg-white/80 p-1 rounded-2xl border border-slate-200 text-xs font-bold shadow-xs">
+              {(['All', 'English', 'Mathematics', 'Science'] as const).map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => setActiveSubject(sub)}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    activeSubject === sub ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowAuthorModal(true)}
+              className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] flex items-center space-x-1.5"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Publish Task</span>
+            </button>
+          </div>
         </div>
       </div>
 

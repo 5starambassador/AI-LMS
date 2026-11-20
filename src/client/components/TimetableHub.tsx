@@ -145,17 +145,20 @@ export function TimetableHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl">🗓️</div>
-          <div>
-            <h1 className="text-xl font-black text-slate-900">Timetable Manager</h1>
-            <p className="text-xs text-slate-500">Build and manage weekly class schedules</p>
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #fff7ed 0%, #fef3c7 40%, #fffbeb 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #EA580C 0%, transparent 70%)' }} />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center shadow-md text-xl shrink-0">🗓️</div>
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Timetable Manager</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Build and manage weekly class schedules</p>
+            </div>
           </div>
+          {saved && (
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">✓ Saved</span>
+          )}
         </div>
-        {saved && (
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-pulse">✓ Saved</span>
-        )}
       </div>
 
       {errorMsg && (

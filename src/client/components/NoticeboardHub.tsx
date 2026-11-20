@@ -92,23 +92,26 @@ export function NoticeboardHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-xl">📢</div>
-          <div>
-            <h1 className="text-xl font-black text-slate-900">Noticeboard</h1>
-            <p className="text-xs text-slate-500">Manage school-wide and class announcements</p>
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef9c3 40%, #fef3c7 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #D97706 0%, transparent 70%)' }} />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center shadow-md text-xl shrink-0">📢</div>
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Noticeboard</h1>
+              <p className="text-xs text-slate-500 mt-0.5">School-wide &amp; class announcements · All roles</p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer bg-white border border-slate-200 rounded-xl px-3 py-1.5">
-            <input type="checkbox" checked={includeInactive} onChange={e => setIncludeInactive(e.target.checked)} className="rounded" />
-            Show inactive
-          </label>
-          <button onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
-            + New Notice
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer bg-white/80 border border-amber-200/60 rounded-xl px-3 py-1.5 hover:bg-white transition-colors">
+              <input type="checkbox" checked={includeInactive} onChange={e => setIncludeInactive(e.target.checked)} className="rounded" />
+              Show inactive
+            </label>
+            <button onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-sm font-bold shadow-sm transition-all active:scale-[0.98]">
+              + New Notice
+            </button>
+          </div>
         </div>
       </div>
 

@@ -303,20 +303,26 @@ export const AttendanceHub: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      {/* 1. Header with Month / Day Switcher & Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/60 mb-1.5">
-            <CalendarIcon className="w-3.5 h-3.5" />
-            <span>Academic Year 2026-2027 · Grade 5A</span>
+      {/* 1. Header */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #ecfdf5 40%, #d1fae5 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shrink-0">
+              <CalendarIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="inline-flex items-center space-x-1.5 text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-1">
+                <span>Academic Year 2026-2027 · Grade 5A</span>
+              </div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                Attendance &amp; Multi-Month Register
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                CBSE statutory roll call · multi-month calendar matrix · scholar retention tracking
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Attendance & Multi-Month Register
-          </h1>
-          <p className="text-xs text-slate-500">
-            Official CBSE statutory roll call, multi-month calendar matrix, and scholar retention tracking.
-          </p>
-        </div>
 
         {/* View Switcher Pills */}
         <div className="flex items-center space-x-2">
@@ -363,6 +369,7 @@ export const AttendanceHub: React.FC = () => {
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export CBSE Register</span>
           </button>
+        </div>
         </div>
       </div>
 

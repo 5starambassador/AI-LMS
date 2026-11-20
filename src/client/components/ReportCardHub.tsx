@@ -162,19 +162,21 @@ export function ReportCardHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-xl">📋</div>
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 40%, #f5f3ff 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)' }} />
+        <div className="relative px-6 py-6 flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center shadow-md text-xl shrink-0">📋</div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black text-slate-900">Student Report Card</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Student Report Card</h1>
               {isFallbackMode && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                   Preview Mode (Seeded Cohort)
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500">Full-term academic performance report with mastery tiers &amp; PDF export</p>
+            <p className="text-xs text-slate-500 mt-0.5">Full-term academic performance report with mastery tiers &amp; PDF export</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -202,6 +204,7 @@ export function ReportCardHub() {
               Print / Export PDF
             </button>
           )}
+        </div>
         </div>
       </div>
 

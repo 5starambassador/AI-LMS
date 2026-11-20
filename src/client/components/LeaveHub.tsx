@@ -105,18 +105,21 @@ export function LeaveHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-xl">🏖️</div>
-          <div>
-            <h1 className="text-xl font-black text-slate-900">Leave Management</h1>
-            <p className="text-xs text-slate-500">Submit and manage staff leave requests</p>
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 40%, #fdf2f8 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #E11D48 0%, transparent 70%)' }} />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center shadow-md text-xl shrink-0">🏖️</div>
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Leave Management</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Submit and manage staff leave requests</p>
+            </div>
           </div>
+          <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
+            className="px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all active:scale-[0.98]">
+            {view === 'new' ? '← Back to List' : '+ New Request'}
+          </button>
         </div>
-        <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
-          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
-          {view === 'new' ? '← Back to List' : '+ New Request'}
-        </button>
       </div>
 
       {loadError && (

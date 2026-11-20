@@ -186,15 +186,19 @@ export const ScoreInsights: React.FC = () => {
   return (
     <div className="space-y-6 pb-16">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 40%, #ede9fe 100%)' }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)' }} />
+        <div className="relative p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/60 mb-1.5">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>SCORE Insights Dashboard</span>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shrink-0">
+              <BarChart3 className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-extrabold text-slate-900">Class Performance Analytics</h1>
-            <p className="text-xs text-slate-500">Aggregated from homework evaluations and quiz submissions — updated live</p>
+            <div>
+              <div className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-0.5">SCORE Insights Dashboard</div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Class Performance Analytics</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Aggregated from homework evaluations and quiz submissions — updated live</p>
+            </div>
           </div>
 
           {/* View switcher & Cross-Module Links */}
@@ -250,6 +254,7 @@ export const ScoreInsights: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
 

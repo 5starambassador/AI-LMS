@@ -144,18 +144,21 @@ export function FeeHub() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl">💳</div>
-          <div>
-            <h1 className="text-xl font-black text-slate-900">Fee Status Tracker</h1>
-            <p className="text-xs text-slate-500">Track and manage student fee payments</p>
+      <div className="relative overflow-hidden rounded-3xl px-6 py-6 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 40%, #ecfdf5 100%)' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-500 flex items-center justify-center shadow-md text-xl shrink-0">💳</div>
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>Fee Status Tracker</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Track and manage student fee payments</p>
+            </div>
           </div>
+          <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
+            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all active:scale-[0.98]">
+            {view === 'new' ? '← Back' : '+ Add Fee'}
+          </button>
         </div>
-        <button onClick={() => setView(view === 'new' ? 'list' : 'new')}
-          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
-          {view === 'new' ? '← Back' : '+ Add Fee'}
-        </button>
       </div>
 
       {errorMsg && (
