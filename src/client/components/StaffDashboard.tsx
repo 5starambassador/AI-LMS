@@ -18,7 +18,11 @@ import {
   BrainCircuit,
   ScanLine,
   ShieldCheck,
-  Search
+  Search,
+  Clock,
+  Zap,
+  BarChart2,
+  ChevronRight
 } from 'lucide-react';
 import { Book, Homework, Quiz, Student } from '../types';
 import { apiFetch } from '../lib/api';
@@ -113,6 +117,12 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
   const [quizzes, setQuizzes] = useState<Quiz[]>(DEFAULT_QUIZZES);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const navigateToRoute = (route: string) => {
     if (onNavigate) {
@@ -256,31 +266,88 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
 
   return (
     <div className="space-y-6 pb-12">
-      {/* 1. Luminous Light Hero Noticeboard Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-teal-50/90 via-sky-50/80 to-indigo-50/90 border border-teal-200/70 p-6 sm:p-8 shadow-xs">
-        <div className="max-w-2xl">
-          <div className="inline-flex items-center space-x-2 bg-teal-600 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-xs mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Achariya Central Campus Conclave</span>
+      {/* 1. Dynamic Hero — Live Noticeboard */}
+      <div className="relative rounded-3xl overflow-hidden border border-teal-200/50 shadow-sm" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 45%, #ede9fe 100%)' }}>
+        {/* Decorative blurs */}
+        <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-teal-300/15 blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full bg-indigo-300/10 blur-2xl translate-y-1/2 pointer-events-none" />
+
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 p-6 sm:p-8">
+          {/* Left — announcement */}
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 bg-teal-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+              <span>Live · Achariya Central Campus Noticeboard</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.025em' }}>
+              Science, AI &amp; Robotics Conclave 2026
+            </h1>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Grade 5 scholars are demonstrating automated solar rainwater harvesting and ecological robotics models in the central amphitheatre this Friday.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
+              <span className="inline-flex items-center gap-1.5 text-teal-700 font-semibold">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>This Friday · Central Amphitheatre</span>
+              </span>
+              <span className="text-slate-300">·</span>
+              <span>Faculty, Scholars &amp; Parents</span>
+              <button
+                type="button"
+                onClick={() => navigateToRoute('/staff/noticeboard')}
+                className="ml-auto inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 font-bold hover:underline"
+              >
+                All Notices <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Achariya Science, AI & Robotics Conclave 2026
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Grade 5 scholars are demonstrating automated solar rainwater harvesting and ecological robotics models in the central amphitheatre this Friday.
-          </p>
-          <div className="mt-4 flex items-center space-x-3 text-xs text-slate-500 font-medium">
-            <span className="flex items-center space-x-1.5 text-teal-800 font-semibold">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Campus Noticeboard</span>
-            </span>
-            <span>•</span>
-            <span>Audience: Faculty, Scholars & Parents</span>
+
+          {/* Right — live clock */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/80 shadow-sm text-center min-w-[140px] shrink-0 flex flex-col items-center gap-1">
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-teal-600 mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+              <span>Live</span>
+            </div>
+            <div className="text-3xl font-black text-slate-900 tabular-nums leading-none" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.03em' }}>
+              {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+            <div className="text-[11px] font-semibold text-slate-500 mt-0.5">
+              {now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 1B. Flagship AI Academic & Student Intelligence Command Center - 3 Connected AI Engines */}
+      {/* 1B. Campus Metrics Strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Scholars Enrolled', value: '847', sub: '+3 this week', iconEl: <Users className="w-4 h-4" />, bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-100' },
+          { label: 'Present Today', value: '94%', sub: '+2% vs yesterday', iconEl: <CheckCircle2 className="w-4 h-4" />, bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
+          { label: 'Active Homeworks', value: String(homeworks.length), sub: 'Due this week', iconEl: <FileCheck className="w-4 h-4" />, bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
+          { label: 'Live Quizzes', value: String(quizzes.length), sub: 'Auto-graded', iconEl: <Activity className="w-4 h-4" />, bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100' },
+        ].map(stat => (
+          <div key={stat.label} className="bg-white rounded-2xl px-4 py-3.5 border border-slate-100 shadow-xs flex items-center gap-3 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.bg} ${stat.text} border ${stat.border}`}>
+              {stat.iconEl}
+            </div>
+            <div className="min-w-0">
+              <div className="text-xl font-black text-slate-900 leading-none tabular-nums" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.03em' }}>
+                {stat.value}
+              </div>
+              <div className="text-[11px] font-semibold text-slate-500 mt-0.5 truncate">{stat.label}</div>
+              <div className={`text-[10px] font-bold ${stat.text}`}>{stat.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* AI Command Center — 3 Flagship Pillars */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="w-3.5 h-3.5 text-teal-600" />
+          <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">AI Command Center · 3 Flagship Engines</span>
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Flagship Pillar 1: AI Tools Suite */}
         <div
@@ -427,150 +494,228 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
         </div>
       </div>
 
-      {/* 2. Daily Operations Quick Action Ribbon - Clean Light Aesthetic */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <button
-          onClick={() => setActiveModal('bookReader')}
-          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all text-left group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-teal-100">
-            <BookOpen className="w-5 h-5" />
-          </div>
-          <div className="text-xs font-bold text-slate-900">Digital Textbooks</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Dual-page vector reader</div>
-        </button>
+      {/* Quick Actions label */}
+      <div className="flex items-center gap-2 -mb-1">
+        <Activity className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Daily Operations</span>
+      </div>
 
-        <button
-          onClick={() => setActiveModal('rollCall')}
-          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-sky-300 transition-all text-left group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-sky-100">
-            <Calendar className="w-5 h-5" />
-          </div>
-          <div className="text-xs font-bold text-slate-900">Daily Attendance</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Record Grade 5A roll call</div>
-        </button>
+      {/* 2. Daily Operations Quick Action Ribbon */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          {
+            key: 'bookReader',
+            icon: <BookOpen className="w-5 h-5" />,
+            iconBg: 'from-teal-500 to-teal-600',
+            label: 'Digital Textbooks',
+            sub: 'Dual-page vector reader',
+            hover: 'hover:border-teal-200 hover:shadow-teal-100/60',
+          },
+          {
+            key: 'rollCall',
+            icon: <Calendar className="w-5 h-5" />,
+            iconBg: 'from-sky-500 to-blue-500',
+            label: 'Daily Attendance',
+            sub: 'Record Grade 5A roll call',
+            hover: 'hover:border-sky-200 hover:shadow-sky-100/60',
+          },
+          {
+            key: 'studentDirectory',
+            icon: <Users className="w-5 h-5" />,
+            iconBg: 'from-indigo-500 to-violet-500',
+            label: 'Scholar Directory',
+            sub: 'Health card & anthropometrics',
+            hover: 'hover:border-indigo-200 hover:shadow-indigo-100/60',
+          },
+          {
+            key: 'createHomework',
+            icon: <PlusCircle className="w-5 h-5" />,
+            iconBg: 'from-amber-400 to-orange-500',
+            label: 'Assign Homework',
+            sub: 'Publish experiential tasks',
+            hover: 'hover:border-amber-200 hover:shadow-amber-100/60',
+          },
+          {
+            key: 'qrLogin',
+            icon: <ScanLine className="w-5 h-5" />,
+            iconBg: 'from-teal-500 to-emerald-500',
+            label: 'QR Class Login',
+            sub: 'Students scan to sign in',
+            hover: 'hover:border-teal-200 hover:shadow-teal-100/60',
+          },
+        ].map(action => (
+          <button
+            key={action.key}
+            type="button"
+            onClick={() => setActiveModal(action.key as any)}
+            className={`group p-4 rounded-2xl bg-white border border-slate-100 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 text-left ${action.hover}`}
+          >
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${action.iconBg} text-white flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform duration-200`}>
+              {action.icon}
+            </div>
+            <div className="text-xs font-bold text-slate-900 leading-tight">{action.label}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5 font-medium leading-tight">{action.sub}</div>
+          </button>
+        ))}
+      </div>
 
-        <button
-          onClick={() => setActiveModal('studentDirectory')}
-          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all text-left group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-indigo-100">
-            <Users className="w-5 h-5" />
-          </div>
-          <div className="text-xs font-bold text-slate-900">Scholar Directory</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Health card & anthropometrics</div>
-        </button>
-
-        <button
-          onClick={() => setActiveModal('createHomework')}
-          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all text-left group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-amber-100">
-            <PlusCircle className="w-5 h-5" />
-          </div>
-          <div className="text-xs font-bold text-slate-900">Assign Homework</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Publish experiential tasks</div>
-        </button>
-
-        <button
-          onClick={() => setActiveModal('qrLogin')}
-          className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-400 transition-all text-left group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform border border-teal-100 text-lg">
-            📱
-          </div>
-          <div className="text-xs font-bold text-slate-900">QR Class Login</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Students scan to sign in</div>
-        </button>
+      {/* Section label */}
+      <div className="flex items-center gap-2 -mb-1">
+        <BarChart2 className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Live Academic Activity</span>
       </div>
 
       {/* 3. Academic Content & Formative Assessments Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Left: Active Homework Tasks */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900">Active Homework Tasks</h2>
-              <p className="text-xs text-slate-500">Grade 5 · Innovation Studio A</p>
+              <h2 className="text-base font-bold text-slate-900" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>Active Homework Tasks</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Grade 5 · Innovation Studio A</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-teal-50 text-teal-800 font-bold px-2.5 py-1 rounded-full border border-teal-200/60">
+              <span className="text-xs bg-teal-50 text-teal-700 font-bold px-2.5 py-1 rounded-full border border-teal-100">
                 {homeworks.length} Active
               </span>
               <button
                 type="button"
                 onClick={() => navigateToRoute('/staff/homework')}
-                className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline"
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-teal-600 hover:text-teal-800 transition-colors"
               >
-                Manage All →
+                All <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {homeworks.map(hw => (
-              <div key={hw.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-900">{hw.title}</h3>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{hw.description}</p>
+          <div className="divide-y divide-slate-50">
+            {homeworks.map((hw, i) => {
+              const totalCapacity = 32;
+              const pct = Math.min(100, Math.round(((hw._count?.submissions ?? 0) / totalCapacity) * 100));
+              const due = new Date(hw.dueDate);
+              const daysLeft = Math.ceil((due.getTime() - Date.now()) / 86400000);
+              const dueCls = daysLeft < 0 ? 'bg-rose-50 text-rose-700 border-rose-100' : daysLeft === 0 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-500 border-slate-100';
+              const dueLabel = daysLeft < 0 ? 'Overdue' : daysLeft === 0 ? 'Due Today' : `Due in ${daysLeft}d`;
+              return (
+                <div key={hw.id} className="flex gap-0 hover:bg-slate-50/60 transition-colors group">
+                  {/* Left accent bar */}
+                  <div className={`w-1 shrink-0 ${i === 0 ? 'bg-teal-500' : 'bg-indigo-400'} rounded-l-sm`} />
+                  <div className="flex-1 p-4 pl-4 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 flex-1">{hw.title}</h3>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${dueCls}`}>{dueLabel}</span>
+                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md">{hw.maxMarks}m</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-1">{hw.subject?.name || 'Subject'}</p>
+                    {/* Submission progress bar */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-semibold">
+                        <span className="text-slate-400">{hw._count?.submissions ?? 0} / {totalCapacity} submitted</span>
+                        <span className="text-teal-600">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-lg shrink-0 ml-2">
-                    {hw.maxMarks} Marks
-                  </span>
                 </div>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/50">
-                  <span>Subject: {hw.subject?.name || 'English & Oratory Arts'}</span>
-                  <span className="text-teal-700 font-semibold">{hw._count?.submissions ?? 0} Submissions Evaluated</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+
+          <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-50">
+            <button
+              type="button"
+              onClick={() => setActiveModal('createHomework')}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold border border-teal-100 transition-colors"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Assign New Task</span>
+            </button>
           </div>
         </div>
 
         {/* Right: Active Quizzes */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900">Formative Quizzes</h2>
-              <p className="text-xs text-slate-500">Auto-graded pedagogical check-ins</p>
+              <h2 className="text-base font-bold text-slate-900" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>Formative Quizzes</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Auto-graded check-ins</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-indigo-50 text-indigo-800 font-bold px-2.5 py-1 rounded-full border border-indigo-200/60">
-                {quizzes.length} Published
+              <span className="text-xs bg-violet-50 text-violet-700 font-bold px-2.5 py-1 rounded-full border border-violet-100">
+                {quizzes.length} Live
               </span>
               <button
                 type="button"
                 onClick={() => navigateToRoute('/staff/insights')}
-                className="text-xs font-bold text-indigo-700 hover:text-indigo-900 hover:underline"
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-violet-600 hover:text-violet-800 transition-colors"
               >
-                Score Insights →
+                Insights <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {quizzes.map(quiz => (
-              <div key={quiz.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-900">{quiz.title}</h3>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Type: {quiz.quizType} · Time Limit: {quiz.timeLimitMinutes} mins
-                    </p>
+          <div className="divide-y divide-slate-50">
+            {quizzes.map((quiz, i) => {
+              const totalCapacity = 32;
+              const pct = Math.min(100, Math.round(((quiz._count?.submissions ?? 0) / totalCapacity) * 100));
+              const typeColors: Record<string, string> = {
+                DIAGNOSTIC: 'bg-sky-50 text-sky-700 border-sky-100',
+                FORMATIVE:  'bg-violet-50 text-violet-700 border-violet-100',
+                SUMMATIVE:  'bg-rose-50 text-rose-700 border-rose-100',
+              };
+              const typeCls = typeColors[quiz.quizType] ?? 'bg-slate-50 text-slate-600 border-slate-100';
+              return (
+                <div key={quiz.id} className="flex gap-0 hover:bg-slate-50/60 transition-colors group">
+                  <div className={`w-1 shrink-0 ${i === 0 ? 'bg-violet-500' : 'bg-sky-400'} rounded-l-sm`} />
+                  <div className="flex-1 p-4 pl-4 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 flex-1">{quiz.title}</h3>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${typeCls}`}>{quiz.quizType}</span>
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md">{quiz.timeLimitMinutes}m</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100">
+                        <CheckCircle2 className="w-2.5 h-2.5" /> Auto-graded
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">{quiz._count?.questions || 1} questions</span>
+                    </div>
+                    {/* Submission progress bar */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-semibold">
+                        <span className="text-slate-400">{quiz._count?.submissions ?? 0} / {totalCapacity} responses</span>
+                        <span className="text-violet-600">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-violet-400 to-purple-500 rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[11px] bg-teal-50 text-teal-800 border border-teal-200/80 font-bold px-2.5 py-0.5 rounded-lg flex items-center space-x-1 shrink-0 ml-2">
-                    <CheckCircle2 className="w-3 h-3 text-teal-600" />
-                    <span>Auto-Graded</span>
-                  </span>
                 </div>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/50">
-                  <span>Questions: {quiz._count?.questions || 1}</span>
-                  <span className="font-semibold text-teal-700">{quiz._count?.submissions ?? 0} Submissions Logged</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+
+          <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-50">
+            <button
+              type="button"
+              onClick={() => navigateToRoute('/staff/exam-builder')}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-bold border border-violet-100 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Build New Quiz with AI</span>
+            </button>
           </div>
         </div>
       </div>
@@ -951,9 +1096,11 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
 
       {/* In-app Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2">
-          <Sparkles className="w-4 h-4 text-teal-400" />
-          <span>{toastMessage}</span>
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm bg-slate-900/95 backdrop-blur-sm text-white px-5 py-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200" style={{ boxShadow: '0 20px 40px -8px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.08)' }}>
+          <div className="w-6 h-6 rounded-lg bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
+            <Sparkles className="w-3 h-3 text-teal-400" />
+          </div>
+          <span className="leading-snug">{toastMessage}</span>
         </div>
       )}
     </div>
