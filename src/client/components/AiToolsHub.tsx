@@ -823,24 +823,6 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
         </div>
       </div>
 
-      {/* CENTER SPINE: ONE CONNECTED DATA LAYER */}
-      <div className="rounded-2xl bg-gradient-to-r from-amber-50 via-white to-amber-50 border-y-2 border-amber-400 px-5 py-3.5 flex flex-col md:flex-row items-center justify-between gap-2 shadow-xs">
-        <div className="flex items-center space-x-3 text-xs">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 text-amber-300 flex items-center justify-center shrink-0">
-            <Database className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="font-black tracking-widest uppercase text-slate-900">ONE CONNECTED DATA LAYER</span>
-            <span className="text-slate-600 font-medium ml-2">
-              — Every assessment, voice sample, BMIT observation and PAL response builds one unified longitudinal profile per child.
-            </span>
-          </div>
-        </div>
-        <span className="px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-extrabold shrink-0">
-          10,480+ Scholars Synced
-        </span>
-      </div>
-
       {/* PILLAR 03: HOLISTIC PROGRESS CARD (NEP 2020 & PARAKH) */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
