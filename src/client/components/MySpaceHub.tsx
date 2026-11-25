@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   GraduationCap, 
@@ -36,6 +36,26 @@ export const MySpaceHub: React.FC = () => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
+
+  // Prevent background page scrolling and support Escape key when any modal is open
+  useEffect(() => {
+    if (activeModal || verifiedCert) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setActiveModal(null);
+          setVerifiedCert(null);
+          setSelectedCourseVideo(null);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [activeModal, verifiedCert]);
 
   // PD Modal State
   const [activePdTab, setActivePdTab] = useState<'courses' | 'certifications'>('courses');
@@ -174,7 +194,7 @@ export const MySpaceHub: React.FC = () => {
   ).toFixed(2);
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-6">
       {/* PAGE HERO */}
       <div className="relative overflow-hidden rounded-3xl px-6 py-7 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)' }}>
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
@@ -287,10 +307,21 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 1: PROFESSIONAL DEVELOPMENT (PD) PORTAL                             */}
       {/* ========================================================================= */}
       {activeModal === 'pd' && renderPortal(
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setActiveModal(null);
+              setSelectedCourseVideo(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-4xl rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Light Clean Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="px-6 py-4 sm:py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <GraduationCap className="w-6 h-6" />
@@ -305,14 +336,15 @@ export const MySpaceHub: React.FC = () => {
               </div>
               <button
                 onClick={() => { setActiveModal(null); setSelectedCourseVideo(null); }}
-                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold"
+                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold text-sm"
+                title="Close (Esc)"
               >
                 ✕
               </button>
             </div>
 
             {/* Subnav Tabs */}
-            <div className="px-6 pt-3 border-b border-slate-200 bg-white flex items-center space-x-6 text-xs font-bold">
+            <div className="px-6 pt-3 border-b border-slate-200 bg-white flex items-center space-x-6 text-xs font-bold shrink-0">
               <button
                 onClick={() => setActivePdTab('courses')}
                 className={`pb-3 border-b-2 flex items-center space-x-1.5 transition-colors ${
@@ -338,7 +370,7 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5">
+            <div className="p-4 sm:p-6 overflow-y-auto min-h-0 flex-1 space-y-5">
               {activePdTab === 'courses' && (
                 <div className="space-y-4">
                   {/* Active Course 1 */}
@@ -510,10 +542,20 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 2: PLANNER (PPG - PEDAGOGICAL PACING GUIDE)                         */}
       {/* ========================================================================= */}
       {activeModal === 'ppg' && renderPortal(
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setActiveModal(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-4xl rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="px-6 py-4 sm:py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <Calendar className="w-6 h-6" />
@@ -528,14 +570,15 @@ export const MySpaceHub: React.FC = () => {
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold"
+                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold text-sm"
+                title="Close (Esc)"
               >
                 ✕
               </button>
             </div>
 
             {/* Subject Selector & Pacing Status */}
-            <div className="px-6 py-4 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="px-6 py-3 sm:py-4 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-slate-700">Subject:</span>
                 {(['Mathematics', 'English', 'Science'] as const).map((sub) => (
@@ -569,14 +612,14 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {rebalancedNotice && (
-              <div className="mx-6 mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
+              <div className="mx-6 mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in shrink-0">
                 <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>Holiday Rebalance Complete: 2 buffer periods dynamically adjusted for upcoming State Holiday. Pacing remains 100% on schedule!</span>
               </div>
             )}
 
             {/* Pacing Overview Statistics */}
-            <div className="p-6 overflow-y-auto space-y-6">
+            <div className="p-4 sm:p-6 overflow-y-auto min-h-0 flex-1 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Periods</span>
@@ -644,10 +687,21 @@ export const MySpaceHub: React.FC = () => {
       {/* MODAL 3: WALKTHROUGH (CLASSROOM QUALITY OBSERVATION AUDIT)                 */}
       {/* ========================================================================= */}
       {activeModal === 'walkthrough' && renderPortal(
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setActiveModal(null);
+              setAuditSubmitted(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-4xl rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <div className="px-6 py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="px-6 py-4 sm:py-5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-200 flex items-center justify-center text-teal-800 shadow-xs">
                   <Video className="w-6 h-6" />
@@ -662,14 +716,15 @@ export const MySpaceHub: React.FC = () => {
               </div>
               <button
                 onClick={() => { setActiveModal(null); setAuditSubmitted(false); }}
-                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold"
+                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors font-bold text-sm"
+                title="Close (Esc)"
               >
                 ✕
               </button>
             </div>
 
             {/* Subnav Tabs */}
-            <div className="px-6 pt-3 border-b border-slate-200 bg-white flex items-center space-x-6 text-xs font-bold">
+            <div className="px-6 pt-3 border-b border-slate-200 bg-white flex items-center space-x-6 text-xs font-bold shrink-0">
               <button
                 onClick={() => setWalkthroughTab('audit')}
                 className={`pb-3 border-b-2 flex items-center space-x-1.5 transition-colors ${
@@ -695,7 +750,7 @@ export const MySpaceHub: React.FC = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5">
+            <div className="p-4 sm:p-6 overflow-y-auto min-h-0 flex-1 space-y-5">
               {walkthroughTab === 'audit' && (
                 <div className="space-y-5">
                   {auditSubmitted && (
@@ -883,8 +938,18 @@ export const MySpaceHub: React.FC = () => {
 
       {/* Verified Credential Modal */}
       {verifiedCert && renderPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150 text-center">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setVerifiedCert(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[calc(100vh-2rem)] flex flex-col overflow-y-auto animate-in fade-in zoom-in-95 duration-150 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b pb-3 shrink-0">
               <div className="flex items-center space-x-2">
                 <Award className="w-5 h-5 text-teal-700" />
