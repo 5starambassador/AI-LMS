@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { renderPortal } from './Modal';
 import {
   BookOpen,
   FileCheck,
@@ -723,9 +724,9 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
       {/* ========================================================================= */}
       {/* MODAL 1: DUAL-PAGE FLIPBOOK VIEWER                                        */}
       {/* ========================================================================= */}
-      {activeModal === 'bookReader' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      {activeModal === 'bookReader' && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
@@ -814,9 +815,9 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
       {/* ========================================================================= */}
       {/* MODAL 2: DAILY ATTENDANCE ROLL CALL                                       */}
       {/* ========================================================================= */}
-      {activeModal === 'rollCall' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      {activeModal === 'rollCall' && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">Morning Classroom Roll Call</h3>
@@ -888,9 +889,9 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
       {/* ========================================================================= */}
       {/* MODAL 3: SCHOLAR DIRECTORY & HEALTH CARD                                  */}
       {/* ========================================================================= */}
-      {activeModal === 'studentDirectory' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      {activeModal === 'studentDirectory' && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">Scholar Profile & CBSE Health Card</h3>
@@ -1020,9 +1021,9 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
       {/* ========================================================================= */}
       {/* MODAL 4: ASSIGN HOMEWORK TASK                                             */}
       {/* ========================================================================= */}
-      {activeModal === 'createHomework' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      {activeModal === 'createHomework' && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">Publish New Experiential Task</h3>
@@ -1088,15 +1089,15 @@ export const StaffDashboard: React.FC<{ onNavigate?: (route: string) => void }> 
       )}
 
       {/* QR Classroom Login Modal */}
-      {activeModal === 'qrLogin' && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {activeModal === 'qrLogin' && renderPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <QrSessionPanel onClose={() => setActiveModal(null)} />
         </div>
       )}
 
       {/* In-app Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm bg-slate-900/95 backdrop-blur-sm text-white px-5 py-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200" style={{ boxShadow: '0 20px 40px -8px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.08)' }}>
+      {toastMessage && renderPortal(
+        <div className="fixed bottom-6 right-6 z-[110] max-w-sm bg-slate-900/95 backdrop-blur-sm text-white px-5 py-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200" style={{ boxShadow: '0 20px 40px -8px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.08)' }}>
           <div className="w-6 h-6 rounded-lg bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
             <Sparkles className="w-3 h-3 text-teal-400" />
           </div>

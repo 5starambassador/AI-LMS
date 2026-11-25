@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiGet, apiPost } from '../lib/api';
+import { renderPortal } from './Modal';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const DEFAULT_PERIODS = [
@@ -242,9 +243,9 @@ export function TimetableHub() {
         </div>
       )}
 
-      {editing && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setEditing(null)}>
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+      {editing && renderPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 sm:p-6 overflow-y-auto" onClick={() => setEditing(null)}>
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 w-full max-w-sm my-auto animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold text-slate-800 mb-4">{DAYS[editing.day - 1]} · Period {editing.period}</h3>
             <div className="space-y-3">
               <div>

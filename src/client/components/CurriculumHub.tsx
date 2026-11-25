@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { renderPortal } from './Modal';
 import {
   BookOpen,
   Search,
@@ -469,9 +470,9 @@ export const CurriculumHub: React.FC = () => {
           }
         ];
         const spread = spreads[currentSpread] || spreads[0];
-        return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[95vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        return renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[95vh] my-auto overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
             {/* Top Toolbar */}
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center space-x-3">
@@ -611,9 +612,9 @@ export const CurriculumHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 2: CHAPTER SYLLABUS & LESSON PLANS                                  */}
       {/* ========================================================================= */}
-      {activeView === 'syllabus' && selectedBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+      {activeView === 'syllabus' && selectedBook && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] my-auto overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">{selectedBook.title}</h3>
@@ -707,9 +708,9 @@ export const CurriculumHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL 3: SCANNABLE BOOK QR CODE ANCHOR                                     */}
       {/* ========================================================================= */}
-      {activeView === 'qrcode' && selectedBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150 text-center">
+      {activeView === 'qrcode' && selectedBook && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150 text-center">
             <div className="flex items-center justify-between border-b pb-3 text-left">
               <div className="flex items-center space-x-2">
                 <QrCode className="w-5 h-5 text-teal-700" />

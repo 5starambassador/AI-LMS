@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { renderPortal } from './Modal';
 import {
   PenTool,
   Eraser,
@@ -768,10 +769,10 @@ export const WorksheetCanvas: React.FC<WorksheetCanvasProps> = ({ onAssignAsHome
       </div>
 
       {/* 4. Assign as Homework Modal */}
-      {assignModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b pb-3">
+      {assignModalOpen && renderPortal(
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b pb-3 shrink-0">
               <div className="flex items-center space-x-2">
                 <Send className="w-5 h-5 text-teal-600" />
                 <h3 className="text-base font-extrabold text-slate-900">Publish Worksheet to Class</h3>

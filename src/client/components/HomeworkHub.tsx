@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { renderPortal } from './Modal';
 import {
   FileCheck,
   PlusCircle,
@@ -536,9 +537,9 @@ export const HomeworkHub: React.FC = () => {
       )}
 
       {/* 4. Publish New Task Modal */}
-      {showAuthorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150 text-xs">
+      {showAuthorModal && renderPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150 text-xs">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-base font-extrabold text-slate-900">Publish Experiential Homework Task</h3>
               <button onClick={() => setShowAuthorModal(false)} className="text-slate-400 hover:text-slate-700 text-sm font-bold">
@@ -654,8 +655,8 @@ export const HomeworkHub: React.FC = () => {
       )}
 
       {/* In-app Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2">
+      {toastMessage && renderPortal(
+        <div className="fixed bottom-6 right-6 z-[110] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2">
           <Sparkles className="w-4 h-4 text-teal-400" />
           <span>{toastMessage}</span>
         </div>

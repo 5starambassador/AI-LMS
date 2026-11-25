@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { renderPortal } from './Modal';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -711,10 +712,10 @@ export const AttendanceHub: React.FC = () => {
       {/* ========================================================================= */}
       {/* SCHOLAR DOSSIER DRAWER MODAL                                              */}
       {/* ========================================================================= */}
-      {selectedScholar && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-start justify-between border-b pb-3">
+      {selectedScholar && renderPortal(
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 p-6 space-y-5 my-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between border-b pb-3 shrink-0">
               <div>
                 <div className="text-[10px] font-bold text-teal-700 uppercase tracking-wider">Scholar Profile Dossier</div>
                 <h3 className="text-lg font-black text-slate-900">{selectedScholar.name}</h3>

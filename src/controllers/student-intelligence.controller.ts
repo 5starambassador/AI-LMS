@@ -1384,21 +1384,28 @@ export class StudentIntelligenceController {
       bmitScores[v.name] = v.score;
     });
 
-    const pdfBuffer = await HpcPdfService.generateHpcPdf({
-      id: studentId,
-      fullName: seed.student.name,
-      rollNumber: seed.student.rollNumber,
-      gradeLabel: seed.student.grade,
-      section: seed.student.section,
-      campusName: seed.student.campus,
-      dominantBmit: seed.student.dominantBmit,
-      bmitScores,
-      vakProfile: {
-        visual: vak.visual,
-        auditory: vak.auditory,
-        kinaesthetic: vak.kinaesthetic
-      }
-    });
+    const cacheKey = `hpc:pdf:${studentId}:${seed.student.rollNumber}:${vak.visual}_${vak.auditory}_${vak.kinaesthetic}`;
+    let pdfBuffer = await CacheService.get<Buffer>(cacheKey);
+
+    if (!pdfBuffer) {
+      pdfBuffer = await HpcPdfService.generateHpcPdf({
+        id: studentId,
+        fullName: seed.student.name,
+        rollNumber: seed.student.rollNumber,
+        gradeLabel: seed.student.grade,
+        section: seed.student.section,
+        campusName: seed.student.campus,
+        dominantBmit: seed.student.dominantBmit,
+        bmitScores,
+        vakProfile: {
+          visual: vak.visual,
+          auditory: vak.auditory,
+          kinaesthetic: vak.kinaesthetic
+        }
+      });
+      // Cache generated PDF in-memory and Redis for 10 minutes (600s)
+      await CacheService.set(cacheKey, pdfBuffer, 600);
+    }
 
     const sanitizedName = seed.student.name.replace(/[^a-zA-Z0-9]/g, '_');
     return reply
