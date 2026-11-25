@@ -36,7 +36,8 @@ import {
   Calendar,
   ArrowRight,
   Target,
-  ShieldCheck
+  ShieldCheck,
+  ClipboardList
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 
@@ -538,262 +539,76 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {isStudentView ? 'AI Learning Hub' : 'AI Tools Hub'}
+                VoiceLab &amp; Adaptive Studio (PAL)
               </h1>
               <p className="text-sm text-slate-500 mt-0.5">
-                {isStudentView
-                  ? '4 AI-powered pillars to accelerate your learning journey'
-                  : '4 flagship AI engines powering every dimension of school excellence'}
+                Achariya flagship AI engines: English Language Lab (LSR), Voice Dubbing, Simulations &amp; Personalised Adaptive Learning
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-bold">
-            <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 border border-teal-200/60">01 Assessment</span>
-            <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 border border-cyan-200/60">02 VoiceLab</span>
-            <span className="px-3 py-1 rounded-full bg-violet-500/10 text-violet-700 border border-violet-200/60">03 HPC</span>
-            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-200/60">04 PAL</span>
+            <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 border border-cyan-200/60">01 VoiceLab LSR</span>
+            <span className="px-3 py-1 rounded-full bg-pink-500/10 text-pink-700 border border-pink-200/60">02 Dubbing &amp; Simulations</span>
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-200/60">03 Adaptive PAL</span>
+            <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 border border-purple-200/60">04 Written Autograde</span>
           </div>
         </div>
       </div>
 
-      {/* PILLAR 01: AI ASSESSMENT (STUDENT SELF-ASSESSMENT VS TEACHER EVALUATION) */}
-      {isStudentView ? (
-        <div className="space-y-3">
-          <div className="rounded-2xl p-4 border border-teal-100/80" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 55%, #f0fdf4 100%)' }}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-sm shrink-0">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Section 01 · AI Assessment</div>
-                  <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI Practice, Self-Assessment &amp; Exam Readiness</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · Sets A/B/C · Bloom's Tagged · CBSE Outcome Aligned</p>
-                </div>
+      {/* CENTRALIZED ASSESSMENT SUITE GATEWAY BANNER */}
+      <div className="rounded-2xl p-4.5 bg-gradient-to-r from-violet-50 via-indigo-50 to-purple-50 border border-violet-200/80 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <ClipboardList className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-violet-900">
+                  Assessment &amp; Optical Evaluation Suite
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-200/70 text-violet-800">
+                  Dedicated Module
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-teal-800 border border-teal-200">Sets A / B / C Practice</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-emerald-800 border border-emerald-200">Instant AI Answer Feedback</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-indigo-800 border border-indigo-200">CBSE &amp; Outcome Tagged</span>
-              </div>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Summative exam blueprints, parallel Sets A/B/C, optical OCR handwriting correction &amp; score insights are centralized under <strong>Assessment</strong>.
+              </p>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Tile 1: AI Mock Exam Practice */}
-            <div
-              onClick={() => setActiveModal('examBuilder')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group flex items-start space-x-4"
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onNavigateToExamBuilder) onNavigateToExamBuilder();
+                else if (onNavigate) onNavigate('/staff/exam-builder');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-violet-200 text-violet-800 text-xs font-bold hover:bg-violet-100/70 shadow-xs transition-colors"
             >
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-purple-700 transition-colors">
-                    AI Mock Practice &amp; Sets A/B/C
-                  </h3>
-                  <span className="text-[10px] bg-purple-100 text-purple-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Adaptive
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Practice questions tagged to your curriculum learning outcomes and Bloom&apos;s taxonomy with instant hints.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 2: AI Answer Checker */}
-            <div
-              onClick={() => setActiveModal('autograde')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all cursor-pointer group flex items-start space-x-4"
+              <FileText className="w-3.5 h-3.5 text-violet-600" />
+              <span>Exam Builder →</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate && onNavigate('/staff/exams')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-violet-200 text-violet-800 text-xs font-bold hover:bg-violet-100/70 shadow-xs transition-colors"
             >
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 border border-teal-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <FileCheck2 className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-teal-700 transition-colors">
-                    AI Answer Checker &amp; Feedback
-                  </h3>
-                  <span className="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Rubric Scored
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Test your handwritten or typed responses to see instant rubric scores and explanations before final exams.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 3: My Learning Gaps & Remedial Quests */}
-            <div
-              onClick={() => (onNavigate ? onNavigate('/student/gaps') : setActiveModal('examInsights'))}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group flex items-start space-x-4"
+              <ClipboardList className="w-3.5 h-3.5 text-violet-600" />
+              <span>Summative Exams →</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate && onNavigate('/staff/insights')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 shadow-xs transition-colors"
             >
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 border border-rose-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Target className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors">
-                    My Learning Gap Quests
-                  </h3>
-                  <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2 py-0.5 rounded-full">
-                    100% Mastery
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Trace concepts needing practice, solve 1-page QR bridge worksheets, and achieve your Gold 100% Mastery badge.
-                </p>
-              </div>
-            </div>
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>AI Exam Grader &amp; Insights →</span>
+            </button>
           </div>
         </div>
-      ) : (
-        /* TEACHER / ADMIN PILLAR 01: AI-POWERED ASSESSMENT & EVALUATION */
-        <div className="space-y-3">
-          <div className="rounded-2xl p-4 border border-teal-100/80" style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 55%, #f0fdf4 100%)' }}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center shadow-sm shrink-0">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-0.5">Section 01 · Assessment Engine</div>
-                  <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI-Powered Assessment &amp; Evaluation</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · Sets A/B/C · Bloom's Taxonomy · CBSE Competency Ready</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-teal-800 border border-teal-200">Parallel Paper Sets (A / B / C)</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-emerald-800 border border-emerald-200">90% Less Correction Time</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-indigo-800 border border-indigo-200">CBSE Competency Ready</span>
-              </div>
-            </div>
-          </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Tile 1: Exam Builder */}
-            <div
-              onClick={() => {
-                if (onNavigateToExamBuilder) {
-                  onNavigateToExamBuilder();
-                } else if (onNavigate) {
-                  onNavigate('/staff/exam-builder');
-                } else {
-                  setActiveModal('examBuilder');
-                }
-              }}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group flex items-start space-x-4"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-purple-700 transition-colors">
-                    Exam Builder
-                  </h3>
-                  <span className="text-[10px] bg-purple-100 text-purple-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Sets A/B/C
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Blueprint papers in minutes tagged to Learning Outcomes &amp; Bloom&apos;s levels with instant parallel sets.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 2: Assign Exam & Batch Print */}
-            <div
-              onClick={() => setActiveModal('assignExam')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group flex items-start space-x-4"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Printer className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-amber-700 transition-colors">
-                  Assign Exam &amp; Parallel Sets
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Compile Set A / B / C personalised QR-anchored booklets across all campuses consistently.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 3: Exam Grader */}
-            <div
-              onClick={() => setActiveModal('examGrader')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group flex items-start space-x-4"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 border border-rose-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <ScanLine className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors">
-                    Exam Grader
-                  </h3>
-                  <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Bias-Free
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Grade scanned scripts with AI reasoning — 90% reduction in teacher correction time, giving hours back to MiWay&apos;s experiential teaching.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 4: Grading Runs */}
-            <div
-              onClick={() => {
-                setActiveModal('gradingRuns');
-                fetchGradingRuns();
-              }}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex items-start space-x-4"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Layers className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-indigo-700 transition-colors">
-                  Grading Runs
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Audit scanned runs and standardised multi-campus benchmarks.
-                </p>
-              </div>
-            </div>
-
-            {/* Tile 5: Instant Insights & Publish Reports */}
-            <div
-              onClick={() => setActiveModal('examInsights')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group flex items-start space-x-4 md:col-span-2"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <BarChart3 className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-purple-700 transition-colors">
-                    Instant Mastery Insights &amp; Publish Parent Reports
-                  </h3>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full">
-                    Same-Day Remediation
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Student, class, outcome &amp; question mastery (Beginner / Progressing / Proficient) — publish question-wise insights to parents &amp; launch same-day remedial groups.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PILLAR 02: AI ENGLISH LANGUAGE LAB (GRADES 1-12) */}
+      {/* PILLAR 01: AI ENGLISH LANGUAGE LAB (GRADES 1-12) */}
       <div className="space-y-3">
         <div className="rounded-2xl p-4 border border-cyan-100/80" style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #e0f7fe 55%, #f0f9ff 100%)' }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -802,7 +617,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
                 <Mic className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-0.5">Section 02 · VoiceLab</div>
+                <div className="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-0.5">Section 01 · VoiceLab Language Lab</div>
                 <h2 className="text-sm font-extrabold text-slate-900 leading-tight">AI English Language Lab: Listening, Speaking &amp; Reading</h2>
                 <p className="text-[11px] text-slate-500 mt-0.5">Grades 1–12 · 125+ Skill Checks · Achariya Cloud Servers (India)</p>
               </div>
@@ -860,67 +675,39 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
         </div>
       </div>
 
-      {/* PILLAR 03: HOLISTIC PROGRESS CARD (NEP 2020 & PARAKH) */}
-      <div className="space-y-3">
-        <div className="rounded-2xl p-4 border border-violet-100/80" style={{ background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 55%, #f5f3ff 100%)' }}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shrink-0">
-                <Compass className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-0.5">Section 03 · HPC · NEP 2020 &amp; PARAKH</div>
-                <h2 className="text-sm font-extrabold text-slate-900 leading-tight">Holistic Progress Card</h2>
-                <p className="text-[11px] text-slate-500 mt-0.5">Grades KG–12 · 40,000+ Cards · BMIT · MiWay Experiential Labs · 5 Arts</p>
-              </div>
+      {/* 360° STUDENT INTELLIGENCE REFERRAL BANNER */}
+      <div className="rounded-2xl p-4.5 bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border border-teal-200/80 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Compass className="w-5 h-5" />
             </div>
-            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-violet-800 border border-violet-200">40,000+ Progress Cards Scale</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/80 text-purple-800 border border-purple-200">BMIT + MiWay Labs + 5 Arts</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5">
-          <div
-            onClick={() => setActiveModal('hpc')}
-            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all cursor-pointer group flex items-start space-x-4"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 border border-teal-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <Compass className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-teal-700 transition-colors">
-                  Holistic Progress Card (NEP 2020 &amp; PARAKH 360° Builder)
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-teal-900">
+                  NEP 2020 &amp; PARAKH Holistic Progress Card (HPC)
                 </h3>
-                <span className="text-[10px] bg-teal-100 text-teal-800 font-extrabold px-2.5 py-0.5 rounded-full">
-                  BMIT · MiWay Experiential Labs · 5 Arts
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-200/70 text-teal-800">
+                  360° Studio
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Beyond marks: competency-level growth aligned with NEP 2020 &amp; PARAKH with personalised recommendations — making BMIT, MiWay Experiential Labs, and the 5 Arts visible beside academics.
+              <p className="text-xs text-slate-600 mt-0.5">
+                Competency growth, BMIT Multiple Intelligences, VAK learning styles, and longitudinal student portfolios are centralized in 360° Intelligence.
               </p>
-              {onNavigate && (
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNavigate(isStudentView ? '/student/intelligence' : '/staff/student-intelligence');
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold hover:bg-teal-100 transition-colors"
-                  >
-                    <span>{isStudentView ? 'Open My 360° BMIT, VAK & Portfolio Studio →' : 'Open Full 360° BMIT, VAK & Career Studio →'}</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => onNavigate && onNavigate('/staff/student-intelligence')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 shadow-xs transition-colors"
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>Open 360° Student Intelligence →</span>
+          </button>
         </div>
       </div>
 
-      {/* PILLAR 04: PERSONALISED LEARNING & STUDENT INSIGHTS (PAL KG-12) */}
+      {/* PILLAR 02: PERSONALISED LEARNING & STUDENT INSIGHTS (PAL KG-12) */}
       <div className="space-y-3">
         <div className="rounded-2xl p-4 border border-amber-100/80" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 55%, #fff7ed 100%)' }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -929,7 +716,7 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
                 <Target className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">Section 04 · PAL · Personalised Learning</div>
+                <div className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">Section 02 · Adaptive Learning (PAL)</div>
                 <h2 className="text-sm font-extrabold text-slate-900 leading-tight">Personalised Learning &amp; Student Insights</h2>
                 <p className="text-[11px] text-slate-500 mt-0.5">Grades KG–12 · Right-Level Adaptive Path · Continuous Term-to-Term Portfolio</p>
               </div>
