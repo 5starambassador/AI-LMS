@@ -65,6 +65,8 @@ function AppShell() {
         setStudentTab('lms');
       } else if (cleanPath === '/student/homework') {
         setStudentTab('homework');
+      } else if (cleanPath === '/student/worksheet') {
+        setStudentTab('worksheet');
       } else if (cleanPath === '/student/voice') {
         setStudentTab('voice');
       } else if (cleanPath === '/student/gaps' || cleanPath === '/student/learning-gaps') {

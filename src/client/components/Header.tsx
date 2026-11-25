@@ -23,7 +23,8 @@ import {
   Menu,
   X,
   LogOut,
-  PlayCircle
+  PlayCircle,
+  Volume2
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -63,13 +64,22 @@ interface HeaderProps {
 
 const ADMIN_ROLES = ['role-ach-superadmin', 'role-ach-manager', 'role-ach-principal'];
 
+interface NavItem {
+  label: string;
+  tab: ActiveTabType;
+  route: string;
+  icon: React.ReactNode;
+  desc: string;
+  allowedRoles?: string[];
+}
+
 interface NavGroup {
   label: string;
   icon: React.ReactNode;
   color: string;
   activeColor: string;
   allowedRoles?: string[];
-  items: { label: string; tab: ActiveTabType; route: string; icon: React.ReactNode; desc: string }[];
+  items: NavItem[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
@@ -96,7 +106,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Summative Exams',   tab: 'exams',         route: '/staff/exams',         icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
       { label: 'Score Insights',    tab: 'insights',      route: '/staff/insights',      icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Score analytics & AI grading' },
       { label: 'Report Cards',      tab: 'reportcard',    route: '/staff/reportcard',    icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Generate student report cards' },
-      { label: 'Learning Gap Studio',tab: 'learning-gaps',route: '/staff/learning-gaps', icon: <Target className="w-4 h-4 text-violet-600" />,       desc: 'Cross-grade error tracing & DAG' },
     ]
   },
   {
@@ -108,7 +117,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Achariya AI Tools Suite', tab: 'aitools',              route: '/staff/aitools',              icon: <Sparkles className="w-4 h-4 text-teal-600" />,     desc: 'Exam Grader, VoiceLab, HPC 360° & PAL' },
       { label: 'AI Learning Gap Studio',  tab: 'learning-gaps',        route: '/staff/learning-gaps',        icon: <Target className="w-4 h-4 text-violet-600" />,     desc: 'Prerequisite DAG & 100% Mastery' },
       { label: '360° Student Intelligence',tab: 'student-intelligence', route: '/staff/student-intelligence', icon: <BrainCircuit className="w-4 h-4 text-indigo-600" />, desc: 'BMIT, VAK, E-Portfolio & Career AI' },
-      { label: 'AI LMS Studio',          tab: 'lms',                  route: '/staff/lms',                  icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
     ]
   },
   {
@@ -116,12 +124,11 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <LayoutGrid className="w-3.5 h-3.5" />,
     color: 'text-orange-500',
     activeColor: 'bg-orange-50 text-orange-800 border-orange-200',
-    allowedRoles: ADMIN_ROLES,
     items: [
-      { label: 'Timetable',   tab: 'timetable',   route: '/staff/timetable',   icon: <CalendarDays className="w-4 h-4 text-orange-500" />, desc: 'Class schedules & period planner' },
-      { label: 'Leave',       tab: 'leaves',      route: '/staff/leaves',      icon: <UmbrellaOff className="w-4 h-4 text-rose-500" />,    desc: 'Staff leave requests & approvals' },
-      { label: 'Noticeboard', tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & announcements' },
-      { label: 'Fees',        tab: 'fees',        route: '/staff/fees',        icon: <CreditCard className="w-4 h-4 text-emerald-600" />,  desc: 'Fee tracker & payment status' },
+      { label: 'Timetable',         tab: 'timetable',   route: '/staff/timetable',   icon: <CalendarDays className="w-4 h-4 text-orange-500" />, desc: 'Class schedules & period planner' },
+      { label: 'Noticeboard',       tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & circulars' },
+      { label: 'Leave Management',  tab: 'leaves',      route: '/staff/leaves',      icon: <UmbrellaOff className="w-4 h-4 text-rose-500" />,    desc: 'Staff leave applications & approvals' },
+      { label: 'Fee Management',    tab: 'fees',        route: '/staff/fees',        icon: <CreditCard className="w-4 h-4 text-emerald-600" />,  desc: 'Fee collections & tuition ledgers', allowedRoles: ADMIN_ROLES },
     ]
   },
 ];
@@ -129,16 +136,25 @@ const NAV_GROUPS: NavGroup[] = [
 function DropdownMenu({
   group,
   activeTab,
+  currentUser,
   onNavigate,
 }: {
   group: NavGroup;
   activeTab: ActiveTabType;
+  currentUser: User | null;
   onNavigate: (route: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isGroupActive = group.items.some(i => i.tab === activeTab);
+
+  const visibleItems = group.items.filter(item =>
+    !item.allowedRoles || (currentUser && item.allowedRoles.includes(currentUser.roleKey))
+  );
+
+  if (visibleItems.length === 0) return null;
+
+  const isGroupActive = visibleItems.some(i => i.tab === activeTab);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -189,10 +205,10 @@ function DropdownMenu({
           <div className="px-3 py-1.5 mb-1 border-b border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.label}</p>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
-              {group.items.length} Modules
+              {visibleItems.length} Modules
             </span>
           </div>
-          {group.items.map(item => (
+          {visibleItems.map(item => (
             <button
               key={item.tab}
               type="button"
@@ -298,34 +314,18 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {/* Grouped dropdowns: Teaching, Assessment, AI Studios, Operations */}
-              {NAV_GROUPS.filter(group =>
-                !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
-              ).map(group => (
+              {NAV_GROUPS.map(group => (
                 <DropdownMenu
                   key={group.label}
                   group={group}
                   activeTab={currentPortal === 'STAFF' ? activeTab : 'home'}
+                  currentUser={currentUser}
                   onNavigate={onNavigate}
                 />
               ))}
 
               {/* ── Divider: academic / utility ── */}
               <span className="w-px h-5 bg-slate-200 mx-0.5 flex-shrink-0" />
-
-              {/* Standalone Leave for teachers (not in Operations group) */}
-              {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
-                <button
-                  onClick={() => onNavigate('/staff/leaves')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-                    currentPortal === 'STAFF' && activeTab === 'leaves'
-                      ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
-                  }`}
-                >
-                  <UmbrellaOff className="w-3.5 h-3.5 text-rose-500" />
-                  <span>Leave</span>
-                </button>
-              )}
 
               {/* My Space */}
               <button
@@ -365,8 +365,9 @@ export const Header: React.FC<HeaderProps> = ({
                 { tab: 'gaps'         as StudentTabType, route: '/student/gaps',         label: 'Gaps & Mastery',  icon: <Target className="w-3.5 h-3.5 text-purple-600" />,   cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: '360° BMIT',       icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab'     as StudentTabType, route: '/student/voicelab',     label: 'VoiceLab',        icon: <Mic className="w-3.5 h-3.5 text-teal-600" />,        cls: 'bg-teal-50 text-teal-800 border-teal-200' },
-                { tab: 'voice'        as StudentTabType, route: '/student/voice',        label: 'Read Aloud',      icon: <Mic className="w-3.5 h-3.5 text-rose-500" />,        cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
+                { tab: 'voice'        as StudentTabType, route: '/student/voice',        label: 'Read Aloud',      icon: <Volume2 className="w-3.5 h-3.5 text-rose-500" />,    cls: 'bg-rose-50 text-rose-800 border-rose-200'  },
                 { tab: 'homework'     as StudentTabType, route: '/student/homework',     label: 'Homework',        icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />,  cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'worksheet'    as StudentTabType, route: '/student/worksheet',    label: 'Worksheet Studio',icon: <PenTool className="w-3.5 h-3.5 text-teal-600" />,    cls: 'bg-teal-50 text-teal-800 border-teal-200' },
               ].map(item => (
                 <button
                   key={item.tab}
@@ -446,100 +447,26 @@ export const Header: React.FC<HeaderProps> = ({
           {(currentPortal === 'STAFF' || currentPortal === 'SUPERADMIN') &&
             currentUser?.roleKey !== 'role-ach-student' &&
             currentUser?.roleKey !== 'role-ach-parent' && (
-              <div className="space-y-2.5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <div className="space-y-3">
+                {/* Primary Quick Access */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pb-2 border-b border-slate-100">
                   <button
                     onClick={() => handleMobileNavigate('/staff/home')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left transition-all ${
                       currentPortal === 'STAFF' && activeTab === 'home'
                         ? 'bg-slate-100 text-slate-900 border-slate-300'
-                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70 hover:bg-slate-100'
                     }`}
                   >
                     <Home className="w-3.5 h-3.5" />
                     <span>Home</span>
                   </button>
                   <button
-                    onClick={() => handleMobileNavigate('/staff/learning-gaps')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
-                      currentPortal === 'STAFF' && activeTab === 'learning-gaps'
-                        ? 'bg-violet-50 text-violet-800 border-violet-300'
-                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
-                    }`}
-                  >
-                    <Target className="w-3.5 h-3.5 text-violet-600" />
-                    <span>Gap Studio</span>
-                  </button>
-                  <button
-                    onClick={() => handleMobileNavigate('/staff/student-intelligence')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
-                      currentPortal === 'STAFF' && activeTab === 'student-intelligence'
-                        ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
-                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
-                    }`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>360° BMIT</span>
-                  </button>
-                  <button
-                    onClick={() => handleMobileNavigate('/staff/aitools')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left ${
-                      currentPortal === 'STAFF' && activeTab === 'aitools'
-                        ? 'bg-teal-50 text-teal-800 border-teal-300'
-                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70'
-                    }`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                    <span>AI Tools</span>
-                  </button>
-                </div>
-
-                {NAV_GROUPS.filter(group =>
-                  !group.allowedRoles || (currentUser && group.allowedRoles.includes(currentUser.roleKey))
-                ).map(group => (
-                  <div key={group.label} className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
-                      {group.label}
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                      {group.items.map(item => (
-                        <button
-                          key={item.tab}
-                          onClick={() => handleMobileNavigate(item.route)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
-                            currentPortal === 'STAFF' && activeTab === item.tab
-                              ? 'bg-slate-100 text-slate-900 border-slate-300 font-bold'
-                              : 'bg-white text-slate-700 border-slate-200/80'
-                          }`}
-                        >
-                          {item.icon}
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1 border-t border-slate-100">
-                  {currentUser && !ADMIN_ROLES.includes(currentUser.roleKey) && (
-                    <button
-                      onClick={() => handleMobileNavigate('/staff/leaves')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
-                        currentPortal === 'STAFF' && activeTab === 'leaves'
-                          ? 'bg-rose-50 text-rose-800 border-rose-300 font-bold'
-                          : 'bg-white text-slate-700 border-slate-200/80'
-                      }`}
-                    >
-                      <UmbrellaOff className="w-3.5 h-3.5 text-rose-500" />
-                      <span>Leave</span>
-                    </button>
-                  )}
-                  <button
                     onClick={() => handleMobileNavigate('/staff/myspace')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left transition-all ${
                       currentPortal === 'STAFF' && activeTab === 'myspace'
-                        ? 'bg-indigo-50 text-indigo-800 border-indigo-300 font-bold'
-                        : 'bg-white text-slate-700 border-slate-200/80'
+                        ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                        : 'bg-slate-50/70 text-slate-700 border-slate-200/70 hover:bg-slate-100'
                     }`}
                   >
                     <Compass className="w-3.5 h-3.5 text-indigo-500" />
@@ -548,10 +475,10 @@ export const Header: React.FC<HeaderProps> = ({
                   {(currentUser?.roleKey === 'role-ach-superadmin' || currentUser?.roleKey === 'role-ach-manager') && (
                     <button
                       onClick={() => handleMobileNavigate('/superadmin')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border text-left transition-all ${
                         currentPortal === 'SUPERADMIN'
-                          ? 'bg-indigo-50 text-indigo-800 border-indigo-300 font-bold'
-                          : 'bg-white text-slate-700 border-slate-200/80'
+                          ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                          : 'bg-slate-50/70 text-slate-700 border-slate-200/70 hover:bg-slate-100'
                       }`}
                     >
                       <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
@@ -559,6 +486,43 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   )}
                 </div>
+
+                {/* Structured Group Navigation */}
+                {NAV_GROUPS.map(group => {
+                  const visibleItems = group.items.filter(item =>
+                    !item.allowedRoles || (currentUser && item.allowedRoles.includes(currentUser.roleKey))
+                  );
+                  if (visibleItems.length === 0) return null;
+
+                  return (
+                    <div key={group.label} className="space-y-1">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          {group.label}
+                        </span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
+                          {visibleItems.length}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        {visibleItems.map(item => (
+                          <button
+                            key={item.tab}
+                            onClick={() => handleMobileNavigate(item.route)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left transition-all ${
+                              currentPortal === 'STAFF' && activeTab === item.tab
+                                ? 'bg-slate-100 text-slate-900 border-slate-300 font-bold'
+                                : 'bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50'
+                            }`}
+                          >
+                            {item.icon}
+                            <span className="truncate">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -569,16 +533,17 @@ export const Header: React.FC<HeaderProps> = ({
                 { tab: 'gaps' as StudentTabType, route: '/student/gaps', label: 'My Learning Gaps & Mastery', icon: <Target className="w-3.5 h-3.5 text-purple-600" />, cls: 'bg-purple-50 text-purple-800 border-purple-200' },
                 { tab: 'intelligence' as StudentTabType, route: '/student/intelligence', label: 'My 360° BMIT, VAK & Career', icon: <BrainCircuit className="w-3.5 h-3.5 text-indigo-600" />, cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
                 { tab: 'voicelab' as StudentTabType, route: '/student/voicelab', label: 'VoiceLab Speech AI', icon: <Mic className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
-                { tab: 'voice' as StudentTabType, route: '/student/voice', label: 'Read Aloud', icon: <Mic className="w-3.5 h-3.5 text-rose-500" />, cls: 'bg-rose-50 text-rose-800 border-rose-200' },
+                { tab: 'voice' as StudentTabType, route: '/student/voice', label: 'Read Aloud Practice', icon: <Volume2 className="w-3.5 h-3.5 text-rose-500" />, cls: 'bg-rose-50 text-rose-800 border-rose-200' },
                 { tab: 'homework' as StudentTabType, route: '/student/homework', label: 'Homework Studio', icon: <FileCheck className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
+                { tab: 'worksheet' as StudentTabType, route: '/student/worksheet', label: 'Worksheet Studio', icon: <PenTool className="w-3.5 h-3.5 text-teal-600" />, cls: 'bg-teal-50 text-teal-800 border-teal-200' },
               ].map(item => (
                 <button
                   key={item.tab}
                   onClick={() => handleMobileNavigate(item.route)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border text-left transition-all ${
                     studentTab === item.tab
-                      ? `${item.cls} font-bold`
-                      : 'bg-white text-slate-700 border-slate-200/80'
+                      ? `${item.cls} font-bold shadow-xs`
+                      : 'bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50'
                   }`}
                 >
                   {item.icon}
