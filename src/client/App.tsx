@@ -20,6 +20,7 @@ const FeeHub = React.lazy(() => import('./components/FeeHub').then(m => ({ defau
 const ParentPortal = React.lazy(() => import('./components/ParentPortal').then(m => ({ default: m.ParentPortal })));
 
 const CurriculumHub = React.lazy(() => import('./components/CurriculumHub').then(m => ({ default: m.CurriculumHub })));
+const AssessmentHub = React.lazy(() => import('./components/AssessmentHub').then(m => ({ default: m.AssessmentHub })));
 const LmsStudio = React.lazy(() => import('./components/LmsStudio').then(m => ({ default: m.LmsStudio })));
 const WorksheetCanvas = React.lazy(() => import('./components/WorksheetCanvas').then(m => ({ default: m.WorksheetCanvas })));
 const ScoreInsights = React.lazy(() => import('./components/ScoreInsights').then(m => ({ default: m.ScoreInsights })));
@@ -86,6 +87,8 @@ function AppShell() {
         setActiveTab('homework');
       } else if (cleanPath === '/staff/worksheet' || cleanPath === '/worksheet') {
         setActiveTab('worksheet');
+      } else if (cleanPath === '/staff/assessment' || cleanPath === '/assessment') {
+        setActiveTab('assessment');
       } else if (cleanPath === '/staff/exam-builder' || cleanPath === '/exam-builder') {
         setActiveTab('exam-builder');
       } else if (cleanPath === '/staff/learning-gaps' || cleanPath === '/learning-gaps') {
@@ -333,6 +336,7 @@ function AppShell() {
                   onNavigateToExamBuilder={() => navigateTo('/staff/exam-builder')}
                 />
               )}
+              {activeTab === 'assessment' && <AssessmentHub onNavigate={navigateTo} />}
               {activeTab === 'myspace' && <MySpaceHub />}
               {activeTab === 'insights' && <ScoreInsights />}
               {activeTab === 'exams' && <ExamHub />}

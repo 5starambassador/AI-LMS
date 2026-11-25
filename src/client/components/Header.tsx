@@ -30,6 +30,7 @@ import { User } from '../types';
 
 export type ActiveTabType =
   | 'home'
+  | 'assessment'
   | 'lms'
   | 'resources'
   | 'homework'
@@ -78,6 +79,8 @@ interface NavGroup {
   icon: React.ReactNode;
   color: string;
   activeColor: string;
+  homeRoute: string;
+  homeTab: ActiveTabType;
   allowedRoles?: string[];
   items: NavItem[];
 }
@@ -88,6 +91,8 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <BookOpen className="w-3.5 h-3.5" />,
     color: 'text-teal-600',
     activeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    homeRoute: '/staff/lms',
+    homeTab: 'lms',
     items: [
       { label: 'AI LMS Studio',   tab: 'lms',        route: '/staff/lms',         icon: <PlayCircle className="w-4 h-4 text-teal-600" />,    desc: 'Video, Audio & Simulation VAK lessons' },
       { label: 'Attendance',      tab: 'attendance', route: '/staff/attendance',  icon: <CalendarCheck className="w-4 h-4 text-teal-600" />, desc: 'Daily roll call, QR scan & register' },
@@ -101,7 +106,10 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <ClipboardList className="w-3.5 h-3.5" />,
     color: 'text-violet-600',
     activeColor: 'bg-violet-50 text-violet-800 border-violet-200',
+    homeRoute: '/staff/assessment',
+    homeTab: 'assessment',
     items: [
+      { label: 'Assessment Command Center',  tab: 'assessment',    route: '/staff/assessment',    icon: <LayoutGrid className="w-4 h-4 text-violet-600" />,   desc: 'Executive overview & exam metrics' },
       { label: 'Exam Builder',               tab: 'exam-builder',  route: '/staff/exam-builder',  icon: <FileText className="w-4 h-4 text-violet-600" />,     desc: 'Curriculum outcomes & blueprint builder' },
       { label: 'Summative Exams',            tab: 'exams',         route: '/staff/exams',         icon: <ClipboardList className="w-4 h-4 text-violet-600" />, desc: 'Create and manage summative exams' },
       { label: 'AI Exam Grader & Insights',  tab: 'insights',      route: '/staff/insights',      icon: <BarChart2 className="w-4 h-4 text-violet-600" />,    desc: 'Optical OCR grading & score mastery' },
@@ -113,8 +121,10 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <Sparkles className="w-3.5 h-3.5" />,
     color: 'text-teal-600',
     activeColor: 'bg-teal-50 text-teal-800 border-teal-200 font-bold',
+    homeRoute: '/staff/aitools',
+    homeTab: 'aitools',
     items: [
-      { label: 'VoiceLab & Adaptive Studio (PAL)', tab: 'aitools',              route: '/staff/aitools',              icon: <Sparkles className="w-4 h-4 text-teal-600" />,     desc: 'English LSR speech AI, dubbing & PAL' },
+      { label: 'AI Studios Command Center',        tab: 'aitools',              route: '/staff/aitools',              icon: <Sparkles className="w-4 h-4 text-teal-600" />,     desc: 'Flagship AI overview & PAL studio' },
       { label: 'AI Learning Gap Studio',           tab: 'learning-gaps',        route: '/staff/learning-gaps',        icon: <Target className="w-4 h-4 text-violet-600" />,     desc: 'Prerequisite DAG & 100% Mastery' },
       { label: '360° Student Intelligence',         tab: 'student-intelligence', route: '/staff/student-intelligence', icon: <BrainCircuit className="w-4 h-4 text-indigo-600" />, desc: 'BMIT, VAK, E-Portfolio & Career AI' },
     ]
@@ -124,6 +134,8 @@ const NAV_GROUPS: NavGroup[] = [
     icon: <LayoutGrid className="w-3.5 h-3.5" />,
     color: 'text-orange-500',
     activeColor: 'bg-orange-50 text-orange-800 border-orange-200',
+    homeRoute: '/staff/timetable',
+    homeTab: 'timetable',
     items: [
       { label: 'Timetable',         tab: 'timetable',   route: '/staff/timetable',   icon: <CalendarDays className="w-4 h-4 text-orange-500" />, desc: 'Class schedules & period planner' },
       { label: 'Noticeboard',       tab: 'noticeboard', route: '/staff/noticeboard', icon: <Megaphone className="w-4 h-4 text-orange-500" />,    desc: 'Campus banners & circulars' },
@@ -154,7 +166,7 @@ function DropdownMenu({
 
   if (visibleItems.length === 0) return null;
 
-  const isGroupActive = visibleItems.some(i => i.tab === activeTab);
+  const isGroupActive = visibleItems.some(i => i.tab === activeTab) || group.homeTab === activeTab;
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -185,20 +197,40 @@ function DropdownMenu({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
-          isGroupActive
-            ? `${group.activeColor} border shadow-xs font-bold`
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent'
-        }`}
-      >
-        <span className={isGroupActive ? '' : group.color}>{group.icon}</span>
-        <span>{group.label}</span>
-        {isGroupActive && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate(group.homeRoute);
+            setOpen(false);
+          }}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-l-xl text-xs font-semibold transition-all border-y border-l whitespace-nowrap ${
+            isGroupActive
+              ? `${group.activeColor} shadow-xs font-bold`
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent hover:border-slate-200'
+          }`}
+          title={`Go to ${group.label} Home`}
+        >
+          <span className={isGroupActive ? '' : group.color}>{group.icon}</span>
+          <span>{group.label}</span>
+          {isGroupActive && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(o => !o);
+          }}
+          className={`px-1.5 py-1.5 rounded-r-xl text-xs transition-all border-y border-r -ml-px ${
+            isGroupActive
+              ? `${group.activeColor} shadow-xs`
+              : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-200'
+          }`}
+          title={`Open ${group.label} submenu`}
+        >
+          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
 
       {open && (
         <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100" style={{ boxShadow: 'var(--shadow-popup)' }}>
@@ -497,9 +529,14 @@ export const Header: React.FC<HeaderProps> = ({
                   return (
                     <div key={group.label} className="space-y-1">
                       <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                          {group.label}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleMobileNavigate(group.homeRoute)}
+                          className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-800 flex items-center gap-1 group/hdr"
+                        >
+                          <span>{group.label}</span>
+                          <span className="text-[9px] text-slate-400 group-hover/hdr:translate-x-0.5 transition-transform">→</span>
+                        </button>
                         <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
                           {visibleItems.length}
                         </span>
