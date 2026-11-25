@@ -47,7 +47,7 @@ export type ActiveTabType =
   | 'leaves'
   | 'fees';
 
-export type StudentTabType = 'lms' | 'voicelab' | 'voice' | 'homework' | 'gaps' | 'intelligence';
+export type StudentTabType = 'lms' | 'voicelab' | 'voice' | 'homework' | 'worksheet' | 'gaps' | 'intelligence';
 
 interface HeaderProps {
   activeTab: ActiveTabType;

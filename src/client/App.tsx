@@ -356,7 +356,12 @@ function AppShell() {
               {studentTab === 'voice' && <VoiceActivity />}
               {studentTab === 'homework' && (
                 <StudentHomeworkPortal
-                  onNavigateToWorksheet={() => navigateTo('/staff/worksheet')}
+                  onNavigateToWorksheet={() => navigateTo('/student/worksheet')}
+                />
+              )}
+              {studentTab === 'worksheet' && (
+                <WorksheetCanvas
+                  onAssignAsHomework={() => navigateTo('/student/homework')}
                 />
               )}
               {studentTab === 'gaps' && (
