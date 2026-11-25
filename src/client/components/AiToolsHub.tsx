@@ -37,7 +37,8 @@ import {
   ArrowRight,
   Target,
   ShieldCheck,
-  ClipboardList
+  ClipboardList,
+  BrainCircuit
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 
@@ -528,82 +529,237 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
         </div>
       )}
 
-      {/* PAGE HERO */}
-      <div className="relative overflow-hidden rounded-3xl px-6 py-7 border border-slate-200/60" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)' }}>
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }} />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
+      {/* ── EXCLUSIVE AI STUDIOS HERO HEADER ── */}
+      <div
+        className="relative overflow-hidden rounded-3xl px-6 py-7 border border-slate-200/80 shadow-xs"
+        style={{
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f0fdfa 35%, #e0f2fe 70%, #ede9fe 100%)'
+        }}
+      >
+        <div
+          className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #0D9488 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }}
+        />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center shadow-lg shrink-0">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center shadow-md text-white shrink-0">
+              <Sparkles className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                VoiceLab &amp; Adaptive Studio (PAL)
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-teal-800 bg-teal-100/80 px-2.5 py-0.5 rounded-full border border-teal-200">
+                  MiWay AI Innovation
+                </span>
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  4 Flagship Studios
+                </span>
+              </div>
+              <h1
+                className="text-2xl font-black text-slate-900 leading-tight"
+                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', letterSpacing: '-0.02em' }}
+              >
+                AI Studios Command Center
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Achariya flagship AI engines: English Language Lab (LSR), Voice Dubbing, Simulations &amp; Personalised Adaptive Learning
+              <p className="text-xs text-slate-600 mt-1 max-w-2xl">
+                Achariya flagship artificial intelligence engines powering prerequisite mastery DAGs, holistic psychometrics, English LSR speech fluency &amp; adaptive learning loops.
               </p>
             </div>
           </div>
+
           <div className="flex flex-wrap gap-2 text-[10px] font-bold">
-            <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-700 border border-cyan-200/60">01 VoiceLab LSR</span>
-            <span className="px-3 py-1 rounded-full bg-pink-500/10 text-pink-700 border border-pink-200/60">02 Dubbing &amp; Simulations</span>
-            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-200/60">03 Adaptive PAL</span>
-            <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 border border-purple-200/60">04 Written Autograde</span>
+            <span className="px-3 py-1.5 rounded-xl bg-white/90 text-teal-800 border border-teal-200 shadow-xs flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+              India Cloud Protected
+            </span>
+            <span className="px-3 py-1.5 rounded-xl bg-white/90 text-indigo-800 border border-indigo-200 shadow-xs flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+              40,000+ Profiles Synced
+            </span>
           </div>
         </div>
       </div>
 
-      {/* CENTRALIZED ASSESSMENT SUITE GATEWAY BANNER */}
-      <div className="rounded-2xl p-4.5 bg-gradient-to-r from-violet-50 via-indigo-50 to-purple-50 border border-violet-200/80 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <ClipboardList className="w-5 h-5" />
-            </div>
+      {/* ── KPI OPERATIONAL METRICS ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Flagship Studios</p>
+            <p className="text-xl font-black text-slate-900 mt-0.5">4 Active</p>
+            <p className="text-[10px] text-teal-600 font-bold mt-0.5">Gaps · 360° · Voice · PAL</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prerequisite DAG</p>
+            <p className="text-xl font-black text-slate-900 mt-0.5">1,420+ Nodes</p>
+            <p className="text-[10px] text-indigo-600 font-bold mt-0.5">Grades 1–12 Mapped</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <Target className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Speech AI Checks</p>
+            <p className="text-xl font-black text-slate-900 mt-0.5">125+ Verifications</p>
+            <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Indian Accent Trained</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <Mic className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scholars Synced</p>
+            <p className="text-xl font-black text-slate-900 mt-0.5">40,000+ Cards</p>
+            <p className="text-[10px] text-purple-600 font-bold mt-0.5">NEP 2020 &amp; PARAKH</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <BrainCircuit className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── FOUR FLAGSHIP AI STUDIO LAUNCHPADS ── */}
+      <div>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div>
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+              Flagship AI Engines
+            </h2>
+            <p className="text-xs text-slate-500">Dedicated operational studios powering the MiWay pedagogic vision</p>
+          </div>
+          <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60">
+            4 AI Suites
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Card 1: AI Learning Gap Studio */}
+          <div
+            onClick={() => onNavigate && onNavigate('/staff/learning-gaps')}
+            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-violet-300 transition-all cursor-pointer group flex flex-col justify-between"
+          >
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-violet-900">
-                  Assessment &amp; Optical Evaluation Suite
-                </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-200/70 text-violet-800">
-                  Dedicated Module
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-700 border border-violet-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Target className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] bg-violet-100 text-violet-800 font-extrabold px-2.5 py-0.5 rounded-full border border-violet-200">
+                  Prerequisite DAG &amp; 100% Mastery
                 </span>
               </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Summative exam blueprints, parallel Sets A/B/C, optical OCR handwriting correction &amp; score insights are centralized under <strong>Assessment</strong>.
+              <h3 className="text-base font-extrabold text-slate-900 group-hover:text-violet-700 transition-colors">
+                AI Learning Gap Studio
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Multi-grade directed acyclic graph (DAG) tracing root-cause learning impediments across academic years. Auto-generates 1-page QR bridge worksheets and gold mastery quests.
               </p>
             </div>
+            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400">Knowledge Graph &amp; Remediation</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 group-hover:translate-x-1 transition-transform">
+                Open Learning Gap Studio <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (onNavigateToExamBuilder) onNavigateToExamBuilder();
-                else if (onNavigate) onNavigate('/staff/exam-builder');
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-violet-200 text-violet-800 text-xs font-bold hover:bg-violet-100/70 shadow-xs transition-colors"
-            >
-              <FileText className="w-3.5 h-3.5 text-violet-600" />
-              <span>Exam Builder →</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate && onNavigate('/staff/exams')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-violet-200 text-violet-800 text-xs font-bold hover:bg-violet-100/70 shadow-xs transition-colors"
-            >
-              <ClipboardList className="w-3.5 h-3.5 text-violet-600" />
-              <span>Summative Exams →</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate && onNavigate('/staff/insights')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 shadow-xs transition-colors"
-            >
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>AI Exam Grader &amp; Insights →</span>
-            </button>
+
+          {/* Card 2: 360° Student Intelligence Studio */}
+          <div
+            onClick={() => onNavigate && onNavigate('/staff/student-intelligence')}
+            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <BrainCircuit className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] bg-indigo-100 text-indigo-800 font-extrabold px-2.5 py-0.5 rounded-full border border-indigo-200">
+                  NEP 2020 HPC &amp; BMIT
+                </span>
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                360° Student Intelligence Studio
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Comprehensive 5-domain Holistic Progress Cards (NEP 2020 &amp; PARAKH), Gardner Multiple Intelligences (BMIT), VAK sensory learning profiles, and AI career trajectories.
+              </p>
+            </div>
+            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400">Psychometrics &amp; E-Portfolios</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 group-hover:translate-x-1 transition-transform">
+                Open 360° Intelligence <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: VoiceLab Speech AI Language Lab */}
+          <div
+            onClick={() => setActiveModal('lsrDashboard')}
+            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-cyan-300 transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-700 border border-cyan-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Mic className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] bg-cyan-100 text-cyan-800 font-extrabold px-2.5 py-0.5 rounded-full border border-cyan-200">
+                  LSR Audio Evidence
+                </span>
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900 group-hover:text-cyan-700 transition-colors">
+                VoiceLab Speech AI Language Lab
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Listening, Speaking &amp; Reading (LSR) assessment with Indian accent acoustic modeling. Compare start-of-year vs. current speech clips with automated pronunciation scoring.
+              </p>
+            </div>
+            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400">125+ Skill Checks Scored</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-700 group-hover:translate-x-1 transition-transform">
+                Open VoiceLab Dashboard <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Personalised Adaptive Learning (PAL) Studio */}
+          <div
+            onClick={() => setActiveModal('palStudio')}
+            className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] bg-amber-100 text-amber-800 font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200">
+                  Adaptive Loops
+                </span>
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900 group-hover:text-amber-700 transition-colors">
+                Personalised Adaptive Learning (PAL)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Adaptive practice loops meeting every child at their zone of proximal development. Automated Bloom&apos;s level question differentiation with instant written response autograding.
+              </p>
+            </div>
+            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400">Right-Level Learning</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform">
+                Launch PAL Studio <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -672,38 +828,6 @@ export const AiToolsHub: React.FC<AiToolsHubProps> = ({ onNavigateToExamBuilder,
               </p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* 360° STUDENT INTELLIGENCE REFERRAL BANNER */}
-      <div className="rounded-2xl p-4.5 bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border border-teal-200/80 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-teal-900">
-                  NEP 2020 &amp; PARAKH Holistic Progress Card (HPC)
-                </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-200/70 text-teal-800">
-                  360° Studio
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Competency growth, BMIT Multiple Intelligences, VAK learning styles, and longitudinal student portfolios are centralized in 360° Intelligence.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigate && onNavigate('/staff/student-intelligence')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 shadow-xs transition-colors"
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Open 360° Student Intelligence →</span>
-          </button>
         </div>
       </div>
 

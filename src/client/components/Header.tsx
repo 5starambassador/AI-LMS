@@ -197,18 +197,20 @@ function DropdownMenu({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-center">
+      <div
+        className={`inline-flex items-center rounded-xl text-xs font-semibold transition-all border whitespace-nowrap ${
+          isGroupActive
+            ? `${group.activeColor} border shadow-xs font-bold`
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent hover:border-slate-200'
+        }`}
+      >
         <button
           type="button"
           onClick={() => {
             onNavigate(group.homeRoute);
             setOpen(false);
           }}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-l-xl text-xs font-semibold transition-all border-y border-l whitespace-nowrap ${
-            isGroupActive
-              ? `${group.activeColor} shadow-xs font-bold`
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent hover:border-slate-200'
-          }`}
+          className="flex items-center gap-1.5 pl-2.5 pr-1 py-1.5 rounded-l-xl hover:opacity-85 transition-opacity"
           title={`Go to ${group.label} Home`}
         >
           <span className={isGroupActive ? '' : group.color}>{group.icon}</span>
@@ -221,11 +223,7 @@ function DropdownMenu({
             e.stopPropagation();
             setOpen(o => !o);
           }}
-          className={`px-1.5 py-1.5 rounded-r-xl text-xs transition-all border-y border-r -ml-px ${
-            isGroupActive
-              ? `${group.activeColor} shadow-xs`
-              : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-200'
-          }`}
+          className="px-1.5 py-1.5 rounded-r-xl text-slate-400 hover:text-slate-700 transition-colors"
           title={`Open ${group.label} submenu`}
         >
           <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
